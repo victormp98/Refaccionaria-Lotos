@@ -1,0 +1,44 @@
+@model RefaccionariaWeb.Models.Vehiculo
+
+@{
+    ViewData["Title"] = "Eliminar Vehículo";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-danger border-2 rounded-4">
+                <div class="card-body text-center p-5">
+
+                    <div class="text-danger mb-3">
+                        <i class="bi bi-exclamation-octagon-fill display-1"></i>
+                    </div>
+
+                    <h2 class="fw-bold text-danger">¿Desactivar Vehículo?</h2>
+                    <p class="lead text-muted">Estás a punto de enviar este auto a la <strong>Papelera</strong>.</p>
+
+                    <div class="card bg-light border-0 my-4 p-4">
+                        <h3 class="fw-bold text-dark mb-0">@Model.Marca @Model.Modelo</h3>
+                        <p class="text-muted mb-0">Motor: @Model.Motor | Años: @Model.AnioInicio-@Model.AnioFin</p>
+                    </div>
+
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-info-circle"></i> Nota: Las compatibilidades asociadas a este auto dejarán de ser visibles hasta que lo restaures.
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-danger btn-lg rounded-pill shadow-sm">
+                                <i class="bi bi-archive-fill"></i> Confirmar Desactivación
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

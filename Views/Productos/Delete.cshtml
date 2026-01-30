@@ -1,0 +1,51 @@
+@model RefaccionariaWeb.Models.Producto
+
+@{
+    ViewData["Title"] = "Eliminar Producto";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-danger border-2 rounded-4">
+                <div class="card-body text-center p-5">
+
+                    <div class="text-danger mb-3">
+                        <i class="bi bi-exclamation-triangle-fill display-1"></i>
+                    </div>
+
+                    <h2 class="fw-bold text-danger">¿Estás seguro?</h2>
+                    <p class="lead text-muted">El producto será enviado a la <strong>Papelera de Reciclaje</strong> y dejará de ser visible en la tienda.</p>
+
+                    <div class="card bg-light border-0 my-4 p-3">
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+                            {
+                                <img src="@Model.ImagenUrl" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                            }
+                            <div class="text-start">
+                                <h5 class="fw-bold mb-0">@Model.Nombre</h5>
+                                <small class="text-muted">SKU: @Model.SKU</small>
+                            </div>
+                            <div class="ms-auto fw-bold text-dark">
+                                $@Model.PrecioVenta
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg rounded-pill shadow-sm">
+                                <i class="bi bi-trash-fill"></i> Sí, Mover a Papelera
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

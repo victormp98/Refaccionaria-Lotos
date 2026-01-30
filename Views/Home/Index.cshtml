@@ -1,0 +1,125 @@
+﻿@model IEnumerable<RefaccionariaWeb.Models.Producto>
+
+@{
+    ViewData["Title"] = "Catálogo";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Refacciones Destacadas</h2>
+        <span class="badge bg-primary rounded-pill">@Model.Count() productos</span>
+    </div>
+
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm rounded-4 position-relative overflow-hidden hover-effect">
+
+                    <div class="ratio ratio-1x1 bg-light">
+                        @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                        {
+                            <img src="@item.ImagenUrl" class="card-img-top object-fit-cover" alt="@item.Nombre">
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center text-muted">
+                                <i class="bi bi-image fs-1"></i>
+                            </div>
+                        }
+
+                        @if (item.Stock == 0)
+                        {
+                            <div class="position-absolute top-50 start-50 translate-middle w-100 text-center bg-dark bg-opacity-75 text-white py-1">
+                                AGOTADO
+                            </div>
+                        }
+                    </div>
+
+                    <div class="card-body d-flex flex-column p-3">
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">@item.MarcaPieza</small>
+
+                        <h6 class="card-title fw-bold text-dark text-truncate mb-1">
+                            <a asp-controller="Productos" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark stretched-link">
+                                @item.Nombre
+                            </a>
+                        </h6>
+
+                        <div class="mb-2 mt-1" style="font-size: 0.85rem;">
+                            @if (item.Stock == 0)
+                            {
+                                <span class="badge bg-secondary">Agotado</span>
+                            }
+                            else if (item.Stock <= 10)
+                            {
+                                <span class="text-danger fw-bold animate-pulse">
+                                    <i class="bi bi-fire"></i> ¡Solo quedan @item.Stock!
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-success">
+                                    <i class="bi bi-box-seam"></i> @item.Stock disponibles
+                                </span>
+                            }
+                        </div>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
+                            <span class="fs-5 fw-bold text-primary">$@item.PrecioVenta</span>
+
+                            @if (!User.IsInRole("Admin") && !User.IsInRole("Almacen"))
+                            {
+                                if (item.Stock > 0)
+                                {
+                                    <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline position-relative z-2">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="cantidad" value="1" />
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+
+                                        <button type="submit" class="btn btn-primary rounded-circle shadow-sm btn-sm d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="Agregar 1 al carrito">
+                                            <i class="bi bi-cart-plus-fill fs-6"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary rounded-circle shadow-sm btn-sm d-flex align-items-center justify-content-center position-relative z-2 disabled" style="width: 35px; height: 35px;" disabled>
+                                        <i class="bi bi-x-lg fs-6"></i>
+                                    </button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+        }
+
+    @@keyframes pulse-red {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .animate-pulse {
+        animation: pulse-red 2s infinite;
+    }
+</style>

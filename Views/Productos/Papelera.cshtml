@@ -1,0 +1,56 @@
+﻿@model IEnumerable<RefaccionariaWeb.Models.Producto>
+
+@{
+    ViewData["Title"] = "Papelera de Reciclaje";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-danger"><i class="bi bi-trash3-fill"></i> Papelera de Reciclaje</h1>
+    <a asp-action="Index" class="btn btn-secondary rounded-pill">
+        <i class="bi bi-arrow-left"></i> Volver al Inventario
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success text-center shadow-sm">
+        <h4>¡Excelente! La papelera está vacía.</h4>
+        <p>No hay productos eliminados pendiente de restauración.</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle border">
+            <thead class="table-secondary">
+                <tr>
+                    <th>Producto</th>
+                    <th>SKU</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                                {
+                                    <img src="@item.ImagenUrl" class="rounded me-3 grayscale" style="width: 40px; height: 40px; object-fit: cover; filter: grayscale(100%);" />
+                                }
+                                <span class="text-decoration-line-through text-muted">@item.Nombre</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">@item.SKU</td>
+                        <td>
+                            <a asp-action="Restaurar" asp-route-id="@item.Id" class="btn btn-success btn-sm rounded-pill px-3" title="Restaurar a la venta">
+                                <i class="bi bi-arrow-counterclockwise"></i> Restaurar
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

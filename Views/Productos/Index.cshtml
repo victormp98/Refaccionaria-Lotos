@@ -1,0 +1,119 @@
+@model IEnumerable<RefaccionariaWeb.Models.Producto>
+
+@{
+    ViewData["Title"] = "Inventario";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Inventario</h1>
+
+    <div>
+        <a asp-action="Papelera" class="btn btn-outline-danger rounded-pill me-2">
+            <i class="bi bi-trash"></i> Papelera
+        </a>
+
+        <a asp-action="Create" class="btn btn-primary rounded-pill">
+            <i class="bi bi-plus-lg"></i> Nuevo Producto
+        </a>
+    </div>
+</div>
+
+<div class="table-responsive d-none d-md-block shadow-sm rounded">
+    <table class="table table-hover align-middle border">
+        <thead class="table-light">
+            <tr>
+                <th>Foto</th>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                        {
+                            <img src="@item.ImagenUrl" class="rounded" style="width: 50px; height: 50px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <span class="text-muted small">Sin foto</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="fw-bold">@item.Nombre</div>
+                        <div class="text-muted small">SKU: @item.SKU</div>
+                    </td>
+                    <td>@item.MarcaPieza</td>
+                    <td class="fw-bold text-success">$@item.PrecioVenta</td>
+                    <td>
+                        @if (item.Stock < 5)
+                        {
+                            <span class="badge bg-danger">@item.Stock</span>
+                        }
+                        else
+                        {
+
+                            <span class="badge bg-success">@item.Stock</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="d-block d-md-none">
+    @foreach (var item in Model)
+    {
+        <div class="card mb-3 shadow-sm border-0 rounded-3">
+            <div class="card-body">
+                <div class="d-flex gap-3">
+                    <div class="flex-shrink-0">
+                        @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                        {
+                            <img src="@item.ImagenUrl" class="rounded" style="width: 80px; height: 80px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="bi bi-image text-muted"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-1">@item.Nombre</h6>
+                        <small class="text-muted d-block">SKU: @item.SKU</small>
+                        <small class="text-muted d-block">Marca: @item.MarcaPieza</small>
+
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fw-bold text-primary fs-5">$@item.PrecioVenta</span>
+                            <span class="badge bg-secondary">Stock: @item.Stock</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-flex mt-3 border-top pt-2">
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-light flex-grow-1 text-primary">
+                        <i class="bi bi-pencil-fill"></i> Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-light flex-grow-1 text-danger">
+                        <i class="bi bi-trash-fill"></i> Borrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

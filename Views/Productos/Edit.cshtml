@@ -1,0 +1,146 @@
+@model RefaccionariaWeb.Models.Producto
+
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="container mt-4">
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ImagenUrl" />
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-pencil-square"></i> Editar: <span class="text-primary">@Model.Nombre</span></h3>
+
+            <div>
+                <a asp-controller="Compatibilidades" asp-action="Index" asp-route-productoId="@Model.Id" class="btn btn-outline-primary rounded-pill me-2">
+                    <i class="bi bi-car-front-fill"></i> Gestionar Autos
+                </a>
+
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill me-2">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-save"></i> Guardar Todo
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">📦 Información Básica</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SKU" class="form-label fw-bold">Código SKU</label>
+                                <input asp-for="SKU" class="form-control" />
+                                <span asp-validation-for="SKU" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="MarcaPieza" class="form-label fw-bold">Marca de la Pieza</label>
+                                <input asp-for="MarcaPieza" class="form-control" placeholder="Ej. Bosch, NGK" />
+                                <span asp-validation-for="MarcaPieza" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label asp-for="Nombre" class="form-label fw-bold">Nombre del Producto</label>
+                                <input asp-for="Nombre" class="form-control" />
+                                <span asp-validation-for="Nombre" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label asp-for="Descripcion" class="form-label">Descripción Detallada</label>
+                                <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Detalles técnicos, material, medidas..."></textarea>
+                                <span asp-validation-for="Descripcion" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">💰 Finanzas</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PrecioCompra" class="form-label text-muted">Costo (Lo que te costó)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="PrecioCompra" type="number" step="0.01" class="form-control" />
+                                </div>
+                                <span asp-validation-for="PrecioCompra" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PrecioVenta" class="form-label fw-bold text-success">Precio al Público</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success text-white">$</span>
+                                    <input asp-for="PrecioVenta" type="number" step="0.01" class="form-control fw-bold" />
+                                </div>
+                                <span asp-validation-for="PrecioVenta" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">📍 Inventario y Ubicación</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Stock" class="form-label fw-bold">Existencias (Stock)</label>
+                            <input asp-for="Stock" type="number" class="form-control" />
+                            <span asp-validation-for="Stock" class="text-danger"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label asp-for="Pasillo" class="form-label">Pasillo</label>
+                                <input asp-for="Pasillo" class="form-control" placeholder="Ej. A1" />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label asp-for="Anaquel" class="form-label">Anaquel</label>
+                                <input asp-for="Anaquel" class="form-control" placeholder="Ej. 3" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">📸 Imagen y Estado</div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+                            {
+                                <img src="@Model.ImagenUrl" class="img-fluid rounded border mb-2" style="max-height: 150px;" />
+                                <div class="small text-muted">Imagen actual</div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-secondary py-4"><i class="bi bi-image"></i> Sin imagen</div>
+                            }
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label small">Subir nueva imagen</label>
+                            <input type="file" name="imagenArchivo" class="form-control form-control-sm" accept="image/*" />
+                        </div>
+
+                        <hr />
+
+                        <div class="form-check form-switch text-start p-3 bg-light rounded">
+                            <input class="form-check-input" type="checkbox" asp-for="EsVisibleEnLinea" />
+                            <label class="form-check-label fw-bold" asp-for="EsVisibleEnLinea">
+                                Visible en Tienda
+                            </label>
+                            <small class="d-block text-muted">Si apagas esto, el cliente no verá el producto.</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>

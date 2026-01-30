@@ -1,0 +1,197 @@
+@model RefaccionariaWeb.Models.Producto
+
+@{
+    ViewData["Title"] = "Detalles de la Pieza";
+}
+
+<div class="container mt-5 mb-5">
+
+    <div class="mb-3 d-flex gap-2">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary rounded-pill btn-sm">
+            <i class="bi bi-grid-fill"></i> Volver al Catálogo
+        </a>
+
+        @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
+        {
+            <a asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm">
+                <i class="bi bi-list-task"></i> Ver Lista de Inventario
+            </a>
+        }
+    </div>
+
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="row g-0">
+
+            <div class="col-md-5 bg-light d-flex align-items-center justify-content-center p-4">
+                @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+                {
+                    <img src="@Model.ImagenUrl" class="img-fluid rounded-3 shadow-sm" style="max-height: 400px; object-fit: contain;" alt="@Model.Nombre">
+                }
+                else
+                {
+                    <div class="text-center text-muted opacity-50">
+                        <i class="bi bi-camera-fill display-1"></i>
+                        <p class="mt-2">Sin Imagen Disponible</p>
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-7">
+                <div class="card-body p-5">
+
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                            <i class="bi bi-tag-fill"></i> @Model.MarcaPieza
+                        </span>
+                        <small class="text-muted fw-bold">SKU: @Model.SKU</small>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-1">@Model.Nombre</h2>
+
+                    <div class="mb-4 mt-3">
+                        <h3 class="text-success fw-bold display-6">
+                            $@Model.PrecioVenta <span class="fs-6 text-muted">MXN</span>
+                        </h3>
+
+                        @if (Model.Stock > 0)
+                        {
+                            <span class="badge bg-success rounded-pill">
+                                <i class="bi bi-check-circle-fill"></i> Disponible (@Model.Stock pzas)
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger rounded-pill">
+                                <i class="bi bi-x-circle-fill"></i> Agotado
+                            </span>
+                        }
+                    </div>
+
+                    <hr class="text-muted opacity-25">
+
+                    <div class="mb-4">
+                        <h6 class="text-uppercase text-muted small fw-bold">Descripción</h6>
+                        <p class="text-secondary">
+                            @(string.IsNullOrEmpty(Model.Descripcion) ? "No hay descripción detallada para esta refacción." : Model.Descripcion)
+                        </p>
+                    </div>
+
+                    <div class="mb-4 bg-light bg-opacity-50 p-3 rounded-3 border border-light">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-uppercase text-muted small fw-bold mb-0">
+                                <i class="bi bi-car-front-fill"></i> Vehículos Compatibles
+                            </h6>
+                        </div>
+
+                        @if (Model.Compatibilidades != null && Model.Compatibilidades.Count > 0)
+                        {
+                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                <table class="table table-sm table-hover small mb-0 bg-white shadow-sm rounded-2">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th class="ps-3">Marca</th>
+                                            <th>Modelo</th>
+                                            <th>Año</th>
+                                            <th>Motor/Detalle</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Compatibilidades)
+                                        {
+                                            <tr>
+                                                <td class="ps-3 fw-bold text-dark">@item.Vehiculo?.Marca</td>
+                                                <td>@item.Vehiculo?.Modelo</td>
+                                                <td>
+                                                    <span class="badge bg-secondary text-white">
+                                                        @item.Vehiculo?.AnioInicio - @item.Vehiculo?.AnioFin
+                                                    </span>
+                                                </td>
+                                                <td class="text-muted fst-italic">
+                                                    @(string.IsNullOrEmpty(item.Vehiculo?.Motor) ? "General" : item.Vehiculo?.Motor)
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center p-3 border border-dashed rounded bg-white text-muted small">
+                                <i class="bi bi-info-circle me-2"></i> No se han especificado vehículos compatibles.
+                            </div>
+                        }
+                    </div>
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
+                    {
+                        <div class="alert alert-warning border-0 bg-warning bg-opacity-10 rounded-3 p-3 mb-4">
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-lock"></i> Datos de Almacén</h6>
+                            <div class="d-flex gap-4">
+                                <div>
+                                    <small class="text-muted d-block">Ubicación</small>
+                                    <strong>Pasillo @Model.Pasillo - Anaquel @Model.Anaquel</strong>
+                                </div>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <div>
+                                        <small class="text-muted d-block">Costo Compra</small>
+                                        <span class="text-danger fw-bold">$@Model.PrecioCompra</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="d-grid gap-2 d-md-block">
+                        @if (!User.IsInRole("Admin") && !User.IsInRole("Almacen"))
+                        {
+                            @if (Model.Stock > 0)
+                            {
+                                <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-flex flex-wrap align-items-center gap-2">
+
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+
+                                    <div class="input-group shadow-sm rounded-pill overflow-hidden" style="width: 140px;">
+                                        <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-x"></i></span>
+                                        <input type="number" name="cantidad" class="form-control text-center fw-bold border-0"
+                                               value="1" min="1" max="@Model.Stock" id="cantidadInput">
+                                    </div>
+
+                                    <button type="submit" name="comprarAhora" value="false" class="btn btn-dark btn-lg rounded-pill px-4 shadow-sm flex-grow-1">
+                                        <i class="bi bi-cart-plus"></i> Agregar
+                                    </button>
+
+                                    <button type="submit" name="comprarAhora" value="true" class="btn btn-success btn-lg rounded-pill px-4 shadow-sm flex-grow-1 fw-bold">
+                                        Comprar Ahora <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </form>
+
+                                <div class="mt-2 text-muted small ms-2">
+                                    <i class="bi bi-box-seam"></i> Inventario real: <strong>@Model.Stock</strong> disponibles
+                                </div>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary btn-lg rounded-pill px-5 disabled w-100" disabled>
+                                    <i class="bi bi-slash-circle"></i> Agotado Temporalmente
+                                </button>
+                            }
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="mt-3">
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning text-dark w-100 rounded-pill">
+                                    <i class="bi bi-pencil-square"></i> Editar Información del Producto
+                                </a>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

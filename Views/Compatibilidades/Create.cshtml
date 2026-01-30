@@ -1,0 +1,54 @@
+@model RefaccionariaWeb.Models.Compatibilidad
+
+@{
+    ViewData["Title"] = "Nueva Compatibilidad";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-body p-4 text-center">
+
+                        <h3 class="mb-4 text-success"><i class="bi bi-link-45deg"></i> Nueva Relación</h3>
+                        <p class="text-muted mb-4">Vincula una refacción con un auto compatible.</p>
+
+                        <div class="form-group mb-3 text-start">
+                            <label asp-for="ProductoId" class="control-label fw-bold mb-1">Paso 1: Elige la Pieza</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-box-seam"></i></span>
+                                <select asp-for="ProductoId" class="form-select" asp-items="ViewBag.ProductoId"></select>
+                            </div>
+                        </div>
+
+                        <div class="my-3 text-muted">
+                            <i class="bi bi-arrow-down fs-4"></i>
+                        </div>
+
+                        <div class="form-group mb-4 text-start">
+                            <label asp-for="VehiculoId" class="control-label fw-bold mb-1">Paso 2: Elige el Auto</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-car-front"></i></span>
+                                <select asp-for="VehiculoId" class="form-select" asp-items="ViewBag.VehiculoId"></select>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success rounded-pill btn-lg shadow-sm">
+                                <i class="bi bi-plus-lg"></i> Crear Enlace
+                            </button>
+                            <a asp-action="Index" class="btn btn-light rounded-pill text-muted">
+                                Cancelar
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

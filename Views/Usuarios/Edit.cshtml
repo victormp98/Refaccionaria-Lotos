@@ -1,0 +1,51 @@
+﻿@model RefaccionariaWeb.Models.ViewModels.EditarUsuarioViewModel
+
+@{
+    ViewData["Title"] = "Editar Empleado";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+                    <h4 class="mb-0"><i class="bi bi-person-gear"></i> Administrar Usuario</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-bold">Correo (Usuario)</label>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Telefono" class="form-label fw-bold">Teléfono</label>
+                            <input asp-for="Telefono" class="form-control" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="RolSeleccionado" class="form-label fw-bold text-primary">Asignar Puesto</label>
+                            <select asp-for="RolSeleccionado" asp-items="Model.ListaRoles" class="form-select form-select-lg"></select>
+                        </div>
+
+                        <hr />
+
+                        <div class="form-check form-switch mb-4 p-3 bg-light rounded">
+                            <input class="form-check-input" type="checkbox" asp-for="EstaBloqueado" />
+                            <label class="form-check-label text-danger fw-bold" asp-for="EstaBloqueado">
+                                <i class="bi bi-slash-circle"></i> Bloquear Acceso al Sistema
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary rounded-pill btn-lg">Guardar Cambios</button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

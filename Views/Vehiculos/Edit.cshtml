@@ -1,0 +1,86 @@
+@model RefaccionariaWeb.Models.Vehiculo
+
+@{
+    ViewData["Title"] = "Editar Vehículo";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3><i class="bi bi-pencil-square"></i> Editar: <span class="text-primary">@Model.Marca @Model.Modelo</span></h3>
+                    <div>
+                        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill me-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                            <i class="bi bi-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light fw-bold">
+                        <i class="bi bi-car-front-fill me-2"></i> Información del Auto
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label asp-for="Marca" class="form-label fw-bold">Marca</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
+                                    <input asp-for="Marca" class="form-control" placeholder="Ej. Nissan" />
+                                </div>
+                                <span asp-validation-for="Marca" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Modelo" class="form-label fw-bold">Modelo</label>
+                                <input asp-for="Modelo" class="form-control" placeholder="Ej. Tsuru" />
+                                <span asp-validation-for="Modelo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted my-4" />
+
+                        <h6 class="text-muted mb-3">Especificaciones Técnicas</h6>
+                        <div class="row align-items-end">
+                            <div class="col-6 col-md-3 mb-3">
+                                <label asp-for="AnioInicio" class="form-label">Año Inicio</label>
+                                <input asp-for="AnioInicio" class="form-control text-center" />
+                                <span asp-validation-for="AnioInicio" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-6 col-md-3 mb-3">
+                                <label asp-for="AnioFin" class="form-label">Año Fin</label>
+                                <input asp-for="AnioFin" class="form-control text-center" />
+                                <span asp-validation-for="AnioFin" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Motor" class="form-label fw-bold">Motor</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-gear-wide-connected"></i></span>
+                                    <input asp-for="Motor" class="form-control" placeholder="Ej. 1.6L 4 Cilindros" />
+                                </div>
+                                <span asp-validation-for="Motor" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

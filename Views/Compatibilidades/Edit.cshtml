@@ -1,0 +1,64 @@
+@model RefaccionariaWeb.Models.Compatibilidad
+
+@{
+    ViewData["Title"] = "Editar Compatibilidad";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-body p-4 text-center">
+
+                        <h3 class="mb-4 text-primary"><i class="bi bi-pencil-fill"></i> Editar Relación</h3>
+
+                        <div class="form-group mb-3 text-start">
+                            <label asp-for="ProductoId" class="control-label fw-bold mb-1">Pieza (Producto)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-box-seam"></i></span>
+                                <select asp-for="ProductoId" class="form-select" asp-items="ViewBag.ProductoId"></select>
+                            </div>
+                            <span asp-validation-for="ProductoId" class="text-danger"></span>
+                        </div>
+
+                        <div class="my-3 text-muted">
+                            <i class="bi bi-arrow-down-up fs-4"></i>
+                            <span class="small d-block">Es compatible con</span>
+                        </div>
+
+                        <div class="form-group mb-4 text-start">
+                            <label asp-for="VehiculoId" class="control-label fw-bold mb-1">Vehículo</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-car-front"></i></span>
+                                <select asp-for="VehiculoId" class="form-select" asp-items="ViewBag.VehiculoId"></select>
+                            </div>
+                            <span asp-validation-for="VehiculoId" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary rounded-pill btn-lg shadow-sm">
+                                Guardar Cambios
+                            </button>
+                            <a asp-action="Index" class="btn btn-light rounded-pill text-muted">
+                                Cancelar
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

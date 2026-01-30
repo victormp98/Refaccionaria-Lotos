@@ -1,0 +1,123 @@
+@model RefaccionariaWeb.Models.Producto
+
+@{
+    ViewData["Title"] = "Nuevo Producto";
+}
+
+<div class="container mt-4">
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-box-seam-fill"></i> Registrar <span class="text-primary">Nuevo Producto</span></h3>
+            <div>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill me-2">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-check-lg"></i> Guardar Producto
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold text-success">
+                        📦 Información Básica
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SKU" class="form-label fw-bold">SKU</label>
+                                <input asp-for="SKU" class="form-control" placeholder="Ej. NGK-123" />
+                                <span asp-validation-for="SKU" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="MarcaPieza" class="form-label fw-bold">Marca</label>
+                                <input asp-for="MarcaPieza" class="form-control" placeholder="Ej. Bosch" />
+                                <span asp-validation-for="MarcaPieza" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label asp-for="Nombre" class="form-label fw-bold">Nombre</label>
+                                <input asp-for="Nombre" class="form-control" placeholder="Ej. Bujía de Iridio" />
+                                <span asp-validation-for="Nombre" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label asp-for="Descripcion" class="form-label">Descripción</label>
+                                <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Descripcion" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">💰 Precios</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PrecioCompra" class="form-label">Costo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="PrecioCompra" type="number" step="0.01" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PrecioVenta" class="form-label fw-bold text-success">Precio Venta</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success text-white">$</span>
+                                    <input asp-for="PrecioVenta" type="number" step="0.01" class="form-control fw-bold" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">📍 Ubicación y Stock</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Stock" class="form-label fw-bold">Cantidad Inicial</label>
+                            <input asp-for="Stock" type="number" class="form-control" value="1" />
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label asp-for="Pasillo" class="form-label">Pasillo</label>
+                                <input asp-for="Pasillo" class="form-control" />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label asp-for="Anaquel" class="form-label">Anaquel</label>
+                                <input asp-for="Anaquel" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-light fw-bold">📸 Imagen</div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-image display-4 text-muted"></i>
+                            <p class="small text-muted mt-2">Sube una foto clara</p>
+                        </div>
+                        <input type="file" name="imagenArchivo" class="form-control" accept="image/*" />
+
+                        <div class="form-check form-switch text-start mt-4 p-3 bg-light rounded">
+                            <input class="form-check-input" type="checkbox" asp-for="EsVisibleEnLinea" checked />
+                            <label class="form-check-label fw-bold" asp-for="EsVisibleEnLinea">Visible en Tienda</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

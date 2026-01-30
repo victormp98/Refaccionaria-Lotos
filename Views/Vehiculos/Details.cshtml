@@ -1,0 +1,57 @@
+@model RefaccionariaWeb.Models.Vehiculo
+
+@{
+    ViewData["Title"] = "Detalles del Vehículo";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow rounded-4 border-0">
+                <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
+                    <i class="bi bi-car-front-fill fs-1"></i>
+                    <h2 class="fw-bold mb-0 mt-2">@Model.Marca @Model.Modelo</h2>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row text-center g-4">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <small class="text-muted text-uppercase fw-bold">Periodo</small>
+                                <h4 class="mb-0 text-primary">@Model.AnioInicio - @Model.AnioFin</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <small class="text-muted text-uppercase fw-bold">Motorización</small>
+                                <h4 class="mb-0 text-dark">@Model.Motor</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <small class="text-muted text-uppercase fw-bold">Estado</small>
+                                <h4 class="mb-0 text-success"><i class="bi bi-check-circle-fill"></i> Activo</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                        <div>
+                            Este vehículo está disponible para vincular con refacciones en el módulo de compatibilidades.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 text-center pb-4">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 me-2">
+                        <i class="bi bi-pencil-fill"></i> Editar
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
