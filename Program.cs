@@ -79,4 +79,20 @@ app.MapControllerRoute(
 
 app.MapRazorPages(); // Necesario para que /Identity/Account/Register funcione
 
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>(); // Cambia 'YourDbContextName' por el nombre de tu Context
+        context.Database.EnsureCreated();
+        Console.WriteLine("✅ Base de datos verificada/creada con éxito.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al crear la base de datos: {ex.Message}");
+    }
+}
 app.Run();
