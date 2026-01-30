@@ -11,7 +11,7 @@ namespace RefaccionariaWeb.Data
             var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-            // 1. Roles exactos de tu proyecto
+            // 1. ROLES (Nombres exactos)
             string[] roleNames = { "Admin", "Cliente", "Mostrador", "Almacen" };
 
             foreach (var roleName in roleNames)
@@ -22,18 +22,21 @@ namespace RefaccionariaWeb.Data
                 }
             }
 
-            // 2. Crear Admin desde Variables de Entorno (SEGURIDAD)
-            var adminEmail = configuration["ADMIN_USER"] ?? "admin@lotos.com";
-            var adminPass = configuration["ADMIN_PASS"] ?? "Lotos2026!"; // Password por defecto si olvidas ponerla en Coolify
+            // 2. ADMIN (Desde Coolify)
+            var adminEmail = configuration["ADMIN_USER"];
+            var adminPass = configuration["ADMIN_PASS"];
 
-            var user = await userManager.FindByEmailAsync(adminEmail);
-            if (user == null)
+            if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPass))
             {
-                var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-                var result = await userManager.CreateAsync(admin, adminPass);
-                if (result.Succeeded)
+                var user = await userManager.FindByEmailAsync(adminEmail);
+                if (user == null)
                 {
-                    await userManager.AddToRoleAsync(admin, "Admin");
+                    var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
+                    var result = await userManager.CreateAsync(admin, adminPass);
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(admin, "Admin");
+                    }
                 }
             }
         }

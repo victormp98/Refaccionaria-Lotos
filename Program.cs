@@ -4,16 +4,13 @@ using RefaccionariaWeb.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. CONEXIÓN
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
+// CONEXIÓN
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// 2. IDENTITY (Con tus 4 roles)
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-{
+// IDENTITY
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -22,57 +19,30 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-
-// 3. SESIÓN
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+builder.Services.AddSession();
 
 var app = builder.Build();
 
-// 4. LIMPIEZA Y SEEDING (Solo corre al iniciar)
+// NUCLEO DE INICIALIZACIÓN
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<ApplicationDbContext>();
+    var context = services.GetRequiredService<ApplicationDbContext>();
 
-        // BORRÓN Y CUENTA NUEVA (Limpia la basura de intentos anteriores)
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+    // AQUÍ ESTÁ EL TRUCO: Borra la basura y recrea todo
+   //    context.Database.EnsureDeleted();
+    context.Database.EnsureCreated();
 
-        // INICIALIZADOR (Tus 4 roles: Admin, Cliente, Mostrador, Almacen)
-        await DbInitializer.Initialize(services);
-
-        Console.WriteLine("✅ Base de datos reseteada y Roles creados.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Error: {ex.Message}");
-    }
+    await DbInitializer.Initialize(services);
 }
 
-// 5. PIPELINE
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Home/Error"); }
 app.UseStaticFiles();
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
-
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
-
 app.Run();
