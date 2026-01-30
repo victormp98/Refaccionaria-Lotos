@@ -36,10 +36,9 @@ namespace RefaccionariaWeb.Controllers
             if (result.Succeeded)
             {
                 // ================================================================
-                // AQUÍ ESTÁ EL CAMBIO: Asignamos el rol "CLIENTE" en automático
+                // CORRECCIÓN: "Cliente" en lugar de "CLIENTE"
                 // ================================================================
-                // Asegúrate que el rol "CLIENTE" exista en la tabla AspNetRoles
-                await _userManager.AddToRoleAsync(user, "CLIENTE");
+                await _userManager.AddToRoleAsync(user, "Cliente");
 
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");

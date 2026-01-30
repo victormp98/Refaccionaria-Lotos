@@ -4,32 +4,26 @@ using RefaccionariaWeb.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. CONEXIÓN A BASE DE DATOS (MySQL)
+// 1. CONEXIÓN
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// ==========================================
-// 2. CONFIGURACIÓN DE IDENTITY (BLINDADA)
-// ==========================================
-// Cambiamos AddDefaultIdentity por AddIdentity para soportar Roles sin errores.
+// 2. IDENTITY (Con tus 4 roles)
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultUI() // <--- IMPORTANTE: Esto carga las vistas de Login/Registro
+.AddDefaultUI()
 .AddDefaultTokenProviders();
 
-// 3. SERVICIOS MVC Y RAZOR PAGES
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages(); // <--- Agregamos esto explícitamente para asegurar que las vistas de Identity carguen
+builder.Services.AddRazorPages();
 
-// ==========================================
-// 4. CONFIGURACIÓN DE SESIONES (CARRITO)
-// ==========================================
+// 3. SESIÓN
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -40,22 +34,30 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// 5. INICIALIZADOR DE BASE DE DATOS (SEEDER)
+// 4. LIMPIEZA Y SEEDING (Solo corre al iniciar)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        await RefaccionariaWeb.Data.DbInitializer.Initialize(services);
+        var context = services.GetRequiredService<ApplicationDbContext>();
+
+        // BORRÓN Y CUENTA NUEVA (Limpia la basura de intentos anteriores)
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+
+        // INICIALIZADOR (Tus 4 roles: Admin, Cliente, Mostrador, Almacen)
+        await DbInitializer.Initialize(services);
+
+        Console.WriteLine("✅ Base de datos reseteada y Roles creados.");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Ocurrió un error al crear los roles o datos iniciales.");
+        Console.WriteLine($"❌ Error: {ex.Message}");
     }
 }
 
-// 6. PIPELINE HTTP
+// 5. PIPELINE
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -64,35 +66,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
-// Orden Importante: Auth -> Authorization -> Session
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
 
-// 7. RUTAS
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
-app.MapRazorPages(); // Necesario para que /Identity/Account/Register funcione
-
-
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<ApplicationDbContext>(); // Cambia 'YourDbContextName' por el nombre de tu Context
-        context.Database.EnsureCreated();
-        Console.WriteLine("✅ Base de datos verificada/creada con éxito.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Error al crear la base de datos: {ex.Message}");
-    }
-}
 app.Run();
