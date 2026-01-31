@@ -25,7 +25,6 @@ namespace RefaccionariaWeb.Controllers
             var carritoSesion = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
             bool huboCambios = false;
 
-            // VALIDACIÓN DE STOCK EN TIEMPO REAL
             foreach (var item in carritoSesion)
             {
                 var productoReal = await _context.Productos.FindAsync(item.ProductoId);
@@ -69,14 +68,10 @@ namespace RefaccionariaWeb.Controllers
             return View(carritoSesion);
         }
 
-        // POST: Agregar al carrito
-        // Acepta returnUrl para saber a dónde regresar
-        // Acepta comprarAhora para saber si redireccionar al checkout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Agregar(int id, int cantidad, string returnUrl = null, bool comprarAhora = false)
         {
-            // 1. Validaciones básicas
             if (cantidad <= 0)
             {
                 TempData["Error"] = "La cantidad debe ser mayor a 0.";
@@ -89,54 +84,76 @@ namespace RefaccionariaWeb.Controllers
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
             var item = carrito.FirstOrDefault(c => c.ProductoId == id);
 
-            // 2. Validar Stock
-            int cantidadActual = item?.Cantidad ?? 0;
-            if (cantidadActual + cantidad > producto.Stock)
-            {
-                TempData["Error"] = $"Stock insuficiente. Solo quedan {producto.Stock} piezas.";
-                return !string.IsNullOrEmpty(returnUrl) ? Redirect(returnUrl) : RedirectToAction("Index", "Home");
-            }
+            int cantidadEnCarrito = item?.Cantidad ?? 0;
+            int totalDeseado = cantidadEnCarrito + cantidad;
 
-            // 3. Agregar o Actualizar
-            if (item != null)
+            if (totalDeseado > producto.Stock)
             {
-                item.Cantidad += cantidad;
-            }
-            else
-            {
-                carrito.Add(new ItemCarrito
+                int capacidadLibre = producto.Stock - cantidadEnCarrito;
+
+                if (capacidadLibre <= 0)
                 {
-                    ProductoId = producto.Id,
-                    Nombre = producto.Nombre,
-                    Precio = producto.PrecioVenta,
-                    Cantidad = cantidad,
-                    StockMaximo = producto.Stock,
-                    ImagenUrl = producto.ImagenUrl
-                });
-            }
-
-            HttpContext.Session.SetObject("Carrito", carrito);
-
-            // 4. LÓGICA DE RESPUESTA (AQUÍ ESTÁ EL CAMBIO)
-            if (comprarAhora)
-            {
-                return RedirectToAction(nameof(Index));
+                    TempData["Error"] = $"No puedes agregar más. Ya tienes las {producto.Stock} piezas disponibles.";
+                }
+                else
+                {
+                    if (item != null) item.Cantidad = producto.Stock;
+                    else
+                    {
+                        carrito.Add(new ItemCarrito
+                        {
+                            ProductoId = producto.Id,
+                            Nombre = producto.Nombre,
+                            Precio = producto.PrecioVenta,
+                            Cantidad = producto.Stock,
+                            StockMaximo = producto.Stock,
+                            ImagenUrl = producto.ImagenUrl
+                        });
+                    }
+                    TempData["AlertaCarrito"] = "true";
+                    TempData["ProductoAgregado"] = producto.Nombre;
+                    TempData["CantidadAgregada"] = capacidadLibre;
+                    TempData["Error"] = $"Solo se agregaron {capacidadLibre} piezas (Límite de stock).";
+                }
             }
             else
             {
-                // En lugar de un mensaje simple, enviamos datos para el SweetAlert "Rico"
-                // Usamos una clave especial "AlertaCarrito" para que el Layout sepa qué mostrar
+                if (item != null) item.Cantidad += cantidad;
+                else
+                {
+                    carrito.Add(new ItemCarrito
+                    {
+                        ProductoId = producto.Id,
+                        Nombre = producto.Nombre,
+                        Precio = producto.PrecioVenta,
+                        Cantidad = cantidad,
+                        StockMaximo = producto.Stock,
+                        ImagenUrl = producto.ImagenUrl
+                    });
+                }
                 TempData["AlertaCarrito"] = "true";
                 TempData["ProductoAgregado"] = producto.Nombre;
                 TempData["CantidadAgregada"] = cantidad;
-
-                // IMPORTANTE: Regresamos EXACTAMENTE a donde estábamos (Detalles o Home)
-                if (!string.IsNullOrEmpty(returnUrl))
-                {
-                    return Redirect(returnUrl);
-                }
-                return RedirectToAction("Index", "Home");
             }
+
+            HttpContext.Session.SetObject("Carrito", carrito);
+            return comprarAhora ? RedirectToAction(nameof(Index)) : (!string.IsNullOrEmpty(returnUrl) ? Redirect(returnUrl) : RedirectToAction("Index", "Home"));
+        }
+
+        [HttpGet]
+        public IActionResult ActualizarCantidad(int id, int cantidad)
+        {
+            var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
+            if (carrito != null)
+            {
+                var item = carrito.FirstOrDefault(c => c.ProductoId == id);
+                if (item != null && cantidad > 0 && cantidad <= item.StockMaximo)
+                {
+                    item.Cantidad = cantidad;
+                    HttpContext.Session.SetObject("Carrito", carrito);
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Eliminar(int id)

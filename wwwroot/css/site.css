@@ -1,31 +1,71 @@
-html {
-  font-size: 14px;
+/* --- DISEÑO HÍBRIDO PROFESIONAL --- */
+:root {
+    --primary-lotos: #1B2631;
+    --electric-lotos: #2E86C1;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* Solo para móviles y tablets */
+@media (max-width: 991.98px) {
+    .nav-mobile-bottom {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        background: white;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 -2px 15px rgba(0,0,0,0.15);
+        z-index: 1050;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-mobile-item {
+        color: var(--primary-lotos);
+        text-decoration: none !important;
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        flex: 1;
+    }
+
+        .nav-mobile-item i {
+            font-size: 1.6rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .nav-mobile-item.active {
+            color: var(--electric-lotos);
+        }
+
+    /* Evita que el contenido de la página se oculte tras la barra */
+    body {
+        padding-bottom: 90px !important;
+    }
+
+    /* Oculta elementos de PC en móvil */
+    .navbar-desktop-content {
+        display: none !important;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Solo para PC */
+@media (min-width: 992px) {
+    .nav-mobile-bottom {
+        display: none !important;
+    }
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* Estilo del menú que sube (Dropup) */
+.dropup .dropdown-menu {
+    margin-bottom: 12px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    border: none;
+    padding: 15px;
+    /* Alineado a la derecha como pediste */
+    right: 10px !important;
+    left: auto !important;
 }
