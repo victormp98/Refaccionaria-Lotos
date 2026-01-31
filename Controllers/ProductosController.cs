@@ -3,26 +3,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Models;
-using Microsoft.AspNetCore.Hosting; // Obligatorio
+using Microsoft.AspNetCore.Hosting;
 using System.IO;
 
 namespace RefaccionariaWeb.Controllers
 {
+    // Aseguramos que los roles coincidan con tu DbInitializer
     [Authorize(Roles = "Admin,Mostrador,Almacen")]
     public class ProductosController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
 
+        // Constructor corregido
         public ProductosController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
             _hostEnvironment = hostEnvironment;
         }
 
-        // Si tu menú dice "Inventario" pero apunta a /Productos, este es el método que busca
+        // GET: /Productos
         public async Task<IActionResult> Index()
         {
+            // Traemos todos para el inventario, sin filtros para que el admin vea todo
             var productos = await _context.Productos.ToListAsync();
             return View(productos);
         }
@@ -50,7 +53,7 @@ namespace RefaccionariaWeb.Controllers
             if (imagenArchivo != null && imagenArchivo.Length > 0)
             {
                 var nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(imagenArchivo.FileName);
-                // ESTO ES LO QUE ARREGLA EL 404 DE LA IMAGEN Y EL ERROR DE RUTA
+                // Path.Combine es clave para Linux (Coolify)
                 string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "imagenes");
 
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
@@ -73,7 +76,6 @@ namespace RefaccionariaWeb.Controllers
             return View(producto);
         }
 
-        // Asegúrate de que este método exista para evitar el 404 al editar
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {

@@ -3,134 +3,135 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RefaccionariaWeb</title>
+    <title>@ViewData["Title"] - Refaccionaria Lotos</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/RefaccionariaWeb.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom shadow-sm mb-3 py-3">
-            <div class="container-fluid px-4">
+    <style>
+        :root {
+            --primary-blue: #1B2631; /* Azul Profundo */
+            --electric-blue: #2E86C1; /* Azul Acción */
+        }
 
-                <a class="navbar-brand fw-bold text-dark fs-4 me-5" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-gear-wide-connected text-primary"></i> Refaccionaria<span class="text-primary">Web</span>
+        .navbar-custom {
+            background-color: white;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .nav-link {
+            color: var(--primary-blue) !important;
+            transition: 0.3s;
+        }
+
+            .nav-link:hover {
+                color: var(--electric-blue) !important;
+            }
+
+        .btn-primary {
+            background-color: var(--electric-blue);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background-color: #21618C;
+            }
+    </style>
+</head>
+<body class="bg-light bg-opacity-50">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light navbar-custom shadow-sm py-3">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index">
+                    <span style="color: var(--primary-blue)">Refaccionaria</span><span style="color: var(--electric-blue)">Lotos</span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between align-items-center">
-
-                    <ul class="navbar-nav flex-grow-1 align-items-center">
-
-                        <li class="nav-item me-3">
-                            <a class="nav-link text-dark fw-semibold" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-grid-fill text-muted"></i> Catálogo
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 mt-3 mt-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door-fill opacity-50 me-1"></i> Catálogo
                             </a>
                         </li>
 
                         @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
                         {
-                            <li class="nav-item me-3">
-                                <a class="nav-link text-dark fw-semibold" asp-controller="Productos" asp-action="Index">
-                                    <i class="bi bi-box-seam-fill text-warning"></i> Inventario
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" asp-controller="Productos" asp-action="Index">
+                                    <i class="bi bi-box-seam-fill text-warning me-1"></i> Inventario
                                 </a>
                             </li>
                         }
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item me-3">
-                                <a class="nav-link text-dark fw-semibold" asp-controller="Vehiculos" asp-action="Index">
-                                    <i class="bi bi-car-front-fill text-secondary"></i> Catálogo Autos
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" asp-controller="Vehiculos" asp-action="Index">
+                                    <i class="bi bi-car-front-fill opacity-50 me-1"></i> Vehículos
                                 </a>
                             </li>
-
                             <li class="nav-item">
-                                <a class="btn btn-outline-danger border-0 rounded-pill fw-bold px-3" asp-controller="Usuarios" asp-action="Index">
-                                    <i class="bi bi-people-fill"></i> Personal
+                                <a class="nav-link fw-bold text-danger" asp-controller="Usuarios" asp-action="Index">
+                                    <i class="bi bi-people-fill me-1"></i> Personal
                                 </a>
                             </li>
                         }
                     </ul>
 
-                    <ul class="navbar-nav align-items-center">
-
+                    <ul class="navbar-nav align-items-lg-center border-top border-lg-0 pt-3 pt-lg-0">
                         @if (!User.IsInRole("Admin") && !User.IsInRole("Almacen"))
                         {
-                            <li class="nav-item me-4">
-                                <a class="nav-link position-relative text-primary fw-bold" asp-controller="Carrito" asp-action="Index" style="font-size: 1.2rem;">
-                                    <i class="bi bi-cart4 display-6 align-middle"></i>
-                                    <span class="d-none d-lg-inline fs-6 ms-1 align-middle">Mi Carrito</span>
+                            <li class="nav-item me-lg-4 mb-3 mb-lg-0">
+                                <a class="nav-link position-relative d-flex align-items-center text-primary" asp-controller="Carrito" asp-action="Index">
+                                    <i class="bi bi-cart4 fs-4"></i>
+                                    <span class="ms-2 fw-bold">Mi Carrito</span>
                                 </a>
                             </li>
                         }
-
-                        <div class="border-start ps-3 ms-2">
+                        <div class="border-start d-none d-lg-block mx-2" style="height: 30px;"></div>
+                        <li class="nav-item">
                             <partial name="_LoginPartial" />
-                        </div>
+                        </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container-fluid py-4">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-5 py-4 bg-light">
+    <footer class="footer text-muted border-top bg-white py-4 mt-auto">
         <div class="container text-center">
-            &copy; 2026 - RefaccionariaWeb - Sistema de Gestión Integral
+            <p class="mb-0">© 2026 - <span class="fw-bold">Refaccionaria Lotos</span> - Sistema de Gestión Profesional</p>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 
+    @* Mismos Scripts de SweetAlert que ya tenías *@
     <script>
-        // 1. ALERTA TIPO MERCADOLIBRE (DECISIÓN)
         @if (TempData["AlertaCarrito"] != null)
         {
                 <text>
                 Swal.fire({
-                    title: '¡Agregado al carrito!',
-                    html: 'Agregaste <strong>@TempData["CantidadAgregada"]</strong> pieza(s) de:<br>@TempData["ProductoAgregado"]',
+                    title: '¡Añadido!',
+                    html: 'Agregaste <strong>@TempData["CantidadAgregada"]</strong> de @TempData["ProductoAgregado"]',
                     icon: 'success',
                     showCancelButton: true,
-                    confirmButtonColor: '#198754', // Verde
-                    cancelButtonColor: '#6c757d',  // Gris
-                    confirmButtonText: 'Ir al Carrito <i class="bi bi-cart-check"></i>',
-                    cancelButtonText: 'Seguir Comprando',
-                    reverseButtons: true // Pone el botón de "Seguir comprando" a la izquierda
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Si dice "Ir al carrito", lo mandamos
-                        window.location.href = '@Url.Action("Index", "Carrito")';
-                    }
-                    // Si dice "Seguir comprando", no hacemos nada (se queda donde está)
-                });
-                </text>
-        }
-
-        // 2. ALERTAS DE ERROR NORMALES
-        @if (TempData["Error"] != null)
-        {
-                <text>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: '@TempData["Error"]',
-                    position: 'center' // También al centro para que se vea bien
-                });
+                    confirmButtonColor: '#28a745',
+                    cancelButtonText: 'Seguir viendo',
+                    confirmButtonText: 'Ir al carrito'
+                }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
                 </text>
         }
     </script>

@@ -31,7 +31,6 @@ using (var scope = app.Services.CreateScope())
     var context = services.GetRequiredService<ApplicationDbContext>();
 
     // AQUÍ ESTÁ EL TRUCO: Borra la basura y recrea todo
-   //    context.Database.EnsureDeleted();
     context.Database.EnsureCreated();
 
     await DbInitializer.Initialize(services);
