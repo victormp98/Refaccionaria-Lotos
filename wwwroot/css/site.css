@@ -4,7 +4,7 @@
     --electric-lotos: #2E86C1;
 }
 
-/* Solo para móviles y tablets */
+/* Solo para celulares y tablets (menos de 992px) */
 @media (max-width: 991.98px) {
     .nav-mobile-bottom {
         position: fixed;
@@ -36,36 +36,25 @@
             margin-bottom: 2px;
         }
 
-        .nav-mobile-item.active {
-            color: var(--electric-lotos);
-        }
-
-    /* Evita que el contenido de la página se oculte tras la barra */
     body {
         padding-bottom: 90px !important;
     }
-
-    /* Oculta elementos de PC en móvil */
-    .navbar-desktop-content {
-        display: none !important;
-    }
 }
 
-/* Solo para PC */
+/* Solo para computadora (992px o más) */
 @media (min-width: 992px) {
     .nav-mobile-bottom {
         display: none !important;
     }
 }
 
-/* Estilo del menú que sube (Dropup) */
+/* Dropup para que el menú suba hacia arriba en el cel */
 .dropup .dropdown-menu {
     margin-bottom: 12px;
     border-radius: 15px;
     box-shadow: 0 5px 25px rgba(0,0,0,0.2);
     border: none;
     padding: 15px;
-    /* Alineado a la derecha como pediste */
     right: 10px !important;
     left: auto !important;
 }

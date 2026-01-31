@@ -47,7 +47,7 @@ namespace RefaccionariaWeb.Controllers
                 {
                     item.EsValido = true;
                     item.MensajeError = $"Stock reducido. Solo quedan {productoReal.Stock}.";
-                    item.Cantidad = productoReal.Stock;
+                    item.Cantidad = productoReal.Stock; // Ajustamos al máximo disponible
                     item.StockMaximo = productoReal.Stock;
                     huboCambios = true;
                 }
@@ -72,12 +72,6 @@ namespace RefaccionariaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Agregar(int id, int cantidad, string returnUrl = null, bool comprarAhora = false)
         {
-            if (cantidad <= 0)
-            {
-                TempData["Error"] = "La cantidad debe ser mayor a 0.";
-                return !string.IsNullOrEmpty(returnUrl) ? Redirect(returnUrl) : RedirectToAction("Index", "Home");
-            }
-
             var producto = await _context.Productos.FindAsync(id);
             if (producto == null) return NotFound();
 
@@ -87,16 +81,18 @@ namespace RefaccionariaWeb.Controllers
             int cantidadEnCarrito = item?.Cantidad ?? 0;
             int totalDeseado = cantidadEnCarrito + cantidad;
 
+            // LÓGICA DE AVISO DE STOCK
             if (totalDeseado > producto.Stock)
             {
                 int capacidadLibre = producto.Stock - cantidadEnCarrito;
 
                 if (capacidadLibre <= 0)
                 {
-                    TempData["Error"] = $"No puedes agregar más. Ya tienes las {producto.Stock} piezas disponibles.";
+                    TempData["Error"] = $"No puedes agregar más. Ya tienes las {producto.Stock} piezas disponibles en tu carrito.";
                 }
                 else
                 {
+                    // Agregamos solo lo que sobra para llegar al tope
                     if (item != null) item.Cantidad = producto.Stock;
                     else
                     {
@@ -113,11 +109,12 @@ namespace RefaccionariaWeb.Controllers
                     TempData["AlertaCarrito"] = "true";
                     TempData["ProductoAgregado"] = producto.Nombre;
                     TempData["CantidadAgregada"] = capacidadLibre;
-                    TempData["Error"] = $"Solo se agregaron {capacidadLibre} piezas (Límite de stock).";
+                    TempData["Error"] = $"Solo se agregaron {capacidadLibre} piezas adicionales (Límite de stock alcanzado).";
                 }
             }
             else
             {
+                // Agregar normal
                 if (item != null) item.Cantidad += cantidad;
                 else
                 {
@@ -140,7 +137,6 @@ namespace RefaccionariaWeb.Controllers
             return comprarAhora ? RedirectToAction(nameof(Index)) : (!string.IsNullOrEmpty(returnUrl) ? Redirect(returnUrl) : RedirectToAction("Index", "Home"));
         }
 
-        [HttpGet]
         public IActionResult ActualizarCantidad(int id, int cantidad)
         {
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
