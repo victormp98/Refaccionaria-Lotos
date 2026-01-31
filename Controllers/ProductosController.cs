@@ -22,7 +22,6 @@ namespace RefaccionariaWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Solo mostramos los que NO son borrados (opcional) o todos para inventario
             return View(await _context.Productos.ToListAsync());
         }
 
@@ -30,10 +29,12 @@ namespace RefaccionariaWeb.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
+
             var producto = await _context.Productos
-                .Include(p => p.Compatibilidades)
+                .Include(p => p.Compatibilidades.Where(c => c.Vehiculo.Activo == true)) // FILTRO PARA NO MOSTRAR AUTOS BORRADOS
                 .ThenInclude(c => c.Vehiculo)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (producto == null) return NotFound();
             return View(producto);
         }
@@ -69,7 +70,6 @@ namespace RefaccionariaWeb.Controllers
             return View(producto);
         }
 
-        // ESTE MÉTODO ES EL QUE FALTABA PARA QUE FUNCIONARA EL BOTÓN GUARDAR
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -98,7 +98,7 @@ namespace RefaccionariaWeb.Controllers
             return View(producto);
         }
 
-        // MÉTODOS PARA ELIMINAR (Para evitar el 404)
+        // --- MÉTODOS PARA ELIMINACIÓN Y PAPELERA (SOLUCIONA EL 404) ---
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -116,10 +116,16 @@ namespace RefaccionariaWeb.Controllers
             var producto = await _context.Productos.FindAsync(id);
             if (producto != null)
             {
-                // Aquí podrías hacer Soft Delete si agregas la columna 'Activo' a Producto
                 _context.Productos.Remove(producto);
                 await _context.SaveChangesAsync();
             }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Papelera()
+        {
+            // Aquí puedes implementar Soft Delete en Productos si gustas, por ahora mandamos a Index
             return RedirectToAction(nameof(Index));
         }
 
