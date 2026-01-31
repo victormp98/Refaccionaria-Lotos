@@ -28,7 +28,7 @@
 
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-gear-wide-connected text-primary"></i> Lotos
+                        <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
                     </a>
                     <div class="ms-auto text-end">
                         <partial name="_LoginPartial" />
@@ -58,7 +58,8 @@
                         }
                     }
 
-                    @if (User.Identity.IsAuthenticated)
+                    @* AJUSTE AQUÍ: Solo muestra el carrito en Desktop si es Cliente *@
+                    @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
                     {
                         <a class="nav-link text-primary fs-5 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
                             <i class="bi bi-cart3"></i>
@@ -132,21 +133,21 @@
         @if (TempData["AlertaCarrito"] != null)
         {
                 <text>
-                Swal.fire({
-                    title: '¡Agregado!',
-                    html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
-                    icon: 'success',
-                    showCancelButton: true,
-                    confirmButtonColor: '#2E86C1',
-                    confirmButtonText: 'Ver Carrito',
-                    cancelButtonText: 'Seguir viendo'
-                }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
+                    Swal.fire({
+                        title: '¡Agregado!',
+                        html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#2E86C1',
+                        confirmButtonText: 'Ver Carrito',
+                        cancelButtonText: 'Seguir viendo'
+                    }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
                 </text>
         }
         @if (TempData["Error"] != null)
         {
                 <text>
-                Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
+                    Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
                 </text>
         }
     </script>
