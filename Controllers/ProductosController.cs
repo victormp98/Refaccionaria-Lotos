@@ -22,7 +22,8 @@ namespace RefaccionariaWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Productos.ToListAsync());
+            // Solo mostramos los que están activos en el inventario principal
+            return View(await _context.Productos.Where(p => p.EsVisibleEnLinea == true).ToListAsync());
         }
 
         [AllowAnonymous]
@@ -31,7 +32,7 @@ namespace RefaccionariaWeb.Controllers
             if (id == null) return NotFound();
 
             var producto = await _context.Productos
-                .Include(p => p.Compatibilidades.Where(c => c.Vehiculo.Activo == true)) // FILTRO PARA NO MOSTRAR AUTOS BORRADOS
+                .Include(p => p.Compatibilidades.Where(c => c.Vehiculo.Activo == true))
                 .ThenInclude(c => c.Vehiculo)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
@@ -98,7 +99,6 @@ namespace RefaccionariaWeb.Controllers
             return View(producto);
         }
 
-        // --- MÉTODOS PARA ELIMINACIÓN Y PAPELERA (SOLUCIONA EL 404) ---
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -116,17 +116,36 @@ namespace RefaccionariaWeb.Controllers
             var producto = await _context.Productos.FindAsync(id);
             if (producto != null)
             {
-                _context.Productos.Remove(producto);
+                // CAMBIO: Ahora solo lo oculta (lo manda a papelera) en lugar de borrarlo
+                producto.EsVisibleEnLinea = false;
+                _context.Update(producto);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
 
         [Authorize(Roles = "Admin")]
-        public IActionResult Papelera()
+        public async Task<IActionResult> Papelera()
         {
-            // Aquí puedes implementar Soft Delete en Productos si gustas, por ahora mandamos a Index
-            return RedirectToAction(nameof(Index));
+            var productosOcultos = await _context.Productos
+                .Where(p => p.EsVisibleEnLinea == false)
+                .ToListAsync();
+
+            return View(productosOcultos);
+        }
+
+        // NUEVA FUNCIÓN: Para regresar el producto al inventario
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Restaurar(int id)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto != null)
+            {
+                producto.EsVisibleEnLinea = true;
+                _context.Update(producto);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Papelera));
         }
 
         private async Task<string> GuardarImagen(IFormFile archivo)
