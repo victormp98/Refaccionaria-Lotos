@@ -4,24 +4,27 @@
     ViewData["Title"] = "Gestión de Personal";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-people-fill"></i> Equipo</h1>
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-2">
+    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-people-fill text-primary"></i> Equipo</h1>
 
-    <div>
-        <a asp-action="Papelera" class="btn btn-outline-secondary rounded-pill me-2">
-            <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Bloqueados</span>
+    <div class="d-flex gap-2 ms-auto ms-sm-0">
+        <a asp-action="Papelera" class="btn btn-outline-secondary rounded-pill px-3 d-flex align-items-center">
+            <i class="bi bi-trash"></i>
+            <span class="ms-1 d-none d-md-inline">Bloqueados</span>
+            <span class="ms-1 d-inline d-md-none">Ver</span>
         </a>
 
-        <a asp-action="Crear" class="btn btn-primary rounded-pill">
-            <i class="bi bi-person-plus-fill"></i> <span class="d-none d-md-inline">Nuevo Empleado</span>
-            <span class="d-inline d-md-none">Nuevo</span>
+        <a asp-action="Crear" class="btn btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center">
+            <i class="bi bi-person-plus-fill"></i>
+            <span class="ms-1 d-none d-md-inline">Nuevo Empleado</span>
+            <span class="ms-1 d-inline d-md-none">Nuevo</span>
         </a>
     </div>
 </div>
 
-<div class="card shadow-sm border-0 d-none d-md-block">
+<div class="card shadow-sm border-0 d-none d-md-block overflow-hidden rounded-3">
     <div class="card-body p-0">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 border-0">
             <thead class="bg-light">
                 <tr>
                     <th class="ps-4">Usuario / Email</th>
@@ -36,24 +39,23 @@
                     <tr>
                         <td class="ps-4 fw-bold">@item.Email</td>
                         <td>
-                            @if (item.RolSeleccionado == "Admin")
+                            @switch (item.RolSeleccionado)
                             {
-                                <span class="badge bg-danger">ADMIN</span>
-                            }
-                            else if (item.RolSeleccionado == "Mostrador")
-                            {
+                                case "Admin":
+                                    <span class="badge bg-danger">ADMIN</span>
+                                    break;
+                                case "Mostrador":
 
-                                <span class="badge bg-success">VENTAS</span>
-                            }
-                            else if (item.RolSeleccionado == "Almacen")
-                            {
+                                    <span class="badge bg-success">VENTAS</span>
+                                    break;
+                                case "Almacen":
 
-                                <span class="badge bg-warning text-dark">ALMACÉN</span>
-                            }
-                            else
-                            {
+                                    <span class="badge bg-warning text-dark">ALMACÉN</span>
+                                    break;
+                                default:
 
-                                <span class="badge bg-secondary">@item.RolSeleccionado</span>
+                                    <span class="badge bg-secondary">@item.RolSeleccionado</span>
+                                    break;
                             }
                         </td>
                         <td>
@@ -63,8 +65,7 @@
                             }
                             else
                             {
-
-                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Activo</span>
+                                <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> Activo</span>
                             }
                         </td>
                         <td class="text-end pe-4">
@@ -89,41 +90,34 @@
                         <h6 class="mb-0 text-truncate fw-bold text-dark">@item.Email</h6>
                         <small class="text-muted">ID: @item.Id.Substring(0, 8)...</small>
                     </div>
-                    @if (item.EstaBloqueado)
-                    {
-                        <span class="badge bg-danger rounded-pill"><i class="bi bi-lock-fill"></i></span>
-                    }
-                    else
-                    {
-
-                        <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle"></i></span>
-                    }
+                    <span class="badge @(item.EstaBloqueado ? "bg-danger" : "bg-success") rounded-pill p-1">
+                        <i class="bi @(item.EstaBloqueado ? "bi-lock-fill" : "bi-check-circle")"></i>
+                    </span>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
                     <div>
-                        @if (item.RolSeleccionado == "Admin")
+                        @switch (item.RolSeleccionado)
                         {
-                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">ADMIN</span>
-                        }
-                        else if (item.RolSeleccionado == "Mostrador")
-                        {
+                            case "Admin":
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">ADMIN</span>
+                                break;
+                            case "Mostrador":
 
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">VENTAS</span>
-                        }
-                        else if (item.RolSeleccionado == "Almacen")
-                        {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">VENTAS</span>
+                                break;
+                            case "Almacen":
 
-                            <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">ALMACÉN</span>
-                        }
-                        else
-                        {
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">ALMACÉN</span>
+                                break;
+                            default:
 
-                            <span class="badge bg-secondary">@item.RolSeleccionado</span>
+                                <span class="badge bg-secondary">@item.RolSeleccionado</span>
+                                break;
                         }
                     </div>
 
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary rounded-pill px-4">
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary rounded-pill px-4 btn-sm shadow-sm">
                         <i class="bi bi-pencil-square"></i> Administrar
                     </a>
                 </div>
