@@ -5,20 +5,21 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-people-fill"></i> Equipo de Trabajo</h1>
+    <h1><i class="bi bi-people-fill"></i> Equipo</h1>
 
     <div>
         <a asp-action="Papelera" class="btn btn-outline-secondary rounded-pill me-2">
-            <i class="bi bi-trash"></i> Ver Bloqueados
+            <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Bloqueados</span>
         </a>
 
         <a asp-action="Crear" class="btn btn-primary rounded-pill">
-            <i class="bi bi-person-plus-fill"></i> Nuevo Empleado
+            <i class="bi bi-person-plus-fill"></i> <span class="d-none d-md-inline">Nuevo Empleado</span>
+            <span class="d-inline d-md-none">Nuevo</span>
         </a>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 d-none d-md-block">
     <div class="card-body p-0">
         <table class="table table-hover align-middle mb-0">
             <thead class="bg-light">
@@ -41,14 +42,17 @@
                             }
                             else if (item.RolSeleccionado == "Mostrador")
                             {
+
                                 <span class="badge bg-success">VENTAS</span>
                             }
                             else if (item.RolSeleccionado == "Almacen")
                             {
+
                                 <span class="badge bg-warning text-dark">ALMACÉN</span>
                             }
                             else
                             {
+
                                 <span class="badge bg-secondary">@item.RolSeleccionado</span>
                             }
                         </td>
@@ -59,6 +63,7 @@
                             }
                             else
                             {
+
                                 <span class="text-success"><i class="bi bi-check-circle-fill"></i> Activo</span>
                             }
                         </td>
@@ -72,4 +77,57 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<div class="d-block d-md-none">
+    @foreach (var item in Model)
+    {
+        <div class="card shadow-sm border-0 mb-3 rounded-4 overflow-hidden">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 text-truncate fw-bold text-dark">@item.Email</h6>
+                        <small class="text-muted">ID: @item.Id.Substring(0, 8)...</small>
+                    </div>
+                    @if (item.EstaBloqueado)
+                    {
+                        <span class="badge bg-danger rounded-pill"><i class="bi bi-lock-fill"></i></span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle"></i></span>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                    <div>
+                        @if (item.RolSeleccionado == "Admin")
+                        {
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">ADMIN</span>
+                        }
+                        else if (item.RolSeleccionado == "Mostrador")
+                        {
+
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">VENTAS</span>
+                        }
+                        else if (item.RolSeleccionado == "Almacen")
+                        {
+
+                            <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">ALMACÉN</span>
+                        }
+                        else
+                        {
+
+                            <span class="badge bg-secondary">@item.RolSeleccionado</span>
+                        }
+                    </div>
+
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-pencil-square"></i> Administrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
 </div>
