@@ -202,6 +202,32 @@ namespace RefaccionariaWeb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ==========================================================
+        // 5. ACCIÓN DIRECTA PARA DESBLOQUEAR (Restaurar desde Papelera)
+        // ==========================================================
+        [HttpGet]
+        public async Task<IActionResult> Desbloquear(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var usuario = await _userManager.FindByIdAsync(id);
+            if (usuario == null) return NotFound();
+
+            // Usamos la misma lógica que ya tienes en el Edit: 
+            // Poner la fecha de bloqueo en null lo activa de inmediato.
+            var result = await _userManager.SetLockoutEndDateAsync(usuario, null);
+
+            if (result.Succeeded)
+            {
+                // Limpiamos los intentos fallidos para que entre limpio
+                await _userManager.ResetAccessFailedCountAsync(usuario);
+            }
+
+            // Te regresa a la Papelera. Como ya no está bloqueado, 
+            // el filtro del método Papelera() lo sacará de la lista automáticamente.
+            return RedirectToAction(nameof(Papelera));
+        }
+
         // Método auxiliar requerido por Identity para manejar emails
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {
