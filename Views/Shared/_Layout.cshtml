@@ -127,5 +127,28 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        @if (TempData["AlertaCarrito"] != null)
+        {
+                <text>
+                Swal.fire({
+                    title: '¡Agregado!',
+                    html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2E86C1',
+                    confirmButtonText: 'Ver Carrito',
+                    cancelButtonText: 'Seguir viendo'
+                }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
+                </text>
+        }
+        @if (TempData["Error"] != null)
+        {
+                <text>
+                Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
+                </text>
+        }
+    </script>
 </body>
 </html>
