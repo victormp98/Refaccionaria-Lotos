@@ -2,10 +2,13 @@
 
 @{
     ViewData["Title"] = "Gestión de Personal";
+    // Filtramos los grupos aquí mismo para no tocar el controlador
+    var listaPersonal = Model.Where(u => u.RolSeleccionado != "Cliente");
+    var listaClientes = Model.Where(u => u.RolSeleccionado == "Cliente");
 }
 
 <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-2">
-    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-people-fill text-primary"></i> Equipo</h1>
+    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-people-fill text-primary"></i> Control de Usuarios</h1>
 
     <div class="d-flex gap-2 ms-auto ms-sm-0">
         <a asp-action="Papelera" class="btn btn-outline-secondary rounded-pill px-3 d-flex align-items-center">
@@ -22,48 +25,33 @@
     </div>
 </div>
 
-<div class="card shadow-sm border-0 d-none d-md-block overflow-hidden rounded-3">
+<hr class="mb-4" />
+
+<h4 class="mb-3"><i class="bi bi-person-badge-fill me-2 text-dark"></i>Personal del Sistema</h4>
+
+@* VISTA PC - PERSONAL *@
+<div class="card shadow-sm border-0 d-none d-md-block overflow-hidden rounded-3 mb-5">
     <div class="card-body p-0">
         <table class="table table-hover align-middle mb-0 border-0">
-            @* Encabezado estandarizado como el de Inventario *@
-            <thead class="table-light border-bottom">
+            <thead class="table-dark">
                 <tr>
                     <th class="ps-4 py-3">Usuario / Email</th>
-                    <th class="py-3">Rol Actual</th>
-                    <th class="py-3">Estado</th>
+                    <th class="py-3 text-center">Rol Actual</th>
                     <th class="text-end pe-5 py-3">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in listaPersonal)
                 {
                     <tr>
                         <td class="ps-4 fw-bold">@item.Email</td>
-                        <td>
+                        <td class="text-center">
                             @switch (item.RolSeleccionado)
                             {
-                                case "Admin":
-                                    <span class="badge bg-danger">ADMIN</span>
-                                    break;
-                                case "Mostrador":
-                                    <span class="badge bg-success">VENTAS</span>
-                                    break;
-                                case "Almacen":
-                                    <span class="badge bg-warning text-dark">ALMACÉN</span>
-                                    break;
-                                default:
-                                    <span class="badge bg-secondary">@item.RolSeleccionado</span>
-                                    break;
-                            }
-                        </td>
-                        <td>
-                            @if (item.EstaBloqueado)
-                            {
-                                <span class="text-danger fw-bold small"><i class="bi bi-lock-fill"></i> Bloqueado</span>
-                            }
-                            else
-                            {
-                                <span class="text-success fw-bold small"><i class="bi bi-check-circle-fill"></i> Activo</span>
+                                case "Admin": <span class="badge bg-danger">ADMIN</span> break;
+                                case "Mostrador": <span class="badge bg-success">VENTAS</span> break;
+                                case "Almacen": <span class="badge bg-warning text-dark">ALMACÉN</span> break;
+                                default: <span class="badge bg-secondary">@item.RolSeleccionado</span> break;
                             }
                         </td>
                         <td class="text-end pe-5">
@@ -78,8 +66,9 @@
     </div>
 </div>
 
-<div class="d-block d-md-none">
-    @foreach (var item in Model)
+@* VISTA MÓVIL - PERSONAL *@
+<div class="d-block d-md-none mb-5">
+    @foreach (var item in listaPersonal)
     {
         <div class="card shadow-sm border-0 mb-3 rounded-4 overflow-hidden">
             <div class="card-body">
@@ -87,32 +76,69 @@
                     <div class="overflow-hidden">
                         <h6 class="mb-0 text-truncate fw-bold text-dark">@item.Email</h6>
                     </div>
-                    <span class="badge @(item.EstaBloqueado ? "bg-danger" : "bg-success") rounded-pill p-1">
-                        <i class="bi @(item.EstaBloqueado ? "bi-lock-fill" : "bi-check-circle")"></i>
-                    </span>
+                    <span class="badge bg-success rounded-pill p-1">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
                 </div>
-
                 <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
                     <div>
-                        @switch (item.RolSeleccionado)
-                        {
-                            case "Admin":
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">ADMIN</span>
-                                break;
-                            case "Mostrador":
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">VENTAS</span>
-                                break;
-                            case "Almacen":
-                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">ALMACÉN</span>
-                                break;
-                            default:
-                                <span class="badge bg-secondary">@item.RolSeleccionado</span>
-                                break;
-                        }
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">@item.RolSeleccionado</span>
                     </div>
-
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary rounded-pill px-4 btn-sm shadow-sm">
                         <i class="bi bi-pencil-square"></i> Administrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<h4 class="mb-3 text-muted"><i class="bi bi-people me-2"></i>Clientes Registrados</h4>
+
+@* VISTA PC - CLIENTES *@
+<div class="card shadow-sm border-0 d-none d-md-block overflow-hidden rounded-3 mb-5">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0 border-0">
+            <thead class="table-light border-bottom">
+                <tr>
+                    <th class="ps-4 py-3 text-muted">Correo de Cliente</th>
+                    <th class="py-3 text-center text-muted">Estado</th>
+                    <th class="text-end pe-5 py-3 text-muted">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in listaClientes)
+                {
+                    <tr>
+                        <td class="ps-4 fw-normal">@item.Email</td>
+                        <td class="text-center">
+                            <span class="text-success fw-bold small"><i class="bi bi-check-circle-fill"></i> Activo</span>
+                        </td>
+                        <td class="text-end pe-5">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light border rounded-pill px-3 shadow-sm">
+                                <i class="bi bi-gear"></i> Opciones
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* VISTA MÓVIL - CLIENTES *@
+<div class="d-block d-md-none mb-5">
+    @foreach (var item in listaClientes)
+    {
+        <div class="card shadow-sm border-0 mb-3 rounded-4 overflow-hidden border-start border-info border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 text-truncate fw-bold text-secondary">@item.Email</h6>
+                        <small class="text-muted">ID: @item.Id.Substring(0, 8)...</small>
+                    </div>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm rounded-circle">
+                        <i class="bi bi-gear-fill"></i>
                     </a>
                 </div>
             </div>
