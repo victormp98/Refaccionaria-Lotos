@@ -19,9 +19,11 @@
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
 
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="wwwroot\imagenes\" />
+	  <Folder Include="wwwroot\imagenes" />
 	</ItemGroup>
 
 </Project>

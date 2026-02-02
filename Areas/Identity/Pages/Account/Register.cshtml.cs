@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using System.Threading;
@@ -13,18 +12,15 @@ namespace RefaccionariaWeb.Areas.Identity.Pages.Account
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ILogger<RegisterModel> _logger;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            RoleManager<IdentityRole> roleManager,
-            ILogger<RegisterModel> logger)
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
-            _logger = logger;
         }
 
         [BindProperty]
@@ -82,7 +78,6 @@ namespace RefaccionariaWeb.Areas.Identity.Pages.Account
                 }
                 foreach (var error in result.Errors)
                 {
-                    _logger.LogError($"Error de registro. Código: {error.Code}, Descripción: {error.Description}");
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
