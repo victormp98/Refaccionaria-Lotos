@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <style>
         .nav-pc-link {
             font-weight: 600;
@@ -75,6 +76,7 @@
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">Inventario</a>
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">Vehículos</a>
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">Relaciones</a>
+                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop-window me-2"></i> Datos de Tienda</a></li>
                         @if (User.IsInRole("Admin"))
                         {
                             <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>

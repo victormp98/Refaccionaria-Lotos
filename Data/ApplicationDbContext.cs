@@ -12,6 +12,7 @@ namespace RefaccionariaWeb.Data
         public DbSet<Pedido> Pedidos { get; set; }
         public DbSet<DetallePedido> DetallesPedido { get; set; }
 
+        public DbSet<RefaccionariaWeb.Models.SucursalConfig> SucursalConfigs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder); // Call the base method for Identity tables
