@@ -11,5 +11,23 @@ namespace RefaccionariaWeb.Data
         public DbSet<Compatibilidad> Compatibilidades { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
         public DbSet<DetallePedido> DetallesPedido { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder); // Call the base method for Identity tables
+
+            // Explicitly map entity names to lowercase table names for MySQL compatibility on Linux
+            modelBuilder.Entity<Producto>().ToTable("productos");
+            modelBuilder.Entity<Vehiculo>().ToTable("vehiculos");
+            modelBuilder.Entity<Compatibilidad>().ToTable("compatibilidades");
+            modelBuilder.Entity<Pedido>().ToTable("pedidos");
+            modelBuilder.Entity<DetallePedido>().ToTable("detallespedido");
+
+            // For Identity tables, typically handled by base.OnModelCreating, but if issues arise,
+            // they can be mapped explicitly as well:
+            // modelBuilder.Entity<IdentityUser>().ToTable("aspnetusers");
+            // modelBuilder.Entity<IdentityRole>().ToTable("aspnetroles");
+            // ... and so on for other Identity tables
+        }
     }
 }
