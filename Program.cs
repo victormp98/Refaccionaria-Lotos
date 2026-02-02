@@ -30,8 +30,12 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
 
-    // AQUÍ ESTÁ EL TRUCO: Borra la basura y recrea todo
-    context.Database.Migrate();
+    // Solo aplicar migraciones automáticamente en el entorno de desarrollo.
+    // En producción, las migraciones se deben aplicar manualmente ANTES de desplegar.
+    if (app.Environment.IsDevelopment())
+    {
+        context.Database.Migrate();
+    }
 
     await DbInitializer.Initialize(services);
 }
