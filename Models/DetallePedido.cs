@@ -3,6 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RefaccionariaWeb.Models
 {
+    // CORRECCIÓN AQUÍ: Forzamos el nombre en minúsculas para coincidir con Linux
+    [Table("detallespedido")]
     public class DetallePedido
     {
         [Key]

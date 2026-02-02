@@ -7,6 +7,8 @@ using RefaccionariaWeb.Models.Enums; // For PedidoStatus
 
 namespace RefaccionariaWeb.Models
 {
+    // CORRECCIÓN AQUÍ: Forzamos el nombre en minúsculas para coincidir con Linux
+    [Table("pedidos")]
     public class Pedido
     {
         [Key]
