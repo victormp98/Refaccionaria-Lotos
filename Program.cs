@@ -64,8 +64,9 @@ using (var scope = app.Services.CreateScope())
             }
             else
             {
-                logger.LogError("FATAL ERROR: Fallaron todos los intentos de conectar e inicializar la base de datos.");
-                throw; // Relanzar la excepción si todos los intentos fallaron
+                logger.LogError("FATAL ERROR: Fallaron todos los intentos de conectar e inicializar la base de datos. La aplicación continuará sin la base de datos. Esto podría causar errores posteriores.");
+                // NO relanzamos la excepción. La aplicación debe continuar.
+                // Esto significa que las operaciones de BD fallarán más adelante si no hay conexión.
             }
         }
     }
