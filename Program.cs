@@ -30,8 +30,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
 
-    // AQUÍ ESTÁ EL TRUCO: Borra la basura y recrea todo
-    context.Database.EnsureCreated();
+    // Aplicar migraciones automáticamente en todos los entornos (por solicitud del usuario)
+    context.Database.Migrate(); // <-- REMOVIDA LA CONDICIÓN 'ISDEVELOPMENT'
 
     await DbInitializer.Initialize(services);
 }

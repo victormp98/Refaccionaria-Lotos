@@ -90,11 +90,27 @@ namespace RefaccionariaWeb.Controllers
         // Esta acción GET podría no ser directamente usada si el pedido se crea desde un proceso de checkout
         // Aquí podríamos mostrar un resumen del carrito antes de confirmar el pedido
         [Authorize(Roles = "Cliente")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create() // Made async to get current user
         {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Challenge();
+            }
+
+            // Inicializar un nuevo pedido para la vista
+            var pedido = new Pedido
+            {
+                ClienteId = currentUser.Id,
+                // Puedes precargar datos del usuario si tienes un perfil más detallado
+                // Por ejemplo, si tu IdentityUser tiene propiedades de dirección.
+                // Por ahora, solo inicializamos lo básico.
+                NombreReceptor = currentUser.UserName ?? currentUser.Email // Asumir username o email como nombre
+            };
+
             // TODO: Aquí se cargaría la información del carrito de compras del usuario
             // Y se pasaría a la vista para su confirmación
-            return View(); // Necesitará una vista Create.cshtml
+            return View(pedido);
         }
 
         // POST: Pedidos/Create (Procesa la creación de un nuevo pedido)
