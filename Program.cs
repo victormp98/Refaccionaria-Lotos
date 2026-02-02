@@ -9,8 +9,11 @@ builder.Logging.AddConsole(); // Añadir proveedor de logging a consola
 
 // CONEXIÓN
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// CAMBIO REALIZADO AQUÍ: Usamos una versión fija (8.0.21) en lugar de AutoDetect
+// para evitar que la aplicación intente conectarse antes de entrar al bloque try-catch.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21))));
 
 // IDENTITY
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
