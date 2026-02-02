@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Extensions;
 using RefaccionariaWeb.Models.DTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,15 +40,15 @@ namespace RefaccionariaWeb.Controllers
                 else if (productoReal.Stock == 0)
                 {
                     item.EsValido = false;
-                    item.MensajeError = "¡Agotado! Alguien te lo ganó.";
+                    item.MensajeError = "¡Agotado!";
                     item.StockMaximo = 0;
                     huboCambios = true;
                 }
                 else if (item.Cantidad > productoReal.Stock)
                 {
                     item.EsValido = true;
-                    item.MensajeError = $"Stock reducido. Solo quedan {productoReal.Stock}.";
-                    item.Cantidad = productoReal.Stock; // Ajustamos al máximo disponible
+                    item.MensajeError = $"Solo quedan {productoReal.Stock} piezas.";
+                    item.Cantidad = productoReal.Stock;
                     item.StockMaximo = productoReal.Stock;
                     huboCambios = true;
                 }
@@ -62,8 +63,17 @@ namespace RefaccionariaWeb.Controllers
             if (huboCambios)
             {
                 HttpContext.Session.SetObject("Carrito", carritoSesion);
-                ViewBag.Alerta = "⚠️ Tu carrito se actualizó porque el inventario cambió.";
+                ViewBag.Alerta = "⚠️ El inventario ha cambiado y actualizamos tu carrito.";
             }
+
+            // --- LÓGICA DE RECOMENDACIONES ESTILO ML ---
+            // Traemos 4 productos aleatorios que no estén ya en el carrito
+            var idsEnCarrito = carritoSesion.Select(x => x.ProductoId).ToList();
+            ViewBag.Recomendaciones = await _context.Productos
+                .Where(p => !idsEnCarrito.Contains(p.Id) && p.Stock > 0)
+                .OrderBy(r => Guid.NewGuid())
+                .Take(4)
+                .ToListAsync();
 
             return View(carritoSesion);
         }
@@ -81,62 +91,20 @@ namespace RefaccionariaWeb.Controllers
             int cantidadEnCarrito = item?.Cantidad ?? 0;
             int totalDeseado = cantidadEnCarrito + cantidad;
 
-            // LÓGICA DE AVISO DE STOCK
             if (totalDeseado > producto.Stock)
             {
                 int capacidadLibre = producto.Stock - cantidadEnCarrito;
-
-                if (capacidadLibre <= 0)
+                if (capacidadLibre > 0)
                 {
-                    TempData["Error"] = $"No puedes agregar más. Ya tienes las {producto.Stock} piezas disponibles en tu carrito.";
-                }
-                else
-                {
-                    // Agregamos solo lo que sobra para llegar al tope
                     if (item != null) item.Cantidad = producto.Stock;
-                    else
-                    {
-                        carrito.Add(new ItemCarrito
-                        {
-                            ProductoId = producto.Id,
-                            Nombre = producto.Nombre,
-                            Precio = producto.PrecioVenta,
-                            Cantidad = producto.Stock,
-                            StockMaximo = producto.Stock,
-                            ImagenUrl = producto.ImagenUrl
-                        });
-                    }
-                    if (!comprarAhora) // ADDED CONDITION
-                    {
-                        TempData["AlertaCarrito"] = "true";
-                        TempData["ProductoAgregado"] = producto.Nombre;
-                        TempData["CantidadAgregada"] = capacidadLibre;
-                        TempData["Error"] = $"Solo se agregaron {capacidadLibre} piezas adicionales (Límite de stock alcanzado).";
-                    }
+                    else carrito.Add(new ItemCarrito { ProductoId = producto.Id, Nombre = producto.Nombre, Precio = producto.PrecioVenta, Cantidad = producto.Stock, StockMaximo = producto.Stock, ImagenUrl = producto.ImagenUrl });
                 }
+                TempData["Error"] = "Stock limitado. Se ajustó al máximo disponible.";
             }
             else
             {
-                // Agregar normal
                 if (item != null) item.Cantidad += cantidad;
-                else
-                {
-                    carrito.Add(new ItemCarrito
-                    {
-                        ProductoId = producto.Id,
-                        Nombre = producto.Nombre,
-                        Precio = producto.PrecioVenta,
-                        Cantidad = cantidad,
-                        StockMaximo = producto.Stock,
-                        ImagenUrl = producto.ImagenUrl
-                    });
-                }
-                if (!comprarAhora) // ADDED CONDITION
-                {
-                    TempData["AlertaCarrito"] = "true";
-                    TempData["ProductoAgregado"] = producto.Nombre;
-                    TempData["CantidadAgregada"] = cantidad;
-                }
+                else carrito.Add(new ItemCarrito { ProductoId = producto.Id, Nombre = producto.Nombre, Precio = producto.PrecioVenta, Cantidad = cantidad, StockMaximo = producto.Stock, ImagenUrl = producto.ImagenUrl });
             }
 
             HttpContext.Session.SetObject("Carrito", carrito);
