@@ -36,7 +36,8 @@ namespace RefaccionariaWeb.Controllers
 
             IQueryable<Pedido> pedidosQuery = _context.Pedidos
                                                      .Include(p => p.Detalles)
-                                                         .ThenInclude(d => d.Producto);
+                                                         .ThenInclude(d => d.Producto)
+                                                     .Include(p => p.Cliente); // <--- AGREGADO
 
             if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
             {
@@ -218,6 +219,21 @@ namespace RefaccionariaWeb.Controllers
             }
 
             return View(pedido);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Mostrador,Almacen")]
+        public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus)
+        {
+            var pedido = await _context.Pedidos.FindAsync(id);
+            if (pedido == null) return NotFound();
+
+            pedido.Status = nuevoStatus;
+            _context.Update(pedido);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = pedido.Id });
         }
     }
 }

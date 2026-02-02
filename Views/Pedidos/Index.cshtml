@@ -31,6 +31,10 @@ else
                 <tr>
                     <th># Pedido</th>
                     <th>Fecha</th>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
+                    {
+                        <th>Cliente</th>
+                    }
                     <th>Estado</th>
                     <th>Total</th>
                     <th>Acciones</th>
@@ -42,10 +46,26 @@ else
                     <tr>
                         <td>@item.Id</td>
                         <td>@item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</td>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
+                        {
+                            <td>
+                                <i class="bi bi-person-circle"></i> @item.Cliente?.UserName <br/>
+                                <small class="text-muted"> @item.Cliente?.Email</small>
+                            </td>
+                        }
                         <td>
-                            <span class="badge @(item.Status == PedidoStatus.Cancelado ? "bg-danger" : item.Status == PedidoStatus.Entregado ? "bg-success" : "bg-info")">
-                                @item.Status
-                            </span>
+                            @if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.PendienteDePago)
+                            {
+                                <span class="badge bg-warning text-dark"> @item.Status</span>
+                            }
+                            else if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.Pagado)
+                            {
+                                <span class="badge bg-success"> @item.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary"> @item.Status</span>
+                            }
                         </td>
                         <td class="fw-bold text-success">$@item.TotalPedido.ToString("N2")</td>
                         <td>
@@ -72,9 +92,18 @@ else
                     <h6 class="fw-bold mb-1">Pedido #@item.Id</h6>
                     <small class="text-muted d-block">Fecha: @item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</small>
                     <div class="mt-2 d-flex justify-content-between align-items-center">
-                        <span class="badge @(item.Status == PedidoStatus.Cancelado ? "bg-danger" : item.Status == PedidoStatus.Entregado ? "bg-success" : "bg-info")">
-                            @item.Status
-                        </span>
+                        @if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.PendienteDePago)
+                        {
+                            <span class="badge bg-warning text-dark"> @item.Status</span>
+                        }
+                        else if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.Pagado)
+                        {
+                            <span class="badge bg-success"> @item.Status</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary"> @item.Status</span>
+                        }
                         <span class="fw-bold text-primary fs-5">$@item.TotalPedido.ToString("N2")</span>
                     </div>
 
