@@ -104,8 +104,8 @@
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
                             <i class="bi bi-bag-check me-2 text-primary"></i> Mis Pedidos
                         </a>
-                        <a class="nav-link text-primary fs-5 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
-                            <i class="bi bi-cart3"></i>
+                        <a class="nav-link text-primary nav-pc-link fs-6 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
+                            <i class="bi bi-cart3 me-2"></i> Mi Carrito
                             @{
                                 var cPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito");
                                 var tPC = cPC?.Sum(x => x.Cantidad) ?? 0;
