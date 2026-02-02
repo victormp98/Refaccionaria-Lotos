@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -62,6 +62,7 @@
                     @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
                     {
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Mis Pedidos</a>
+                        @* REMOVED: <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Create">Finalizar Compra</a> *@
                         <a class="nav-link text-primary fs-5 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
                             <i class="bi bi-cart3"></i>
                             @{
@@ -125,6 +126,7 @@
                 @if (User.IsInRole("Cliente")) // New block for Cliente-specific links
                 {
                     <li><a class="dropdown-item py-2" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-bag-check me-2"></i> Mis Pedidos</a></li>
+                    @* REMOVED: <li><a class="dropdown-item py-2" asp-controller="Pedidos" asp-action="Create"><i class="bi bi-credit-card me-2"></i> Finalizar Compra</a></li> *@
                 }
                 <hr>
                 <li><partial name="_LoginPartial" /></li>
