@@ -26,6 +26,7 @@ namespace RefaccionariaWeb.Controllers
             var carritoSesion = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
             bool huboCambios = false;
 
+            // 1. Validar Stock de lo que ya está en el carrito
             foreach (var item in carritoSesion)
             {
                 var productoReal = await _context.Productos.FindAsync(item.ProductoId);
@@ -66,12 +67,13 @@ namespace RefaccionariaWeb.Controllers
                 ViewBag.Alerta = "⚠️ El inventario ha cambiado y actualizamos tu carrito.";
             }
 
-            // --- LÓGICA DE RECOMENDACIONES ESTILO ML ---
-            // Traemos 4 productos aleatorios que no estén ya en el carrito
+            // --- LÓGICA DE RECOMENDACIONES ACTIVA ---
+            // Traemos 4 productos aleatorios que tengan stock y NO estén en el carrito actual
             var idsEnCarrito = carritoSesion.Select(x => x.ProductoId).ToList();
+
             ViewBag.Recomendaciones = await _context.Productos
                 .Where(p => !idsEnCarrito.Contains(p.Id) && p.Stock > 0)
-                .OrderBy(r => Guid.NewGuid())
+                .OrderBy(r => Guid.NewGuid()) // Esto los mezcla al azar
                 .Take(4)
                 .ToListAsync();
 
@@ -97,18 +99,42 @@ namespace RefaccionariaWeb.Controllers
                 if (capacidadLibre > 0)
                 {
                     if (item != null) item.Cantidad = producto.Stock;
-                    else carrito.Add(new ItemCarrito { ProductoId = producto.Id, Nombre = producto.Nombre, Precio = producto.PrecioVenta, Cantidad = producto.Stock, StockMaximo = producto.Stock, ImagenUrl = producto.ImagenUrl });
+                    else carrito.Add(new ItemCarrito
+                    {
+                        ProductoId = producto.Id,
+                        Nombre = producto.Nombre,
+                        Precio = producto.PrecioVenta,
+                        Cantidad = producto.Stock,
+                        StockMaximo = producto.Stock,
+                        ImagenUrl = producto.ImagenUrl
+                    });
                 }
-                TempData["Error"] = "Stock limitado. Se ajustó al máximo disponible.";
+                TempData["Error"] = $"Stock limitado. Solo pudimos añadir lo disponible ({producto.Stock} piezas).";
             }
             else
             {
                 if (item != null) item.Cantidad += cantidad;
-                else carrito.Add(new ItemCarrito { ProductoId = producto.Id, Nombre = producto.Nombre, Precio = producto.PrecioVenta, Cantidad = cantidad, StockMaximo = producto.Stock, ImagenUrl = producto.ImagenUrl });
+                else carrito.Add(new ItemCarrito
+                {
+                    ProductoId = producto.Id,
+                    Nombre = producto.Nombre,
+                    Precio = producto.PrecioVenta,
+                    Cantidad = cantidad,
+                    StockMaximo = producto.Stock,
+                    ImagenUrl = producto.ImagenUrl
+                });
+
+                // --- ALERTAS PARA SWEETALERT ---
+                TempData["AlertaCarrito"] = "true";
+                TempData["ProductoAgregado"] = producto.Nombre;
+                TempData["CantidadAgregada"] = cantidad;
             }
 
             HttpContext.Session.SetObject("Carrito", carrito);
-            return comprarAhora ? RedirectToAction(nameof(Index)) : (!string.IsNullOrEmpty(returnUrl) ? Redirect(returnUrl) : RedirectToAction("Index", "Home"));
+
+            if (comprarAhora) return RedirectToAction(nameof(Index));
+
+            return !string.IsNullOrEmpty(returnUrl) ? Redirect(returnUrl) : RedirectToAction("Index", "Home");
         }
 
         public IActionResult ActualizarCantidad(int id, int cantidad)

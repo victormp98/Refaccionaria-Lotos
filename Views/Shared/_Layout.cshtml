@@ -25,7 +25,6 @@
     <header class="sticky-top shadow-sm">
         <nav class="navbar navbar-light bg-white py-2">
             <div class="container-fluid px-3">
-                @* HEADER SUPERIOR: Logo y Login *@
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index">
                         <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
@@ -35,7 +34,6 @@
                     </div>
                 </div>
 
-                @* BUSCADOR CENTRAL *@
                 <div class="row justify-content-center w-100 mt-2 mx-0">
                     <div class="col-12 col-lg-8 px-1">
                         <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light w-100 overflow-hidden shadow-sm">
@@ -45,23 +43,19 @@
                     </div>
                 </div>
 
-                @* 1. VISTA PC (Desktop Nav) *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
                     <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
-
                     @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
                     {
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Ventas</a>
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">Inventario</a>
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">Vehículos</a>
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">Relaciones</a>
-
                         @if (User.IsInRole("Admin"))
                         {
                             <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
                         }
                     }
-
                     @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
                     {
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Mis Pedidos</a>
@@ -86,12 +80,8 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* 2. VISTA MÓVIL (Bottom Nav) *@
     <div class="nav-mobile-bottom d-lg-none">
-        <a asp-controller="Home" asp-action="Index" class="nav-mobile-item">
-            <i class="bi bi-house"></i><span>Inicio</span>
-        </a>
-
+        <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
         @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
         {
             <a asp-controller="Carrito" asp-action="Index" class="nav-mobile-item position-relative">
@@ -105,14 +95,12 @@
                 }
             </a>
         }
-
         @if (User.Identity.IsAuthenticated)
         {
             <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item">
                 <i class="bi bi-bag-check"></i><span>@(User.IsInRole("Cliente") ? "Pedidos" : "Ventas")</span>
             </a>
         }
-
         <div class="dropup nav-mobile-item">
             <a href="#" class="nav-mobile-item" data-bs-toggle="dropdown"><i class="bi bi-list"></i><span>Menú</span></a>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-3">
