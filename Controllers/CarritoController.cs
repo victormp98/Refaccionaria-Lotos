@@ -106,10 +106,13 @@ namespace RefaccionariaWeb.Controllers
                             ImagenUrl = producto.ImagenUrl
                         });
                     }
-                    TempData["AlertaCarrito"] = "true";
-                    TempData["ProductoAgregado"] = producto.Nombre;
-                    TempData["CantidadAgregada"] = capacidadLibre;
-                    TempData["Error"] = $"Solo se agregaron {capacidadLibre} piezas adicionales (Límite de stock alcanzado).";
+                    if (!comprarAhora) // ADDED CONDITION
+                    {
+                        TempData["AlertaCarrito"] = "true";
+                        TempData["ProductoAgregado"] = producto.Nombre;
+                        TempData["CantidadAgregada"] = capacidadLibre;
+                        TempData["Error"] = $"Solo se agregaron {capacidadLibre} piezas adicionales (Límite de stock alcanzado).";
+                    }
                 }
             }
             else
@@ -128,9 +131,12 @@ namespace RefaccionariaWeb.Controllers
                         ImagenUrl = producto.ImagenUrl
                     });
                 }
-                TempData["AlertaCarrito"] = "true";
-                TempData["ProductoAgregado"] = producto.Nombre;
-                TempData["CantidadAgregada"] = cantidad;
+                if (!comprarAhora) // ADDED CONDITION
+                {
+                    TempData["AlertaCarrito"] = "true";
+                    TempData["ProductoAgregado"] = producto.Nombre;
+                    TempData["CantidadAgregada"] = cantidad;
+                }
             }
 
             HttpContext.Session.SetObject("Carrito", carrito);
