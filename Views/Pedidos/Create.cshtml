@@ -6,6 +6,10 @@
     ViewData["Title"] = "Finalizar Compra";
     var carrito = Context.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
     var total = carrito.Sum(x => x.SubTotal);
+
+    // Obtenemos los datos de la sucursal desde la base de datos
+    var db = Context.RequestServices.GetService<RefaccionariaWeb.Data.ApplicationDbContext>();
+    var tienda = db.SucursalConfigs.FirstOrDefault(x => x.Id == 1);
 }
 
 <style>
@@ -35,7 +39,7 @@
     @@media (max-width: 767.98px) {
         .btn-confirmar-fix {
             position: fixed;
-            bottom: 65px; /* Ajustado para que flote sobre la nav-mobile-bottom */
+            bottom: 65px;
             left: 0;
             right: 0;
             z-index: 1020;
@@ -49,20 +53,17 @@
         body {
             padding-bottom: 150px;
         }
-        /* Más espacio para no tapar el contenido final */
     }
 </style>
 
 <div class="container py-4">
     <div class="row g-4">
-        @* IZQUIERDA: PASOS *@
         <div class="col-lg-8">
             <h2 class="fw-bold mb-4">¿Cómo quieres recibir tu compra?</h2>
 
             <form asp-action="Create" id="checkoutForm">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                @* OPCIONES DE ENTREGA *@
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <div id="cardDomicilio" class="card h-100 step-card p-3 step-active" onclick="toggleEnvio(true)">
@@ -92,7 +93,6 @@
                     </div>
                 </div>
 
-                @* FORMULARIO DIRECCIÓN *@
                 <div id="sectionDireccion" class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-4"><i class="bi bi-geo-alt text-primary"></i> Datos de entrega</h5>
@@ -126,7 +126,6 @@
                     </div>
                 </div>
 
-                @* FACTURACIÓN *@
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body p-4">
                         <div class="form-check form-switch">
@@ -149,7 +148,6 @@
             </form>
         </div>
 
-        @* DERECHA: RESUMEN *@
         <div class="col-lg-4">
             <div class="card shadow-sm rounded-4 border-0 sticky-summary">
                 <div class="card-body p-4">
@@ -188,9 +186,23 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
+        const datosTienda = {
+            nombre: "@tienda?.NombreTienda",
+            direccion: "@tienda?.Direccion",
+            cp: "@tienda?.CP",
+            ciudad: "@tienda?.Ciudad",
+            estado: "@tienda?.Estado"
+        };
+
         function toggleEnvio(esEnvio) {
             const section = document.getElementById('sectionDireccion');
             const txtEnvio = document.getElementById('txtEnvio');
+
+            const inputNombre = document.querySelector('[name="NombreReceptor"]');
+            const inputDireccion = document.querySelector('[name="DireccionEnvio"]');
+            const inputCP = document.querySelector('[name="CodigoPostalEnvio"]');
+            const inputCiudad = document.querySelector('[name="CiudadEnvio"]');
+            const inputEstado = document.querySelector('[name="EstadoEnvio"]');
 
             document.getElementById('cardDomicilio').classList.toggle('step-active', esEnvio);
             document.getElementById('cardSucursal').classList.toggle('step-active', !esEnvio);
@@ -199,12 +211,25 @@
                 $(section).slideDown();
                 txtEnvio.innerText = "Gratis";
                 txtEnvio.className = "text-success";
+
+                inputNombre.value = "";
+                inputDireccion.value = "";
+                inputCP.value = "";
+                inputCiudad.value = "";
+                inputEstado.value = "";
             } else {
                 $(section).slideUp();
-                txtEnvio.innerText = "N/A";
+                txtEnvio.innerText = "N/A (Retiro)";
                 txtEnvio.className = "text-muted";
+
+                inputNombre.value = "RETIRO: " + datosTienda.nombre;
+                inputDireccion.value = datosTienda.direccion;
+                inputCP.value = datosTienda.cp;
+                inputCiudad.value = datosTienda.ciudad;
+                inputEstado.value = datosTienda.estado;
             }
         }
+
         document.getElementById('chkFactura').addEventListener('change', function() {
             $('#billingInfo').slideToggle(this.checked);
         });

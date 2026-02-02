@@ -30,7 +30,6 @@
             .search-container form {
                 pointer-events: auto;
             }
-        /* Solo el buscador recibe clics */
 
         @@media (max-width: 767.98px) {
             .nav-mobile-bottom {
@@ -47,7 +46,6 @@
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
-                @* LOGO Y LOGIN (Misma línea) *@
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index">
                         <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
@@ -57,7 +55,6 @@
                     </div>
                 </div>
 
-                @* BUSCADOR (Con pointer-events: none para no tapar clics ajenos) *@
                 <div class="search-container row justify-content-center w-100 mt-2 mx-0">
                     <div class="col-12 col-lg-8 px-1">
                         <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light w-100 overflow-hidden shadow-sm">
@@ -67,7 +64,6 @@
                     </div>
                 </div>
 
-                @* MENÚ DE NAVEGACIÓN PC *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
                     <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
                     @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
@@ -76,9 +72,10 @@
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">Inventario</a>
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">Vehículos</a>
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">Relaciones</a>
-                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop-window me-2"></i> Datos de Tienda</a></li>
+
                         @if (User.IsInRole("Admin"))
                         {
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-1 text-primary"></i> Sucursal</a>
                             <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
                         }
                     }
@@ -106,7 +103,6 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL (Intacta) *@
     <div class="nav-mobile-bottom d-lg-none">
         <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
         @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
@@ -139,6 +135,7 @@
                     <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
                     @if (User.IsInRole("Admin"))
                     {
+                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-2"></i> Datos de Tienda</a></li>
                         <li><a class="dropdown-item py-2" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people me-2"></i> Personal</a></li>
                     }
                 }
