@@ -1,0 +1,108 @@
+@model RefaccionariaWeb.Models.Pedido
+
+@{
+    ViewData["Title"] = "Confirmar Pedido";
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
+    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-cart-check"></i> Finalizar Compra</h1>
+    <div>
+        <a asp-controller="Carrito" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3">
+            <i class="bi bi-arrow-left"></i> Volver al Carrito
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Información de Envío</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="NombreReceptor" class="form-label"></label>
+                    <input asp-for="NombreReceptor" class="form-control" />
+                    <span asp-validation-for="NombreReceptor" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DireccionEnvio" class="form-label"></label>
+                    <input asp-for="DireccionEnvio" class="form-control" />
+                    <span asp-validation-for="DireccionEnvio" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CiudadEnvio" class="form-label"></label>
+                    <input asp-for="CiudadEnvio" class="form-control" />
+                    <span asp-validation-for="CiudadEnvio" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="EstadoEnvio" class="form-label"></label>
+                    <input asp-for="EstadoEnvio" class="form-control" />
+                    <span asp-validation-for="EstadoEnvio" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CodigoPostalEnvio" class="form-label"></label>
+                    <input asp-for="CodigoPostalEnvio" class="form-control" />
+                    <span asp-validation-for="CodigoPostalEnvio" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="PaisEnvio" class="form-label"></label>
+                    <input asp-for="PaisEnvio" class="form-control" />
+                    <span asp-validation-for="PaisEnvio" class="text-danger"></span>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" asp-for="RequiereFactura" />
+                <label class="form-check-label" asp-for="RequiereFactura"></label>
+            </div>
+
+            <div id="billingInfo" style="display: @(Model.RequiereFactura ? "block" : "none");">
+                 <h5 class="mb-3">Datos de Facturación</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Rfc" class="form-label"></label>
+                        <input asp-for="Rfc" class="form-control" />
+                        <span asp-validation-for="Rfc" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="RazonSocial" class="form-label"></label>
+                        <input asp-for="RazonSocial" class="form-control" />
+                        <span asp-validation-for="RazonSocial" class="text-danger"></span>
+                    </div>
+                </div>
+                <hr class="my-4" />
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-bag-check"></i> Confirmar Pedido y Pagar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var requiereFacturaCheckbox = document.getElementById('@Html.IdFor(model => model.RequiereFactura)');
+            var billingInfoDiv = document.getElementById('billingInfo');
+
+            function toggleBillingInfo() {
+                if (requiereFacturaCheckbox.checked) {
+                    billingInfoDiv.style.display = 'block';
+                } else {
+                    billingInfoDiv.style.display = 'none';
+                }
+            }
+
+            requiereFacturaCheckbox.addEventListener('change', toggleBillingInfo);
+            toggleBillingInfo(); // Set initial state
+        });
+    </script>
+}
+

@@ -9,5 +9,7 @@ namespace RefaccionariaWeb.Data
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Vehiculo> Vehiculos { get; set; }
         public DbSet<Compatibilidad> Compatibilidades { get; set; }
+        public DbSet<Pedido> Pedidos { get; set; }
+        public DbSet<DetallePedido> DetallesPedido { get; set; }
     }
 }

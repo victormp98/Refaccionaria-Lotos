@@ -1,0 +1,90 @@
+@model IEnumerable<RefaccionariaWeb.Models.Pedido>
+
+@{
+    ViewData["Title"] = "Mis Pedidos";
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
+    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-box-seam"></i> Mis Pedidos</h1>
+    @* TODO: Botón para crear nuevo pedido o ver carrito si aplica aquí *@
+    @* <a asp-action="Create" class="btn btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center">
+        <i class="bi bi-plus-lg"></i>
+        <span class="ms-1 d-none d-sm-inline">Nuevo Pedido</span>
+        <span class="ms-1 d-inline d-sm-none">Nuevo</span>
+    </a> *@
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info text-center" role="alert">
+        <h4 class="alert-heading">¡Aún no tienes pedidos!</h4>
+        <p>Parece que no has realizado ninguna compra con nosotros. Explora nuestro catálogo y encuentra lo que necesitas.</p>
+        <hr>
+        <p class="mb-0">Cuando realices un pedido, aparecerá aquí.</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive d-none d-md-block shadow-sm rounded">
+        <table class="table table-hover align-middle border">
+            <thead class="table-light">
+                <tr>
+                    <th># Pedido</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge @(item.Status == PedidoStatus.Cancelado ? "bg-danger" : item.Status == PedidoStatus.Entregado ? "bg-success" : "bg-info")">
+                                @item.Status
+                            </span>
+                        </td>
+                        <td class="fw-bold text-success">$@item.TotalPedido.ToString("N2")</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary"><i class="bi bi-eye"></i> Detalles</a>
+                                @* TODO: Botón de cancelar pedido si aplica, dependiendo del Status *@
+                                @* @if (item.Status == PedidoStatus.PendienteDePago)
+                                {
+                                    <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> Cancelar</a>
+                                } *@
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-block d-md-none"> @* Mobile View *@
+        @foreach (var item in Model)
+        {
+            <div class="card mb-3 shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">Pedido #@item.Id</h6>
+                    <small class="text-muted d-block">Fecha: @item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</small>
+                    <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <span class="badge @(item.Status == PedidoStatus.Cancelado ? "bg-danger" : item.Status == PedidoStatus.Entregado ? "bg-success" : "bg-info")">
+                            @item.Status
+                        </span>
+                        <span class="fw-bold text-primary fs-5">$@item.TotalPedido.ToString("N2")</span>
+                    </div>
+
+                    <div class="d-grid mt-3 border-top pt-2">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-light text-primary">
+                            <i class="bi bi-eye-fill"></i> Ver Detalles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
