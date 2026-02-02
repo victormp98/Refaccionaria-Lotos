@@ -15,74 +15,89 @@
             transition: 0.2s;
         }
 
-        .nav-pc-link:hover {
-            background: #f8f9fa;
-            color: #2E86C1 !important;
+            .nav-pc-link:hover {
+                background: #f8f9fa;
+                color: #2E86C1 !important;
+            }
+
+        /* Ajustes para evitar que los elementos se encimen */
+        .navbar {
+            z-index: 1030;
         }
 
-        /* --- CAMBIO AQUÍ: AJUSTE PARA BOTÓN DE PAGO MÓVIL --- */
         @@media (max-width: 767.98px) {
             .nav-mobile-bottom {
-                z-index: 1010; /* Menor que el botón de confirmar (1020) */
+                z-index: 1010;
             }
-            /* Esto evita que el botón tape el último contenido de la página */
+
             body {
-                padding-bottom: 140px !important; 
+                padding-bottom: 140px !important;
             }
+        }
+
+        /* Asegura que el área de Login sea clickeable en PC */
+        ._login-area {
+            position: relative;
+            z-index: 1040;
         }
     </style>
 </head>
 <body class="bg-light">
-    <header class="sticky-top shadow-sm">
-        <nav class="navbar navbar-light bg-white py-2">
-            <div class="container-fluid px-3">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
-                    </a>
-                    <div class="ms-auto text-end">
-                        <partial name="_LoginPartial" />
-                    </div>
-                </div>
+    <header class="sticky-top shadow-sm bg-white">
+        <nav class="navbar navbar-expand-lg navbar-light py-2 px-3">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+                @* LOGO *@
+                <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
+                </a>
 
-                <div class="row justify-content-center w-100 mt-2 mx-0">
-                    <div class="col-12 col-lg-8 px-1">
-                        <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light w-100 overflow-hidden shadow-sm">
+                @* ÁREA DE LOGIN (Aislada para que sea clickeable) *@
+                <div class="_login-area">
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+
+            @* BUSCADOR (Ahora en su propio contenedor para no estorbar) *@
+            <div class="container-fluid mt-2">
+                <div class="row justify-content-center w-100 mx-0">
+                    <div class="col-12 col-lg-6">
+                        <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light overflow-hidden shadow-sm">
                             <input name="searchString" class="form-control border-0 bg-transparent px-3 py-2" type="search" placeholder="Buscar refacciones...">
                             <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
                         </form>
                     </div>
                 </div>
+            </div>
 
-                <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
-                    <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
-                    @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
+            @* MENÚ PC *@
+            <div class="container-fluid d-none d-lg-flex justify-content-center mt-2 border-top pt-2">
+                <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
+                @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
+                {
+                    <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Ventas</a>
+                    <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">Inventario</a>
+                    <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">Vehículos</a>
+                    <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">Relaciones</a>
+                    @if (User.IsInRole("Admin"))
                     {
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Ventas</a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">Inventario</a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">Vehículos</a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">Relaciones</a>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
+                    }
+                }
+                @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
+                {
+                    <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Mis Pedidos</a>
+                    <a class="nav-link text-primary fs-5 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
+                        <i class="bi bi-cart3"></i>
+                        @{
+                            var cPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito");
+                            var tPC = cPC?.Sum(x => x.Cantidad) ?? 0;
                         }
-                    }
-                    @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
-                    {
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Mis Pedidos</a>
-                        <a class="nav-link text-primary fs-5 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
-                            <i class="bi bi-cart3"></i>
-                            @{
-                                var cPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito");
-                                var tPC = cPC?.Sum(x => x.Cantidad) ?? 0;
-                            }
-                            @if (tPC > 0)
-                            {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">@tPC</span>
-                            }
-                        </a>
-                    }
-                </div>
+                        @if (tPC > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">@tPC</span>
+                        }
+                    </a>
+                }
             </div>
         </nav>
     </header>
@@ -91,6 +106,7 @@
         <main role="main">@RenderBody()</main>
     </div>
 
+    @* BARRA MÓVIL *@
     <div class="nav-mobile-bottom d-lg-none">
         <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
         @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
@@ -141,23 +157,23 @@
     <script>
         @if (TempData["AlertaCarrito"] != null)
         {
-            <text>
-                Swal.fire({
-                    title: '¡Agregado!',
-                    html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
-                    icon: 'success',
-                    showCancelButton: true,
-                    confirmButtonColor: '#2E86C1',
-                    confirmButtonText: 'Ver Carrito',
-                    cancelButtonText: 'Seguir viendo'
-                }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
-            </text>
+                <text>
+                    Swal.fire({
+                        title: '¡Agregado!',
+                        html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#2E86C1',
+                        confirmButtonText: 'Ver Carrito',
+                        cancelButtonText: 'Seguir viendo'
+                    }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
+                </text>
         }
         @if (TempData["Error"] != null)
         {
-            <text>
-                Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
-            </text>
+                <text>
+                    Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
+                </text>
         }
     </script>
 </body>
