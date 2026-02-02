@@ -113,38 +113,98 @@ namespace RefaccionariaWeb.Controllers
             return View(pedido);
         }
 
-        // POST: Pedidos/Create (Procesa la creación de un nuevo pedido)
+        // POST: Pedidos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> Create([Bind("DireccionEnvio,CiudadEnvio,EstadoEnvio,CodigoPostalEnvio,PaisEnvio,NombreReceptor,RequiereFactura,Rfc,RazonSocial")] Pedido pedido)
         {
+            var currentUser = await _userManager.GetUserAsync(User);
+            // Recuperamos el carrito de la sesión
+            var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
+
+            if (currentUser == null) return Challenge();
+
+            // Validación: No dejar comprar si el carrito está vacío o nulo
+            if (carrito == null || !carrito.Any())
+            {
+                ModelState.AddModelError("", "Tu carrito está vacío.");
+                // Regresamos a la vista mostrando el error
+                return View(pedido);
+            }
+
             if (ModelState.IsValid)
             {
-                var currentUser = await _userManager.GetUserAsync(User);
-                if (currentUser == null)
+                // INICIO DE TRANSACCIÓN: Todo o Nada
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                
+                try
                 {
-                    return Challenge();
+                    // 1. Configurar datos del Pedido
+                    pedido.ClienteId = currentUser.Id;
+                    pedido.FechaPedido = DateTime.Now;
+                    pedido.Status = PedidoStatus.PendienteDePago;
+                    pedido.TotalPedido = 0; // Se calcula sumando los detalles
+                    
+                    _context.Add(pedido);
+                    await _context.SaveChangesAsync(); // Guardamos para generar el pedido.Id
+
+                    decimal totalCalculado = 0;
+
+                    // 2. Procesar cada item del carrito
+                    foreach (var item in carrito)
+                    {
+                        // Buscamos el producto real para descontar stock
+                        var productoDb = await _context.Productos.FindAsync(item.ProductoId);
+
+                        // Validación de Stock en tiempo real
+                        if (productoDb == null)
+                        {
+                             throw new Exception($"El producto '{item.Nombre}' ya no existe.");
+                        }
+                        if (productoDb.Stock < item.Cantidad)
+                        {
+                             throw new Exception($"Stock insuficiente para '{item.Nombre}'. Disponibles: {productoDb.Stock}.");
+                        }
+
+                        // RESTAR STOCK
+                        productoDb.Stock -= item.Cantidad;
+                        _context.Update(productoDb);
+
+                        // CREAR DETALLE
+                        var detalle = new DetallePedido
+                        {
+                            PedidoId = pedido.Id,
+                            ProductoId = item.ProductoId,
+                            Cantidad = item.Cantidad,
+                            PrecioUnitario = item.Precio
+                        };
+                        _context.Add(detalle);
+
+                        totalCalculado += (item.Cantidad * item.Precio);
+                    }
+
+                    // 3. Actualizar Total y Cerrar
+                    pedido.TotalPedido = totalCalculado;
+                    _context.Update(pedido);
+                    await _context.SaveChangesAsync();
+
+                    // CONFIRMAR TRANSACCIÓN
+                    await transaction.CommitAsync();
+
+                    // 4. Limpiar Carrito (Ya se compró)
+                    HttpContext.Session.Remove("Carrito");
+
+                    return RedirectToAction(nameof(Details), new { id = pedido.Id });
                 }
-
-                // === LÓGICA DE CREACIÓN DEL PEDIDO ===
-                pedido.ClienteId = currentUser.Id;
-                pedido.FechaPedido = DateTime.Now;
-                pedido.Status = PedidoStatus.PendienteDePago; // Estado inicial
-                
-                // TODO: Aquí se calcularía el TotalPedido y se añadirían los DetallesPedido
-                // Esto usualmente se haría iterando sobre los items de un carrito de compras
-                // Por ahora, TotalPedido se establece a 0 y Detalles está vacío
-                pedido.TotalPedido = 0; // Placeholder
-                // pedido.Detalles.Add(new DetallePedido { ... }); // Ejemplo
-
-                _context.Add(pedido);
-                await _context.SaveChangesAsync();
-                
-                // TODO: Redirigir a una página de confirmación o de pago
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    // SI ALGO FALLA: Deshacer todo
+                    await transaction.RollbackAsync();
+                    ModelState.AddModelError("", $"Error en la compra: {ex.Message}");
+                }
             }
-            // Si el modelo no es válido, vuelve a mostrar el formulario con errores
+
             return View(pedido);
         }
     }
