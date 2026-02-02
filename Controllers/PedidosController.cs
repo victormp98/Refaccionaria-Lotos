@@ -8,6 +8,8 @@ using RefaccionariaWeb.Models.Enums;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using RefaccionariaWeb.Models.DTOs;
+using RefaccionariaWeb.Extensions;
 
 namespace RefaccionariaWeb.Controllers
 {
