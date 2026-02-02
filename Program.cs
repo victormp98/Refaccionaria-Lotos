@@ -10,8 +10,7 @@ builder.Logging.AddConsole(); // Añadir proveedor de logging a consola
 // CONEXIÓN
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// CAMBIO REALIZADO AQUÍ: Usamos una versión fija (8.0.21) en lugar de AutoDetect
-// para evitar que la aplicación intente conectarse antes de entrar al bloque try-catch.
+// CAMBIO REALIZADO AQUÍ: Usamos una versión fija (8.0.21)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21))));
 
@@ -45,12 +44,52 @@ using (var scope = app.Services.CreateScope())
         try
         {
             logger.LogInformation($"Intento {i} de {maxRetries}: Aplicando migraciones e inicializando la base de datos.");
-            // Aplicar migraciones automáticamente en todos los entornos
+
+            // 1. Aplicar migraciones existentes (si las hay)
             context.Database.Migrate();
+
+            // ==============================================================================
+            // PARCHE DE EMERGENCIA: CREAR TABLAS FALTANTES DIRECTAMENTE EN EL SERVIDOR
+            // ==============================================================================
+            logger.LogInformation("Ejecutando script de emergencia para asegurar tablas pedidos/detalles...");
+            context.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS pedidos (
+                    Id INT NOT NULL AUTO_INCREMENT,
+                    ClienteId VARCHAR(255) NOT NULL,
+                    FechaPedido DATETIME(6) NOT NULL,
+                    Status INT NOT NULL, 
+                    TotalPedido DECIMAL(18,2) NOT NULL,
+                    DireccionEnvio VARCHAR(200) NOT NULL,
+                    CiudadEnvio VARCHAR(100) NOT NULL,
+                    EstadoEnvio VARCHAR(100) NOT NULL,
+                    CodigoPostalEnvio VARCHAR(10) NOT NULL,
+                    PaisEnvio VARCHAR(100) NOT NULL DEFAULT 'México',
+                    NombreReceptor VARCHAR(150) NOT NULL,
+                    RequiereFactura BIT(1) NOT NULL,
+                    Rfc VARCHAR(13) NULL,
+                    RazonSocial VARCHAR(250) NULL,
+                    PRIMARY KEY (Id),
+                    CONSTRAINT FK_Pedidos_AspNetUsers_ClienteId FOREIGN KEY (ClienteId) REFERENCES AspNetUsers (Id) ON DELETE CASCADE
+                ) CHARACTER SET utf8mb4;
+
+                CREATE TABLE IF NOT EXISTS detallespedido (
+                    Id INT NOT NULL AUTO_INCREMENT,
+                    PedidoId INT NOT NULL,
+                    ProductoId INT NOT NULL,
+                    Cantidad INT NOT NULL,
+                    PrecioUnitario DECIMAL(18,2) NOT NULL,
+                    PRIMARY KEY (Id),
+                    CONSTRAINT FK_DetallesPedido_Pedidos_PedidoId FOREIGN KEY (PedidoId) REFERENCES pedidos (Id) ON DELETE CASCADE,
+                    CONSTRAINT FK_DetallesPedido_Productos_ProductoId FOREIGN KEY (ProductoId) REFERENCES Productos (Id) ON DELETE CASCADE
+                ) CHARACTER SET utf8mb4;
+            ");
+            // ==============================================================================
+            // FIN DEL PARCHE
+            // ==============================================================================
 
             await DbInitializer.Initialize(services);
 
-            logger.LogInformation("Conexión exitosa a la base de datos y inicialización completada.");
+            logger.LogInformation("Conexión exitosa, tablas verificadas e inicialización completada.");
             break; // Salir del bucle si es exitoso
         }
         catch (Exception ex)
@@ -60,13 +99,11 @@ using (var scope = app.Services.CreateScope())
             if (i < maxRetries)
             {
                 logger.LogWarning($"Esperando {delaySeconds} segundos antes de reintentar...");
-                System.Threading.Thread.Sleep(delaySeconds * 1000); // Esperar en milisegundos
+                System.Threading.Thread.Sleep(delaySeconds * 1000);
             }
             else
             {
-                logger.LogError("FATAL ERROR: Fallaron todos los intentos de conectar e inicializar la base de datos. La aplicación continuará sin la base de datos. Esto podría causar errores posteriores.");
-                // NO relanzamos la excepción. La aplicación debe continuar.
-                // Esto significa que las operaciones de BD fallarán más adelante si no hay conexión.
+                logger.LogError("FATAL ERROR: Fallaron todos los intentos. La aplicación podría inestabilizarse.");
             }
         }
     }
