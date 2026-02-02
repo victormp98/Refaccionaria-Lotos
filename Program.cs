@@ -34,18 +34,37 @@ using (var scope = app.Services.CreateScope())
     var context = services.GetRequiredService<ApplicationDbContext>();
     var logger = services.GetRequiredService<ILogger<Program>>(); // Obtener logger
 
-    try
-    {
-        // Aplicar migraciones automáticamente en todos los entornos
-        context.Database.Migrate();
+    const int maxRetries = 5;
+    const int delaySeconds = 5;
 
-        await DbInitializer.Initialize(services);
-    }
-    catch (Exception ex)
+    for (int i = 1; i <= maxRetries; i++)
     {
-        logger.LogError(ex, "FATAL ERROR: Ocurrió un error al migrar o inicializar la base de datos.");
-        // Relanzamos la excepción para asegurar que Coolify registre el fallo y el contenedor no arranque.
-        throw;
+        try
+        {
+            logger.LogInformation($"Intento {i} de {maxRetries}: Aplicando migraciones e inicializando la base de datos.");
+            // Aplicar migraciones automáticamente en todos los entornos
+            context.Database.Migrate();
+
+            await DbInitializer.Initialize(services);
+
+            logger.LogInformation("Conexión exitosa a la base de datos y inicialización completada.");
+            break; // Salir del bucle si es exitoso
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Intento {i} de {maxRetries} fallido. Error: {ex.Message}");
+
+            if (i < maxRetries)
+            {
+                logger.LogWarning($"Esperando {delaySeconds} segundos antes de reintentar...");
+                System.Threading.Thread.Sleep(delaySeconds * 1000); // Esperar en milisegundos
+            }
+            else
+            {
+                logger.LogError("FATAL ERROR: Fallaron todos los intentos de conectar e inicializar la base de datos.");
+                throw; // Relanzar la excepción si todos los intentos fallaron
+            }
+        }
     }
 }
 
