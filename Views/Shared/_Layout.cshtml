@@ -135,8 +135,8 @@
                     <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
                     @if (User.IsInRole("Admin"))
                     {
-                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-2"></i> Datos de Tienda</a></li>
-                        <li><a class="dropdown-item py-2" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people me-2"></i> Personal</a></li>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit">Dir.Sucursal</a>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
                     }
                 }
                 <li><a class="dropdown-item py-2" asp-controller="Home" asp-action="Index"><i class="bi bi-shop me-2"></i> Catálogo</a></li>

@@ -3,6 +3,8 @@
 
 @{
     ViewData["Title"] = $"Detalle Pedido #{Model.Id}";
+    // Detectamos si es retiro en sucursal basándonos en el nombre que pusimos en el JS
+    bool esRetiro = Model.NombreReceptor?.StartsWith("RETIRO") ?? false;
 }
 
 <div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
@@ -10,58 +12,118 @@
     <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3"><i class="bi bi-arrow-left"></i> Volver</a>
 </div>
 
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-light"><h5 class="mb-0">Resumen</h5></div>
-    <div class="card-body">
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Fecha:</dt>
-            <dd class="col-sm-9">@Model.FechaPedido.ToString("dd/MM/yyyy HH:mm")</dd>
-            <dt class="col-sm-3">Estado:</dt>
-            <dd class="col-sm-9">
-                @{
-                    var color = Model.Status == PedidoStatus.Pagado ? "bg-success" :
-                    Model.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" :
-                    Model.Status == PedidoStatus.Cancelado ? "bg-danger" : "bg-info";
-                }
-                <span class="badge @color">@Model.Status</span>
-            </dd>
-            <dt class="col-sm-3">Total:</dt>
-            <dd class="col-sm-9 fw-bold text-success fs-5">$@Model.TotalPedido.ToString("N2")</dd>
-        </dl>
-    </div>
-</div>
+<div class="row g-4">
+    @* COLUMNA IZQUIERDA: RESUMEN Y DATOS DE ENVÍO *@
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-4 border-0 rounded-4">
+            <div class="card-header bg-light border-0 py-3 rounded-top-4">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2 text-primary"></i>Resumen General</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Fecha:</dt>
+                    <dd class="col-sm-7 text-muted">@Model.FechaPedido.ToString("dd/MM/yyyy HH:mm")</dd>
 
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-light"><h5 class="mb-0">Productos</h5></div>
-    <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th></tr></thead>
-            <tbody>
-                @foreach (var d in Model.Detalles)
+                    <dt class="col-sm-5">Estado:</dt>
+                    <dd class="col-sm-7">
+                        @{
+                            var color = Model.Status == PedidoStatus.Pagado ? "bg-success" :
+                            Model.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" :
+                            Model.Status == PedidoStatus.Cancelado ? "bg-danger" : "bg-info";
+                        }
+                        <span class="badge @color">@Model.Status</span>
+                    </dd>
+
+                    <dt class="col-sm-5">Total:</dt>
+                    <dd class="col-sm-7 fw-bold text-success fs-5">$@Model.TotalPedido.ToString("N2")</dd>
+                </dl>
+            </div>
+        </div>
+
+        @* SECCIÓN DE DATOS DE ENTREGA *@
+        <div class="card shadow-sm border-0 rounded-4 @(esRetiro ? "border-start border-4 border-warning" : "")">
+            <div class="card-header bg-light border-0 py-3 rounded-top-4">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi @(esRetiro ? "bi-shop" : "bi-truck") me-2 text-primary"></i>
+                    @(esRetiro ? "Datos de Retiro" : "Datos de Entrega")
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (esRetiro)
                 {
-                    <tr>
-                        <td>@d.Producto?.Nombre <br /><small class="text-muted">@d.Producto?.SKU</small></td>
-                        <td>@d.Cantidad</td>
-                        <td>$@d.PrecioUnitario.ToString("N2")</td>
-                        <td>$@((d.Cantidad * d.PrecioUnitario).ToString("N2"))</td>
-                    </tr>
+                    <div class="alert alert-warning border-0 py-2 small mb-3">
+                        <i class="bi bi-info-square-fill me-2"></i> Cliente recogerá en mostrador.
+                    </div>
                 }
-            </tbody>
-        </table>
+
+                <p class="mb-1 fw-bold text-dark">@Model.NombreReceptor</p>
+                <p class="mb-1 text-muted small"><i class="bi bi-geo-alt me-1"></i> @Model.DireccionEnvio</p>
+                <p class="mb-0 text-muted small">
+                    @Model.CiudadEnvio, @Model.EstadoEnvio, CP @Model.CodigoPostalEnvio
+                </p>
+
+                @if (Model.RequiereFactura)
+                {
+                    <hr />
+                    <div class="badge bg-secondary mb-2">Requiere Factura</div>
+                    <p class="mb-0 small"><strong>RFC:</strong> @Model.Rfc</p>
+                    <p class="mb-0 small"><strong>Razón:</strong> @Model.RazonSocial</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* COLUMNA DERECHA: PRODUCTOS *@
+    <div class="col-md-7">
+        <div class="card shadow-sm mb-4 border-0 rounded-4">
+            <div class="card-header bg-light border-0 py-3 rounded-top-4">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-cart me-2 text-primary"></i>Productos Comprados</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Producto</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-end">Precio</th>
+                                <th class="text-end pe-4">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.Detalles)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold">@d.Producto?.Nombre</div>
+                                        <small class="text-muted">SKU: @d.Producto?.SKU</small>
+                                    </td>
+                                    <td class="text-center">@d.Cantidad</td>
+                                    <td class="text-end">$@d.PrecioUnitario.ToString("N2")</td>
+                                    <td class="text-end pe-4 fw-bold">$@((d.Cantidad * d.PrecioUnitario).ToString("N2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
 {
-    <div class="card border-primary mt-4 shadow-sm">
-        <div class="card-header bg-primary text-white"><i class="bi bi-gear-fill"></i> Panel de Administración</div>
-        <div class="card-body">
-            <form asp-action="UpdateStatus" method="post" class="d-flex gap-2 flex-wrap">
+    <div class="card border-primary mt-2 shadow-sm rounded-4">
+        <div class="card-header bg-primary text-white py-3 rounded-top-4">
+            <h6 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Panel de Gestión de Orden</h6>
+        </div>
+        <div class="card-body bg-light rounded-bottom-4">
+            <form asp-action="UpdateStatus" method="post" class="d-flex gap-2 flex-wrap justify-content-center">
                 <input type="hidden" name="id" value="@Model.Id" />
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Pagado" class="btn btn-success btn-sm">Marcar Pagado</button>
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Enviado" class="btn btn-info btn-sm text-white">Marcar Enviado</button>
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Entregado" class="btn btn-primary btn-sm">Entregado</button>
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Cancelado" class="btn btn-outline-danger btn-sm">Cancelar</button>
+                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Pagado" class="btn btn-success rounded-pill px-4">Pagado</button>
+                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Enviado" class="btn btn-info text-white rounded-pill px-4">Enviado</button>
+                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Entregado" class="btn btn-primary rounded-pill px-4">Entregado</button>
+                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Cancelado" class="btn btn-outline-danger rounded-pill px-4">Cancelar</button>
             </form>
         </div>
     </div>
