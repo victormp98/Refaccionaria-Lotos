@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders(); // Limpiar proveedores de logging predeterminados
+builder.Logging.AddConsole(); // Añadir proveedor de logging a consola
 
 // CONEXIÓN
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -29,11 +32,21 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
+    var logger = services.GetRequiredService<ILogger<Program>>(); // Obtener logger
 
-    // Aplicar migraciones automáticamente en todos los entornos (por solicitud del usuario)
-    context.Database.Migrate(); // <-- REMOVIDA LA CONDICIÓN 'ISDEVELOPMENT'
+    try
+    {
+        // Aplicar migraciones automáticamente en todos los entornos
+        context.Database.Migrate();
 
-    await DbInitializer.Initialize(services);
+        await DbInitializer.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "FATAL ERROR: Ocurrió un error al migrar o inicializar la base de datos.");
+        // Relanzamos la excepción para asegurar que Coolify registre el fallo y el contenedor no arranque.
+        throw;
+    }
 }
 
 if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Home/Error"); }
