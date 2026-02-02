@@ -26,7 +26,6 @@ namespace RefaccionariaWeb.Controllers
             var carritoSesion = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
             bool huboCambios = false;
 
-            // 1. Validar Stock de lo que ya está en el carrito
             foreach (var item in carritoSesion)
             {
                 var productoReal = await _context.Productos.FindAsync(item.ProductoId);
@@ -67,13 +66,10 @@ namespace RefaccionariaWeb.Controllers
                 ViewBag.Alerta = "⚠️ El inventario ha cambiado y actualizamos tu carrito.";
             }
 
-            // --- LÓGICA DE RECOMENDACIONES ACTIVA ---
-            // Traemos 4 productos aleatorios que tengan stock y NO estén en el carrito actual
             var idsEnCarrito = carritoSesion.Select(x => x.ProductoId).ToList();
-
             ViewBag.Recomendaciones = await _context.Productos
                 .Where(p => !idsEnCarrito.Contains(p.Id) && p.Stock > 0)
-                .OrderBy(r => Guid.NewGuid()) // Esto los mezcla al azar
+                .OrderBy(r => Guid.NewGuid())
                 .Take(4)
                 .ToListAsync();
 
@@ -88,8 +84,9 @@ namespace RefaccionariaWeb.Controllers
             if (producto == null) return NotFound();
 
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
-            var item = carrito.FirstOrDefault(c => c.ProductoId == id);
 
+            // --- LÓGICA UNIFICADA DE AGREGAR (OPCIÓN B) ---
+            var item = carrito.FirstOrDefault(c => c.ProductoId == id);
             int cantidadEnCarrito = item?.Cantidad ?? 0;
             int totalDeseado = cantidadEnCarrito + cantidad;
 
@@ -109,7 +106,7 @@ namespace RefaccionariaWeb.Controllers
                         ImagenUrl = producto.ImagenUrl
                     });
                 }
-                TempData["Error"] = $"Stock limitado. Solo pudimos añadir lo disponible ({producto.Stock} piezas).";
+                TempData["Error"] = $"Stock limitado. Solo añadimos {producto.Stock} piezas.";
             }
             else
             {
@@ -124,15 +121,24 @@ namespace RefaccionariaWeb.Controllers
                     ImagenUrl = producto.ImagenUrl
                 });
 
-                // --- ALERTAS PARA SWEETALERT ---
-                TempData["AlertaCarrito"] = "true";
-                TempData["ProductoAgregado"] = producto.Nombre;
-                TempData["CantidadAgregada"] = cantidad;
+                // Solo mostramos la alerta de SweetAlert si NO va a redirigir al checkout
+                if (!comprarAhora)
+                {
+                    TempData["AlertaCarrito"] = "true";
+                    TempData["ProductoAgregado"] = producto.Nombre;
+                    TempData["CantidadAgregada"] = cantidad;
+                }
             }
 
+            // Guardamos los cambios en la sesión (manteniendo lo que ya estaba)
             HttpContext.Session.SetObject("Carrito", carrito);
 
-            if (comprarAhora) return RedirectToAction(nameof(Index));
+            // --- REDIRECCIÓN SEGÚN EL BOTÓN PRESIONADO ---
+            if (comprarAhora)
+            {
+                // Si es "Comprar Ahora", saltamos directo al proceso de dirección sin borrar el carrito
+                return RedirectToAction("Create", "Pedidos");
+            }
 
             return !string.IsNullOrEmpty(returnUrl) ? Redirect(returnUrl) : RedirectToAction("Index", "Home");
         }
