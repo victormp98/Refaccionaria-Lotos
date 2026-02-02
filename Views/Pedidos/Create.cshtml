@@ -1,108 +1,207 @@
 @model RefaccionariaWeb.Models.Pedido
+@using RefaccionariaWeb.Models.DTOs
+@using RefaccionariaWeb.Extensions
 
 @{
-    ViewData["Title"] = "Confirmar Pedido";
+    ViewData["Title"] = "Finalizar Compra";
+    var carrito = Context.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
+    var total = carrito.Sum(x => x.SubTotal);
 }
 
-<div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
-    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-cart-check"></i> Finalizar Compra</h1>
-    <div>
-        <a asp-controller="Carrito" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3">
-            <i class="bi bi-arrow-left"></i> Volver al Carrito
-        </a>
-    </div>
-</div>
+<style>
+    .step-card {
+        cursor: pointer;
+        transition: 0.3s;
+        border: 2px solid #eee;
+        border-radius: 15px;
+    }
 
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Información de Envío</h5>
-    </div>
-    <div class="card-body">
-        <form asp-action="Create">
-            <div asp-validation-summary="All" class="alert alert-danger"></div>
-            
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="NombreReceptor" class="form-label"></label>
-                    <input asp-for="NombreReceptor" class="form-control" />
-                    <span asp-validation-for="NombreReceptor" class="text-danger"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="DireccionEnvio" class="form-label"></label>
-                    <input asp-for="DireccionEnvio" class="form-control" />
-                    <span asp-validation-for="DireccionEnvio" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="CiudadEnvio" class="form-label"></label>
-                    <input asp-for="CiudadEnvio" class="form-control" />
-                    <span asp-validation-for="CiudadEnvio" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="EstadoEnvio" class="form-label"></label>
-                    <input asp-for="EstadoEnvio" class="form-control" />
-                    <span asp-validation-for="EstadoEnvio" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="CodigoPostalEnvio" class="form-label"></label>
-                    <input asp-for="CodigoPostalEnvio" class="form-control" />
-                    <span asp-validation-for="CodigoPostalEnvio" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="PaisEnvio" class="form-label"></label>
-                    <input asp-for="PaisEnvio" class="form-control" />
-                    <span asp-validation-for="PaisEnvio" class="text-danger"></span>
-                </div>
-            </div>
+        .step-card:hover {
+            border-color: #2E86C1;
+            background-color: #f8fbff;
+        }
 
-            <hr class="my-4" />
+    .step-active {
+        border-color: #2E86C1 !important;
+        background-color: #f8fbff;
+        box-shadow: 0 4px 15px rgba(46,134,193,0.1);
+    }
 
-            <div class="form-check mb-3">
-                <input class="form-check-input" asp-for="RequiereFactura" />
-                <label class="form-check-label" asp-for="RequiereFactura"></label>
-            </div>
+    .sticky-summary {
+        position: sticky;
+        top: 90px;
+    }
 
-            <div id="billingInfo" style="display: @(Model.RequiereFactura ? "block" : "none");">
-                 <h5 class="mb-3">Datos de Facturación</h5>
-                <div class="row g-3">
+    @@media (max-width: 767.98px) {
+        .btn-confirmar-fix {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            border-radius: 0;
+            padding: 15px;
+        }
+
+        body {
+            padding-bottom: 80px;
+        }
+    }
+</style>
+
+<div class="container py-4">
+    <div class="row g-4">
+        @* IZQUIERDA: PASOS *@
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-4">¿Cómo quieres recibir tu compra?</h2>
+
+            <form asp-action="Create" id="checkoutForm">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                @* OPCIONES DE ENTREGA *@
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label asp-for="Rfc" class="form-label"></label>
-                        <input asp-for="Rfc" class="form-control" />
-                        <span asp-validation-for="Rfc" class="text-danger"></span>
+                        <div id="cardDomicilio" class="card h-100 step-card p-3 step-active" onclick="toggleEnvio(true)">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="bi bi-truck text-primary fs-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Envío a domicilio</h6>
+                                    <small class="text-muted">Recibe en tu dirección</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="RazonSocial" class="form-label"></label>
-                        <input asp-for="RazonSocial" class="form-control" />
-                        <span asp-validation-for="RazonSocial" class="text-danger"></span>
+                        <div id="cardSucursal" class="card h-100 step-card p-3" onclick="toggleEnvio(false)">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-secondary bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="bi bi-shop text-secondary fs-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Retiro en sucursal</h6>
+                                    <small class="text-muted">Recoge hoy mismo</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <hr class="my-4" />
-            </div>
 
-            <div class="d-grid">
-                <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-bag-check"></i> Confirmar Pedido y Pagar</button>
+                @* FORMULARIO DIRECCIÓN *@
+                <div id="sectionDireccion" class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4"><i class="bi bi-geo-alt text-primary"></i> Datos de entrega</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Nombre de quién recibe</label>
+                                <input asp-for="NombreReceptor" class="form-control rounded-3" placeholder="Ej. Víctor Pérez" />
+                                <span asp-validation-for="NombreReceptor" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-bold">Calle y número</label>
+                                <input asp-for="DireccionEnvio" class="form-control rounded-3" />
+                                <span asp-validation-for="DireccionEnvio" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Código Postal</label>
+                                <input asp-for="CodigoPostalEnvio" class="form-control rounded-3" />
+                                <span asp-validation-for="CodigoPostalEnvio" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Ciudad</label>
+                                <input asp-for="CiudadEnvio" class="form-control rounded-3" />
+                                <span asp-validation-for="CiudadEnvio" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Estado</label>
+                                <input asp-for="EstadoEnvio" class="form-control rounded-3" />
+                                <span asp-validation-for="EstadoEnvio" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* FACTURACIÓN *@
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="RequiereFactura" id="chkFactura">
+                            <label class="form-check-label fw-bold" for="chkFactura">¿Necesitas factura?</label>
+                        </div>
+                        <div id="billingInfo" class="mt-3 row g-3" style="display: none;">
+                            <div class="col-md-6">
+                                <label class="form-label small">RFC</label>
+                                <input asp-for="Rfc" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Razón Social</label>
+                                <input asp-for="RazonSocial" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" id="btnSubmitHidden" style="display:none;"></button>
+            </form>
+        </div>
+
+        @* DERECHA: RESUMEN *@
+        <div class="col-lg-4">
+            <div class="card shadow-sm rounded-4 border-0 sticky-summary">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Resumen de compra</h5>
+                    <div class="mb-3" style="max-height: 200px; overflow-y: auto;">
+                        @foreach (var item in carrito)
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="@item.ImagenUrl" width="45" height="45" class="rounded border me-2" style="object-fit: contain;">
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="small fw-bold text-truncate">@item.Nombre</div>
+                                    <small class="text-muted">Cant: @item.Cantidad</small>
+                                </div>
+                                <div class="small fw-bold ms-2">$@item.SubTotal.ToString("N2")</div>
+                            </div>
+                        }
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2"><span>Productos</span><span>$@total.ToString("N2")</span></div>
+                    <div class="d-flex justify-content-between mb-2 text-success"><span>Envío</span><span id="txtEnvio">Gratis</span></div>
+                    <div class="d-flex justify-content-between h4 fw-bold text-primary my-3"><span>Total</span><span>$@total.ToString("N2")</span></div>
+
+                    <button type="button" onclick="document.getElementById('btnSubmitHidden').click()" class="btn btn-success btn-lg w-100 rounded-pill py-3 fw-bold btn-confirmar-fix shadow">
+                        Confirmar y Pagar
+                    </button>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var requiereFacturaCheckbox = document.getElementById('@Html.IdFor(model => model.RequiereFactura)');
-            var billingInfoDiv = document.getElementById('billingInfo');
+        function toggleEnvio(esEnvio) {
+            const section = document.getElementById('sectionDireccion');
+            const txtEnvio = document.getElementById('txtEnvio');
 
-            function toggleBillingInfo() {
-                if (requiereFacturaCheckbox.checked) {
-                    billingInfoDiv.style.display = 'block';
-                } else {
-                    billingInfoDiv.style.display = 'none';
-                }
+            document.getElementById('cardDomicilio').classList.toggle('step-active', esEnvio);
+            document.getElementById('cardSucursal').classList.toggle('step-active', !esEnvio);
+
+            if (esEnvio) {
+                $(section).slideDown();
+                txtEnvio.innerText = "Gratis";
+                txtEnvio.className = "text-success";
+            } else {
+                $(section).slideUp();
+                txtEnvio.innerText = "N/A";
+                txtEnvio.className = "text-muted";
             }
+        }
 
-            requiereFacturaCheckbox.addEventListener('change', toggleBillingInfo);
-            toggleBillingInfo(); // Set initial state
+        document.getElementById('chkFactura').addEventListener('change', function() {
+            $('#billingInfo').slideToggle(this.checked);
         });
     </script>
 }
-
