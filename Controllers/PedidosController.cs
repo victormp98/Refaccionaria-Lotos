@@ -135,6 +135,16 @@ namespace RefaccionariaWeb.Controllers
                 return View(pedido);
             }
 
+            // --- LIMPIEZA DE VALIDACIONES INTERNAS ---
+            // Estos campos NO vienen del formulario, los calculamos nosotros.
+            // Los removemos del ModelState para que no bloqueen la entrada.
+            ModelState.Remove("ClienteId");
+            ModelState.Remove("Cliente");       // Propiedad de navegación
+            ModelState.Remove("TotalPedido");
+            ModelState.Remove("FechaPedido");
+            ModelState.Remove("Status");
+            ModelState.Remove("Detalles");      // Lista de detalles
+            // -----------------------------------------
             if (ModelState.IsValid)
             {
                 // INICIO DE TRANSACCIÓN: Todo o Nada
