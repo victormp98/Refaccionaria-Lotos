@@ -15,10 +15,21 @@
             transition: 0.2s;
         }
 
-            .nav-pc-link:hover {
-                background: #f8f9fa;
-                color: #2E86C1 !important;
+        .nav-pc-link:hover {
+            background: #f8f9fa;
+            color: #2E86C1 !important;
+        }
+
+        /* --- CAMBIO AQUÍ: AJUSTE PARA BOTÓN DE PAGO MÓVIL --- */
+        @@media (max-width: 767.98px) {
+            .nav-mobile-bottom {
+                z-index: 1010; /* Menor que el botón de confirmar (1020) */
             }
+            /* Esto evita que el botón tape el último contenido de la página */
+            body {
+                padding-bottom: 140px !important; 
+            }
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -130,23 +141,23 @@
     <script>
         @if (TempData["AlertaCarrito"] != null)
         {
-                <text>
-                    Swal.fire({
-                        title: '¡Agregado!',
-                        html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
-                        icon: 'success',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2E86C1',
-                        confirmButtonText: 'Ver Carrito',
-                        cancelButtonText: 'Seguir viendo'
-                    }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
-                </text>
+            <text>
+                Swal.fire({
+                    title: '¡Agregado!',
+                    html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2E86C1',
+                    confirmButtonText: 'Ver Carrito',
+                    cancelButtonText: 'Seguir viendo'
+                }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
+            </text>
         }
         @if (TempData["Error"] != null)
         {
-                <text>
-                    Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
-                </text>
+            <text>
+                Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
+            </text>
         }
     </script>
 </body>

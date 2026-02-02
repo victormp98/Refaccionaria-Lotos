@@ -35,17 +35,21 @@
     @@media (max-width: 767.98px) {
         .btn-confirmar-fix {
             position: fixed;
-            bottom: 0;
+            bottom: 65px; /* Ajustado para que flote sobre la nav-mobile-bottom */
             left: 0;
             right: 0;
-            z-index: 1050;
+            z-index: 1020;
             border-radius: 0;
-            padding: 15px;
+            padding: 12px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
         }
 
         body {
-            padding-bottom: 80px;
+            padding-bottom: 150px;
         }
+        /* Más espacio para no tapar el contenido final */
     }
 </style>
 
@@ -168,9 +172,11 @@
                     <div class="d-flex justify-content-between mb-2 text-success"><span>Envío</span><span id="txtEnvio">Gratis</span></div>
                     <div class="d-flex justify-content-between h4 fw-bold text-primary my-3"><span>Total</span><span>$@total.ToString("N2")</span></div>
 
-                    <button type="button" onclick="document.getElementById('btnSubmitHidden').click()" class="btn btn-success btn-lg w-100 rounded-pill py-3 fw-bold btn-confirmar-fix shadow">
-                        Confirmar y Pagar
-                    </button>
+                    <div class="btn-confirmar-fix">
+                        <button type="button" onclick="document.getElementById('btnSubmitHidden').click()" class="btn btn-success btn-lg w-100 rounded-pill py-3 fw-bold shadow">
+                            Confirmar y Pagar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -199,7 +205,6 @@
                 txtEnvio.className = "text-muted";
             }
         }
-
         document.getElementById('chkFactura').addEventListener('change', function() {
             $('#billingInfo').slideToggle(this.checked);
         });
