@@ -14,11 +14,17 @@
             padding: 0.5rem 1rem;
             border-radius: 50px;
             transition: 0.2s;
+            display: flex;
+            align-items: center;
         }
 
             .nav-pc-link:hover {
                 background: #f8f9fa;
                 color: #2E86C1 !important;
+            }
+
+            .nav-pc-link i {
+                font-size: 1.1rem;
             }
 
         .search-container {
@@ -63,25 +69,41 @@
                     </div>
                 </div>
 
-                @* NAVEGACIÓN PC: Sin iconos para Admin *@
+                @* NAVEGACIÓN PC: Con iconos para todos *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
-                    <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
+                    <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-grid me-2 text-primary"></i> Catálogo
+                    </a>
                     @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
                     {
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Ventas</a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">Inventario</a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">Vehículos</a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">Relaciones</a>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
+                            <i class="bi bi-cash-stack me-2 text-primary"></i> Ventas
+                        </a>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">
+                            <i class="bi bi-box-seam me-2 text-primary"></i> Inventario
+                        </a>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">
+                            <i class="bi bi-car-front me-2 text-primary"></i> Vehículos
+                        </a>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">
+                            <i class="bi bi-diagram-3 me-2 text-primary"></i> Relaciones
+                        </a>
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit">Sucursal</a>
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit">
+                                <i class="bi bi-shop me-2 text-primary"></i> Mi Tienda
+                            </a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">
+                                <i class="bi bi-people me-2 text-primary"></i> Personal
+                            </a>
                         }
                     }
                     @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
                     {
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">Mis Pedidos</a>
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
+                            <i class="bi bi-bag-check me-2 text-primary"></i> Mis Pedidos
+                        </a>
                         <a class="nav-link text-primary fs-5 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
                             <i class="bi bi-cart3"></i>
                             @{
@@ -136,11 +158,11 @@
                     <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
                     @if (User.IsInRole("Admin"))
                     {
-                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-2"></i> Sucursal</a></li>
+                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-2"></i> Mi Tienda</a></li>
                         <li><a class="dropdown-item py-2" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people me-2"></i> Personal</a></li>
                     }
                 }
-                <li><a class="dropdown-item py-2" asp-controller="Home" asp-action="Index"><i class="bi bi-shop me-2"></i> Catálogo</a></li>
+                @* Se eliminó el botón Catálogo de aquí por redundancia con el nav inferior *@
                 <hr>
                 <li><partial name="_LoginPartial" /></li>
             </ul>
