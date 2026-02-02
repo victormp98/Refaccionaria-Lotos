@@ -21,7 +21,6 @@
                 color: #2E86C1 !important;
             }
 
-        /* EL PARCHE: Evita que el contenedor del buscador tape los clics de arriba */
         .search-container {
             position: relative;
             pointer-events: none;
@@ -64,6 +63,7 @@
                     </div>
                 </div>
 
+                @* NAVEGACIÓN PC: Sin iconos para Admin *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
                     <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
                     @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
@@ -75,7 +75,7 @@
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-1 text-primary"></i> Sucursal</a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit">Sucursal</a>
                             <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
                         }
                     }
@@ -103,6 +103,7 @@
         <main role="main">@RenderBody()</main>
     </div>
 
+    @* BARRA MÓVIL *@
     <div class="nav-mobile-bottom d-lg-none">
         <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
         @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
@@ -135,8 +136,8 @@
                     <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
                     @if (User.IsInRole("Admin"))
                     {
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit">Dir.Sucursal</a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">Personal</a>
+                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-2"></i> Sucursal</a></li>
+                        <li><a class="dropdown-item py-2" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people me-2"></i> Personal</a></li>
                     }
                 }
                 <li><a class="dropdown-item py-2" asp-controller="Home" asp-action="Index"><i class="bi bi-shop me-2"></i> Catálogo</a></li>
