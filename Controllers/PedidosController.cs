@@ -13,7 +13,7 @@ using RefaccionariaWeb.Extensions;
 
 namespace RefaccionariaWeb.Controllers
 {
-    [Authorize] // Asegura que solo usuarios autenticados puedan acceder a los pedidos
+    [Authorize]
     public class PedidosController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -25,199 +25,106 @@ namespace RefaccionariaWeb.Controllers
             _userManager = userManager;
         }
 
-        // GET: Pedidos (Muestra los pedidos del usuario actual)
         public async Task<IActionResult> Index()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return Challenge(); // Redirige a login si no hay usuario
-            }
+            if (currentUser == null) return Challenge();
 
             IQueryable<Pedido> pedidosQuery = _context.Pedidos
-                                                     .Include(p => p.Detalles)
-                                                         .ThenInclude(d => d.Producto)
-                                                     .Include(p => p.Cliente); // <--- AGREGADO
+                .Include(p => p.Detalles).ThenInclude(d => d.Producto)
+                .Include(p => p.Cliente);
 
-            if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
-            {
-                // El personal puede ver todos los pedidos
-                // No se aplica filtro por ClienteId
-            }
-            else // Asumimos que es un Cliente o cualquier otro rol no listado que solo ve sus propios pedidos
+            if (!(User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen")))
             {
                 pedidosQuery = pedidosQuery.Where(p => p.ClienteId == currentUser.Id);
             }
 
-            var pedidos = await pedidosQuery.ToListAsync();
+            var pedidos = await pedidosQuery.OrderByDescending(p => p.FechaPedido).ToListAsync();
             return View(pedidos);
         }
 
-        // GET: Pedidos/Details/5 (Muestra los detalles de un pedido específico)
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return Challenge();
-            }
-
             var pedidoQuery = _context.Pedidos
-                                      .Include(p => p.Detalles)
-                                          .ThenInclude(d => d.Producto)
-                                      .Where(m => m.Id == id); // Filtra por ID de pedido
+                .Include(p => p.Cliente)
+                .Include(p => p.Detalles).ThenInclude(d => d.Producto)
+                .Where(m => m.Id == id);
 
             if (!(User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen")))
             {
-                // Si NO es personal, filtra también por ClienteId
                 pedidoQuery = pedidoQuery.Where(m => m.ClienteId == currentUser.Id);
             }
 
             var pedido = await pedidoQuery.FirstOrDefaultAsync();
-            
-            if (pedido == null)
-            {
-                // Si el pedido no existe o no pertenece al usuario actual (si es Cliente), no se encuentra
-                return NotFound();
-            }
+            if (pedido == null) return NotFound();
 
             return View(pedido);
         }
 
-        // GET: Pedidos/Create (Muestra el formulario para crear un nuevo pedido - desde el carrito)
-        // Esta acción GET podría no ser directamente usada si el pedido se crea desde un proceso de checkout
-        // Aquí podríamos mostrar un resumen del carrito antes de confirmar el pedido
         [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> Create() // Made async to get current user
+        public async Task<IActionResult> Create()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return Challenge();
-            }
-
-            // Inicializar un nuevo pedido para la vista
             var pedido = new Pedido
             {
                 ClienteId = currentUser.Id,
-                // Puedes precargar datos del usuario si tienes un perfil más detallado
-                // Por ejemplo, si tu IdentityUser tiene propiedades de dirección.
-                // Por ahora, solo inicializamos lo básico.
-                NombreReceptor = currentUser.UserName ?? currentUser.Email // Asumir username o email como nombre
+                NombreReceptor = currentUser.UserName ?? currentUser.Email
             };
-
-            // TODO: Aquí se cargaría la información del carrito de compras del usuario
-            // Y se pasaría a la vista para su confirmación
             return View(pedido);
         }
 
-        // POST: Pedidos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> Create([Bind("DireccionEnvio,CiudadEnvio,EstadoEnvio,CodigoPostalEnvio,PaisEnvio,NombreReceptor,RequiereFactura,Rfc,RazonSocial")] Pedido pedido)
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            // Recuperamos el carrito de la sesión
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
 
-            if (currentUser == null) return Challenge();
-
-            // Validación: No dejar comprar si el carrito está vacío o nulo
-            if (carrito == null || !carrito.Any())
-            {
-                ModelState.AddModelError("", "Tu carrito está vacío.");
-                // Regresamos a la vista mostrando el error
-                return View(pedido);
-            }
-
-            // --- LIMPIEZA DE VALIDACIONES INTERNAS ---
-            // Estos campos NO vienen del formulario, los calculamos nosotros.
-            // Los removemos del ModelState para que no bloqueen la entrada.
             ModelState.Remove("ClienteId");
-            ModelState.Remove("Cliente");       // Propiedad de navegación
+            ModelState.Remove("Cliente");
             ModelState.Remove("TotalPedido");
             ModelState.Remove("FechaPedido");
             ModelState.Remove("Status");
-            ModelState.Remove("Detalles");      // Lista de detalles
-            // -----------------------------------------
-            if (ModelState.IsValid)
+            ModelState.Remove("Detalles");
+
+            if (ModelState.IsValid && carrito != null && carrito.Any())
             {
-                // INICIO DE TRANSACCIÓN: Todo o Nada
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                
                 try
                 {
-                    // 1. Configurar datos del Pedido
                     pedido.ClienteId = currentUser.Id;
                     pedido.FechaPedido = DateTime.Now;
                     pedido.Status = PedidoStatus.PendienteDePago;
-                    pedido.TotalPedido = 0; // Se calcula sumando los detalles
-                    
                     _context.Add(pedido);
-                    await _context.SaveChangesAsync(); // Guardamos para generar el pedido.Id
-
-                    decimal totalCalculado = 0;
-
-                    // 2. Procesar cada item del carrito
-                    foreach (var item in carrito)
-                    {
-                        // Buscamos el producto real para descontar stock
-                        var productoDb = await _context.Productos.FindAsync(item.ProductoId);
-
-                        // Validación de Stock en tiempo real
-                        if (productoDb == null)
-                        {
-                             throw new Exception($"El producto '{item.Nombre}' ya no existe.");
-                        }
-                        if (productoDb.Stock < item.Cantidad)
-                        {
-                             throw new Exception($"Stock insuficiente para '{item.Nombre}'. Disponibles: {productoDb.Stock}.");
-                        }
-
-                        // RESTAR STOCK
-                        productoDb.Stock -= item.Cantidad;
-                        _context.Update(productoDb);
-
-                        // CREAR DETALLE
-                        var detalle = new DetallePedido
-                        {
-                            PedidoId = pedido.Id,
-                            ProductoId = item.ProductoId,
-                            Cantidad = item.Cantidad,
-                            PrecioUnitario = item.Precio
-                        };
-                        _context.Add(detalle);
-
-                        totalCalculado += (item.Cantidad * item.Precio);
-                    }
-
-                    // 3. Actualizar Total y Cerrar
-                    pedido.TotalPedido = totalCalculado;
-                    _context.Update(pedido);
                     await _context.SaveChangesAsync();
 
-                    // CONFIRMAR TRANSACCIÓN
+                    decimal total = 0;
+                    foreach (var item in carrito)
+                    {
+                        var prod = await _context.Productos.FindAsync(item.ProductoId);
+                        if (prod == null || prod.Stock < item.Cantidad) throw new Exception("Error de stock");
+                        prod.Stock -= item.Cantidad;
+                        _context.Update(prod);
+                        _context.Add(new DetallePedido { PedidoId = pedido.Id, ProductoId = prod.Id, Cantidad = item.Cantidad, PrecioUnitario = item.Precio });
+                        total += (item.Cantidad * item.Precio);
+                    }
+                    pedido.TotalPedido = total;
+                    _context.Update(pedido);
+                    await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-
-                    // 4. Limpiar Carrito (Ya se compró)
                     HttpContext.Session.Remove("Carrito");
-
                     return RedirectToAction(nameof(Details), new { id = pedido.Id });
                 }
                 catch (Exception ex)
                 {
-                    // SI ALGO FALLA: Deshacer todo
                     await transaction.RollbackAsync();
-                    ModelState.AddModelError("", $"Error en la compra: {ex.Message}");
+                    ModelState.AddModelError("", ex.Message);
                 }
             }
-
             return View(pedido);
         }
 
@@ -227,13 +134,13 @@ namespace RefaccionariaWeb.Controllers
         public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus)
         {
             var pedido = await _context.Pedidos.FindAsync(id);
-            if (pedido == null) return NotFound();
-
-            pedido.Status = nuevoStatus;
-            _context.Update(pedido);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Details), new { id = pedido.Id });
+            if (pedido != null)
+            {
+                pedido.Status = nuevoStatus;
+                _context.Update(pedido);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Details), new { id = id });
         }
     }
 }

@@ -1,119 +1,47 @@
 @model IEnumerable<RefaccionariaWeb.Models.Pedido>
+@using RefaccionariaWeb.Models.Enums
 
 @{
-    ViewData["Title"] = "Mis Pedidos";
+    ViewData["Title"] = "Gestión de Pedidos";
 }
 
-<div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
-    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-box-seam"></i> Mis Pedidos</h1>
-    @* TODO: Botón para crear nuevo pedido o ver carrito si aplica aquí *@
-    @* <a asp-action="Create" class="btn btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center">
-        <i class="bi bi-plus-lg"></i>
-        <span class="ms-1 d-none d-sm-inline">Nuevo Pedido</span>
-        <span class="ms-1 d-inline d-sm-none">Nuevo</span>
-    </a> *@
-</div>
+<h1 class="mb-4"><i class="bi bi-list-check"></i> @(User.IsInRole("Cliente") ? "Mis Pedidos" : "Panel de Ventas")</h1>
 
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-info text-center" role="alert">
-        <h4 class="alert-heading">¡Aún no tienes pedidos!</h4>
-        <p>Parece que no has realizado ninguna compra con nosotros. Explora nuestro catálogo y encuentra lo que necesitas.</p>
-        <hr>
-        <p class="mb-0">Cuando realices un pedido, aparecerá aquí.</p>
-    </div>
-}
-else
-{
-    <div class="table-responsive d-none d-md-block shadow-sm rounded">
-        <table class="table table-hover align-middle border">
-            <thead class="table-light">
-                <tr>
-                    <th># Pedido</th>
-                    <th>Fecha</th>
-                    @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
-                    {
-                        <th>Cliente</th>
-                    }
-                    <th>Estado</th>
-                    <th>Total</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover align-middle bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                @if (!User.IsInRole("Cliente"))
                 {
-                    <tr>
-                        <td>@item.Id</td>
-                        <td>@item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</td>
-                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
-                        {
-                            <td>
-                                <i class="bi bi-person-circle"></i> @item.Cliente?.UserName <br/>
-                                <small class="text-muted"> @item.Cliente?.Email</small>
-                            </td>
-                        }
-                        <td>
-                            @if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.PendienteDePago)
-                            {
-                                <span class="badge bg-warning text-dark"> @item.Status</span>
-                            }
-                            else if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.Pagado)
-                            {
-                                <span class="badge bg-success"> @item.Status</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary"> @item.Status</span>
-                            }
-                        </td>
-                        <td class="fw-bold text-success">$@item.TotalPedido.ToString("N2")</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary"><i class="bi bi-eye"></i> Detalles</a>
-                                @* TODO: Botón de cancelar pedido si aplica, dependiendo del Status *@
-                                @* @if (item.Status == PedidoStatus.PendienteDePago)
-                                {
-                                    <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> Cancelar</a>
-                                } *@
-                            </div>
-                        </td>
-                    </tr>
+                    <th>Cliente</th>
                 }
-            </tbody>
-        </table>
-    </div>
-
-    <div class="d-block d-md-none"> @* Mobile View *@
-        @foreach (var item in Model)
-        {
-            <div class="card mb-3 shadow-sm border-0 rounded-3">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-1">Pedido #@item.Id</h6>
-                    <small class="text-muted d-block">Fecha: @item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</small>
-                    <div class="mt-2 d-flex justify-content-between align-items-center">
-                        @if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.PendienteDePago)
-                        {
-                            <span class="badge bg-warning text-dark"> @item.Status</span>
+                <th>Estado</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.FechaPedido.ToShortDateString()</td>
+                    @if (!User.IsInRole("Cliente"))
+                    {
+                        <td>@item.Cliente?.UserName<br /><small class="text-muted">@item.Cliente?.Email</small></td>
+                    }
+                    <td>
+                        @{
+                            var c = item.Status == PedidoStatus.Pagado ? "bg-success" : item.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" : "bg-secondary";
                         }
-                        else if (item.Status == RefaccionariaWeb.Models.Enums.PedidoStatus.Pagado)
-                        {
-                            <span class="badge bg-success"> @item.Status</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary"> @item.Status</span>
-                        }
-                        <span class="fw-bold text-primary fs-5">$@item.TotalPedido.ToString("N2")</span>
-                    </div>
-
-                    <div class="d-grid mt-3 border-top pt-2">
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-light text-primary">
-                            <i class="bi bi-eye-fill"></i> Ver Detalles
-                        </a>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-}
+                        <span class="badge @c">@item.Status</span>
+                    </td>
+                    <td class="fw-bold">$@item.TotalPedido.ToString("N2")</td>
+                    <td><a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">Ver Detalle</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
