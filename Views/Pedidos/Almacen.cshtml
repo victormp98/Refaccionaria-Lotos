@@ -70,8 +70,8 @@
                                     <form asp-action="UpdateStatus" method="post">
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <input type="hidden" name="nuevoStatus" value="@PedidoStatus.EnProceso" />
-                                        @* Enviamos returnUrl para que al procesar regrese aquí mismo *@
-                                        <input type="hidden" name="returnUrl" value="@Url.Action("Almacen")" />
+                                        @* MAGIA: Al procesar, el controlador nos mandará directo a Details con la bandera de origen *@
+                                        <input type="hidden" name="returnUrl" value="@Url.Action("Details", new { id = item.Id, origen = "almacen" })" />
 
                                         <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold">
                                             <i class="bi bi-play-fill"></i> Comenzar Surtido
@@ -80,8 +80,8 @@
                                 }
                                 else
                                 {
-                                    @* El botón de detalles ahora nos llevará a una vista que sabe cómo regresar al almacén *@
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-warning btn-lg w-100 rounded-pill fw-bold text-dark">
+                                    @* Si ya está en proceso, entramos directo con la bandera *@
+                                    <a asp-action="Details" asp-route-id="@item.Id" asp-route-origen="almacen" class="btn btn-warning btn-lg w-100 rounded-pill fw-bold text-dark">
                                         <i class="bi bi-box-seam me-1"></i> Ver y Finalizar
                                     </a>
                                 }

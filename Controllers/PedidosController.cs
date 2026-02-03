@@ -141,7 +141,7 @@ namespace RefaccionariaWeb.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Si tenemos una URL de retorno (como el panel de almacén), regresamos allá
+            // Si viene una URL de retorno específica (como Detalles con la bandera de almacén), vamos allá
             if (!string.IsNullOrEmpty(returnUrl))
             {
                 return Redirect(returnUrl);
