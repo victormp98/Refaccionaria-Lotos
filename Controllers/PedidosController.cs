@@ -131,7 +131,7 @@ namespace RefaccionariaWeb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Mostrador,Almacen")]
-        public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus)
+        public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus, string returnUrl = null)
         {
             var pedido = await _context.Pedidos.FindAsync(id);
             if (pedido != null)
@@ -140,6 +140,13 @@ namespace RefaccionariaWeb.Controllers
                 _context.Update(pedido);
                 await _context.SaveChangesAsync();
             }
+
+            // Si tenemos una URL de retorno (como el panel de almacén), regresamos allá
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
             return RedirectToAction(nameof(Details), new { id = id });
         }
         [Authorize(Roles = "Admin,Almacen")]
