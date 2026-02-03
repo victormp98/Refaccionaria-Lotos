@@ -1,0 +1,80 @@
+﻿@model IEnumerable<RefaccionariaWeb.Models.Pedido>
+@using RefaccionariaWeb.Models.Enums
+
+@{
+    ViewData["Title"] = "Panel de Almacén";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0"><i class="bi bi-box-seam text-primary"></i> Pedidos por Surtir</h2>
+        <span class="badge bg-primary rounded-pill">@Model.Count() Pendientes</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-check2-circle display-1 text-muted"></i>
+            <p class="fs-4 text-muted mt-3">¡Todo al día! No hay pedidos pendientes.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 rounded-4 @(item.Status == PedidoStatus.EnProceso ? "border-start border-4 border-warning" : "")">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0">#@item.Id</h5>
+                                    <small class="text-muted">@item.FechaPedido.ToString("HH:mm") - @item.NombreReceptor</small>
+                                </div>
+                                @if (item.Status == PedidoStatus.EnProceso)
+                                {
+                                    <span class="badge bg-warning text-dark px-3 rounded-pill">En Preparación</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success px-3 rounded-pill">Listo para Surtir</span>
+                                }
+                            </div>
+
+                            <div class="bg-light rounded-3 p-3 mb-3" style="max-height: 150px; overflow-y: auto;">
+                                <ul class="list-unstyled mb-0 small">
+                                    @foreach (var det in item.Detalles)
+                                    {
+                                        <li class="mb-2 d-flex justify-content-between">
+                                            <span><strong>@det.Cantidad x</strong> @det.Producto.Nombre</span>
+                                            <span class="text-muted">SKU: @det.Producto.SKU</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                @if (item.Status == PedidoStatus.Pagado)
+                                {
+                                    <form asp-action="UpdateStatus" method="post">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="nuevoStatus" value="@PedidoStatus.EnProceso" />
+                                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold">
+                                            <i class="bi bi-play-fill"></i> Comenzar Surtido
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-warning btn-lg w-100 rounded-pill fw-bold text-dark">
+                                        <i class="bi bi-check2-all"></i> Finalizar Empaque
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

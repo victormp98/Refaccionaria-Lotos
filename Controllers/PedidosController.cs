@@ -142,5 +142,18 @@ namespace RefaccionariaWeb.Controllers
             }
             return RedirectToAction(nameof(Details), new { id = id });
         }
+        [Authorize(Roles = "Admin,Almacen")]
+        public async Task<IActionResult> Almacen()
+        {
+            // El almacenista solo ve lo que ya se pagó o lo que él mismo está preparando
+            var pedidosAlmacen = await _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Detalles).ThenInclude(d => d.Producto)
+                .Where(p => p.Status == PedidoStatus.Pagado || p.Status == PedidoStatus.EnProceso)
+                .OrderByDescending(p => p.FechaPedido)
+                .ToListAsync();
+
+            return View(pedidosAlmacen);
+        }
     }
 }
