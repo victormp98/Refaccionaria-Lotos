@@ -60,67 +60,78 @@
                     </div>
                 </div>
 
-                <div class="search-container row justify-content-center w-100 mt-2 mx-0">
-                    <div class="col-12 col-lg-8 px-1">
-                        <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light w-100 overflow-hidden shadow-sm">
-                            <input name="searchString" class="form-control border-0 bg-transparent px-3 py-2" type="search" placeholder="Buscar refacciones...">
-                            <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
-                        </form>
+                @* Buscador: Oculto para Almacenistas para limpiar su vista *@
+                @if (!User.IsInRole("Almacen"))
+                {
+                    <div class="search-container row justify-content-center w-100 mt-2 mx-0">
+                        <div class="col-12 col-lg-8 px-1">
+                            <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light w-100 overflow-hidden shadow-sm">
+                                <input name="searchString" class="form-control border-0 bg-transparent px-3 py-2" type="search" placeholder="Buscar refacciones...">
+                                <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                }
 
-                @* NAVEGACIÓN PC: Con iconos para todos *@
+                @* NAVEGACIÓN PC *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
-                    <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-grid me-2 text-primary"></i> Catálogo
-                    </a>
-                    @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
+                    @if (!User.IsInRole("Almacen"))
                     {
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
-                            <i class="bi bi-cash-stack me-2 text-primary"></i> Ventas
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-grid me-2 text-primary"></i> Catálogo
                         </a>
+                    }
 
-                        @* Botón de Almacén para Personal (Admin, Almacen, Mostrador) *@
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Almacen">
-                            <i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén
-                        </a>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                        {
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
+                                <i class="bi bi-cash-stack me-2 text-primary"></i> Ventas
+                            </a>
+                        }
 
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">
-                            <i class="bi bi-box-seam me-2 text-primary"></i> Inventario
-                        </a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">
-                            <i class="bi bi-car-front me-2 text-primary"></i> Vehículos
-                        </a>
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Compatibilidades" asp-action="Index">
-                            <i class="bi bi-diagram-3 me-2 text-primary"></i> Relaciones
-                        </a>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
+                        {
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Almacen">
+                                <i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén
+                            </a>
+                        }
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                        {
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">
+                                <i class="bi bi-box-seam me-2 text-primary"></i> Inventario
+                            </a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">
+                                <i class="bi bi-car-front me-2 text-primary"></i> Vehículos
+                            </a>
+                        }
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Configuracion" asp-action="Edit">
-                                <i class="bi bi-shop me-2 text-primary"></i> Mi Tienda
-                            </a>
                             <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">
                                 <i class="bi bi-people me-2 text-primary"></i> Personal
                             </a>
                         }
-                    }
-                    @if (User.Identity.IsAuthenticated && User.IsInRole("Cliente"))
-                    {
-                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
-                            <i class="bi bi-bag-check me-2 text-primary"></i> Mis Pedidos
-                        </a>
-                        <a class="nav-link text-dark nav-pc-link fs-6 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
-                            <i class="bi bi-cart3 me-2 text-primary"></i> Mi Carrito
-                            @{
-                                var cPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito");
-                                var tPC = cPC?.Sum(x => x.Cantidad) ?? 0;
-                            }
-                            @if (tPC > 0)
-                            {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">@tPC</span>
-                            }
-                        </a>
+
+                        @if (User.IsInRole("Cliente"))
+                        {
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
+                                <i class="bi bi-bag-check me-2 text-primary"></i> Mis Pedidos
+                            </a>
+                            <a class="nav-link text-dark nav-pc-link fs-6 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
+                                <i class="bi bi-cart3 me-2 text-primary"></i> Mi Carrito
+                                @{
+                                    var cPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito");
+                                    var tPC = cPC?.Sum(x => x.Cantidad) ?? 0;
+                                }
+                                @if (tPC > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">@tPC</span>
+                                }
+                            </a>
+                        }
                     }
                 </div>
             </div>
@@ -131,11 +142,24 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL *@
+    @* BARRA MÓVIL (NAV INFERIOR DINÁMICA) *@
     <div class="nav-mobile-bottom d-lg-none">
-        <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
-        @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
+        @if (User.IsInRole("Almacen"))
         {
+            @* Vista Almacenista: Enfoque Logístico *@
+            <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
+            <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-journal-check"></i><span>Envíos</span></a>
+        }
+        else if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+        {
+            @* Vista Admin/Mostrador: Enfoque Ventas *@
+            <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
+            <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Almacén</span></a>
+        }
+        else
+        {
+            @* Vista Cliente / Público: Enfoque Compra *@
+            <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
             <a asp-controller="Carrito" asp-action="Index" class="nav-mobile-item position-relative">
                 <i class="bi bi-cart3"></i><span>Carrito</span>
                 @{
@@ -147,27 +171,33 @@
                 }
             </a>
         }
-        @if (User.Identity.IsAuthenticated)
+
+        @* Icono de Pedidos (Para Clientes) *@
+        @if (User.IsInRole("Cliente"))
         {
             <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item">
-                <i class="bi bi-bag-check"></i><span>@(User.IsInRole("Cliente") ? "Pedidos" : "Ventas")</span>
+                <i class="bi bi-bag-check"></i><span>Pedidos</span>
             </a>
         }
+
+        @* Menú Hamburguesa Contextual *@
         <div class="dropup nav-mobile-item">
             <a href="#" class="nav-mobile-item" data-bs-toggle="dropdown"><i class="bi bi-list"></i><span>Menú</span></a>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-3">
-                <li class="border-bottom mb-2 pb-2 text-end"><strong>@User.Identity?.Name</strong></li>
-                @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
-                {
-                    @* Opción de Almacén en el menú de hamburguesa *@
-                    <li><a class="dropdown-item py-2" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2"></i> Panel Almacén</a></li>
-                    <hr class="my-2" />
+                <li class="border-bottom mb-2 pb-2 text-end small text-muted"><strong>@User.Identity?.Name</strong></li>
 
-                    <li><a class="dropdown-item py-2" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam me-2"></i> Inventario</a></li>
-                    <li><a class="dropdown-item py-2" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front me-2"></i> Vehículos</a></li>
-                    <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                    {
+                        <li><a class="dropdown-item py-2" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam me-2"></i> Inventario</a></li>
+                        <li><a class="dropdown-item py-2" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front me-2"></i> Vehículos</a></li>
+                        <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
+                    }
+
                     @if (User.IsInRole("Admin"))
                     {
+                        <hr class="my-2" />
                         <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-2"></i> Mi Tienda</a></li>
                         <li><a class="dropdown-item py-2" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people me-2"></i> Personal</a></li>
                     }
