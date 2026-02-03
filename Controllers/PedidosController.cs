@@ -145,7 +145,7 @@ namespace RefaccionariaWeb.Controllers
         [Authorize(Roles = "Admin,Almacen")]
         public async Task<IActionResult> Almacen()
         {
-            // El almacenista solo ve lo que ya se pagó o lo que él mismo está preparando
+            // Filtramos solo los pedidos que necesitan atención del almacén
             var pedidosAlmacen = await _context.Pedidos
                 .Include(p => p.Cliente)
                 .Include(p => p.Detalles).ThenInclude(d => d.Producto)

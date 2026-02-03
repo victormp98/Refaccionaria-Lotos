@@ -79,6 +79,12 @@
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
                             <i class="bi bi-cash-stack me-2 text-primary"></i> Ventas
                         </a>
+
+                        @* Botón de Almacén para Personal (Admin, Almacen, Mostrador) *@
+                        <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Almacen">
+                            <i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén
+                        </a>
+
                         <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">
                             <i class="bi bi-box-seam me-2 text-primary"></i> Inventario
                         </a>
@@ -153,6 +159,10 @@
                 <li class="border-bottom mb-2 pb-2 text-end"><strong>@User.Identity?.Name</strong></li>
                 @if (User.Identity.IsAuthenticated && !User.IsInRole("Cliente"))
                 {
+                    @* Opción de Almacén en el menú de hamburguesa *@
+                    <li><a class="dropdown-item py-2 fw-bold text-primary" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2"></i> Panel Almacén</a></li>
+                    <hr class="my-2" />
+
                     <li><a class="dropdown-item py-2" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam me-2"></i> Inventario</a></li>
                     <li><a class="dropdown-item py-2" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front me-2"></i> Vehículos</a></li>
                     <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
@@ -162,7 +172,6 @@
                         <li><a class="dropdown-item py-2" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people me-2"></i> Personal</a></li>
                     }
                 }
-                @* Se eliminó el botón Catálogo de aquí por redundancia con el nav inferior *@
                 <hr>
                 <li><partial name="_LoginPartial" /></li>
             </ul>
