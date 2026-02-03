@@ -64,6 +64,9 @@
             <form asp-action="Create" id="checkoutForm">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+                @* Campo oculto para el Tipo de Entrega *@
+                <input type="hidden" name="TipoEntrega" id="inputTipoEntrega" value="0" />
+
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <div id="cardDomicilio" class="card h-100 step-card p-3 step-active" onclick="toggleEnvio(true)">
@@ -206,6 +209,9 @@
 
             document.getElementById('cardDomicilio').classList.toggle('step-active', esEnvio);
             document.getElementById('cardSucursal').classList.toggle('step-active', !esEnvio);
+
+            // ACTUALIZAMOS EL INPUT OCULTO
+            document.getElementById('inputTipoEntrega').value = esEnvio ? "0" : "1";
 
             if (esEnvio) {
                 $(section).slideDown();

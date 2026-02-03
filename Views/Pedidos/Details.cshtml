@@ -4,7 +4,9 @@
 @{
     bool esAdmin = !User.IsInRole("Cliente");
     ViewData["Title"] = esAdmin ? $"Detalle Pedido #{Model.Id}" : "Detalle de mi Compra";
-    bool esRetiro = Model.NombreReceptor?.StartsWith("RETIRO") ?? false;
+
+    // Nueva lógica: usamos el campo TipoEntrega de la base de datos
+    bool esRetiroLocal = Model.TipoEntrega == 1;
 
     // --- LÓGICA DE LA BANDERA ---
     var origen = Context.Request.Query["origen"].ToString();
@@ -16,7 +18,6 @@
         <i class="bi bi-box-seam text-primary"></i>
         @(esAdmin ? $"Detalle Pedido #{Model.Id}" : "Detalle de mi Compra")
     </h1>
-    @* El botón ahora decide dinámicamente a dónde regresar sin perderse *@
     <a asp-action="@accionVolver" class="btn btn-outline-secondary rounded-pill px-3">
         <i class="bi bi-arrow-left"></i> Volver
     </a>
@@ -52,18 +53,18 @@
         </div>
 
         @* SECCIÓN DE DATOS DE ENTREGA *@
-        <div class="card shadow-sm border-0 rounded-4 @(esRetiro ? "border-start border-4 border-warning" : "")">
+        <div class="card shadow-sm border-0 rounded-4 @(esRetiroLocal ? "border-start border-4 border-warning" : "")">
             <div class="card-header bg-light border-0 py-3 rounded-top-4">
                 <h5 class="mb-0 fw-bold">
-                    <i class="bi @(esRetiro ? "bi-shop" : "bi-truck") me-2 text-primary"></i>
-                    @(esRetiro ? "Datos de Retiro" : "Datos de Entrega")
+                    <i class="bi @(esRetiroLocal ? "bi-shop" : "bi-truck") me-2 text-primary"></i>
+                    @(esRetiroLocal ? "Datos de Retiro en Sucursal" : "Datos de Entrega a Domicilio")
                 </h5>
             </div>
             <div class="card-body">
-                @if (esRetiro)
+                @if (esRetiroLocal)
                 {
                     <div class="alert alert-warning border-0 py-2 small mb-3">
-                        <i class="bi bi-info-square-fill me-2"></i> Cliente recogerá en mostrador.
+                        <i class="bi bi-info-square-fill me-2"></i> Cliente recogerá personalmente en tienda.
                     </div>
                 }
 
@@ -72,6 +73,15 @@
                 <p class="mb-0 text-muted small">
                     @Model.CiudadEnvio, @Model.EstadoEnvio, CP @Model.CodigoPostalEnvio
                 </p>
+
+                @if (!string.IsNullOrEmpty(Model.NumeroGuia))
+                {
+                    <div class="mt-3 p-2 bg-light rounded border">
+                        <small class="d-block text-muted fw-bold">INFORMACIÓN DE RASTREO:</small>
+                        <span class="d-block"><strong>Paquetería:</strong> @Model.Paqueteria</span>
+                        <span class="d-block"><strong>Guía:</strong> @Model.NumeroGuia</span>
+                    </div>
+                }
 
                 @if (Model.RequiereFactura)
                 {
@@ -129,17 +139,71 @@
             <h6 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Panel de Gestión de Orden</h6>
         </div>
         <div class="card-body bg-light rounded-bottom-4">
-            <form asp-action="UpdateStatus" method="post" class="d-flex gap-2 flex-wrap justify-content-center">
+            <form asp-action="UpdateStatus" method="post" id="formStatus" class="row g-3 justify-content-center">
                 <input type="hidden" name="id" value="@Model.Id" />
-                @* Si estamos en modo almacén, mantenemos la bandera al actualizar *@
                 <input type="hidden" name="returnUrl" value="@(origen == "almacen" ? Url.Action("Details", new { id = Model.Id, origen = "almacen" }) : "")" />
 
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Pagado" class="btn btn-success rounded-pill px-4">Pagado</button>
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.EnProceso" class="btn btn-primary rounded-pill px-4">En Proceso</button>
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Enviado" class="btn btn-info text-white rounded-pill px-4">Enviado</button>
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Entregado" class="btn btn-primary rounded-pill px-4">Entregado</button>
-                <button type="submit" name="nuevoStatus" value="@PedidoStatus.Cancelado" class="btn btn-outline-danger rounded-pill px-4">Cancelar</button>
+                @* FORMULARIO DE GUÍA: Solo se muestra si es ENVÍO A DOMICILIO y para roles logísticos *@
+                @if (Model.TipoEntrega == 0 && Model.Status != PedidoStatus.Entregado && Model.Status != PedidoStatus.Cancelado)
+                {
+                    <div class="col-md-10 border-bottom pb-3 mb-2">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="small fw-bold">Paquetería</label>
+                                <input type="text" name="paqueteria" id="inputPaq" class="form-control form-control-sm" placeholder="Ej. DHL, FedEx..." value="@Model.Paqueteria" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold">Número de Guía</label>
+                                <input type="text" name="guia" id="inputGuia" class="form-control form-control-sm" placeholder="Ingrese el código de rastreo" value="@Model.NumeroGuia" />
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="col-12 d-flex gap-2 flex-wrap justify-content-center">
+                    @if (!User.IsInRole("Almacen"))
+                    {
+                        <button type="submit" name="nuevoStatus" value="@PedidoStatus.Pagado" class="btn btn-success rounded-pill px-4">Pagado</button>
+                    }
+
+                    <button type="submit" name="nuevoStatus" value="@PedidoStatus.EnProceso" class="btn btn-primary rounded-pill px-4">En Proceso</button>
+
+                    @* El botón Enviado se valida con JS si es tipo envío *@
+                    <button type="submit" name="nuevoStatus" id="btnEnviado" value="@PedidoStatus.Enviado" class="btn btn-info text-white rounded-pill px-4">Enviado</button>
+
+                    <button type="submit" name="nuevoStatus" value="@PedidoStatus.Entregado" class="btn btn-primary rounded-pill px-4">Entregado</button>
+
+                    @if (!User.IsInRole("Almacen"))
+                    {
+                        <button type="submit" name="nuevoStatus" value="@PedidoStatus.Cancelado" class="btn btn-outline-danger rounded-pill px-4">Cancelar</button>
+                    }
+                </div>
             </form>
         </div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const btnEnviado = document.getElementById("btnEnviado");
+            const inputPaq = document.getElementById("inputPaq");
+            const inputGuia = document.getElementById("inputGuia");
+            const tipoEntrega = @Model.TipoEntrega;
+
+            function validarEnvio() {
+                if (btnEnviado && inputPaq && inputGuia && tipoEntrega === 0) {
+                    // Si es envío a domicilio, los campos deben tener texto para habilitar "Enviado"
+                    const esValido = inputPaq.value.trim() !== "" && inputGuia.value.trim() !== "";
+                    btnEnviado.disabled = !esValido;
+                    btnEnviado.title = esValido ? "" : "Debe ingresar paquetería y guía para marcar como enviado";
+                }
+            }
+
+            if (inputPaq) inputPaq.addEventListener("input", validarEnvio);
+            if (inputGuia) inputGuia.addEventListener("input", validarEnvio);
+
+            validarEnvio();
+        });
+    </script>
 }

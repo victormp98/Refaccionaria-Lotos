@@ -65,6 +65,18 @@ namespace RefaccionariaWeb.Models
         [StringLength(250)]
         public string? RazonSocial { get; set; }
 
+        // === NUEVOS CAMPOS DE LOGÍSTICA Y CONTROL ===
+        // 0 = Envío domicilio, 1 = Retiro en sucursal, 2 = Venta Mostrador
+        public int TipoEntrega { get; set; }
+
+        [StringLength(100)]
+        public string? Paqueteria { get; set; }
+
+        [StringLength(100)]
+        public string? NumeroGuia { get; set; }
+
+        public DateTime? FechaEnvio { get; set; }
+
         // === RELACIÓN CON LOS DETALLES DEL PEDIDO ===
         public virtual ICollection<DetallePedido> Detalles { get; set; } = new List<DetallePedido>();
     }

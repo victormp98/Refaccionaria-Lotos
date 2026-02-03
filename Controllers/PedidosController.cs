@@ -79,7 +79,7 @@ namespace RefaccionariaWeb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> Create([Bind("DireccionEnvio,CiudadEnvio,EstadoEnvio,CodigoPostalEnvio,PaisEnvio,NombreReceptor,RequiereFactura,Rfc,RazonSocial")] Pedido pedido)
+        public async Task<IActionResult> Create([Bind("DireccionEnvio,CiudadEnvio,EstadoEnvio,CodigoPostalEnvio,PaisEnvio,NombreReceptor,RequiereFactura,Rfc,RazonSocial,TipoEntrega")] Pedido pedido)
         {
             var currentUser = await _userManager.GetUserAsync(User);
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
@@ -131,17 +131,24 @@ namespace RefaccionariaWeb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Mostrador,Almacen")]
-        public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus, string returnUrl = null)
+        public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus, string paqueteria = null, string guia = null, string returnUrl = null)
         {
             var pedido = await _context.Pedidos.FindAsync(id);
             if (pedido != null)
             {
                 pedido.Status = nuevoStatus;
+
+                if (nuevoStatus == PedidoStatus.Enviado)
+                {
+                    pedido.Paqueteria = paqueteria;
+                    pedido.NumeroGuia = guia;
+                    pedido.FechaEnvio = DateTime.Now;
+                }
+
                 _context.Update(pedido);
                 await _context.SaveChangesAsync();
             }
 
-            // Si viene una URL de retorno específica (como Detalles con la bandera de almacén), vamos allá
             if (!string.IsNullOrEmpty(returnUrl))
             {
                 return Redirect(returnUrl);
@@ -149,10 +156,10 @@ namespace RefaccionariaWeb.Controllers
 
             return RedirectToAction(nameof(Details), new { id = id });
         }
+
         [Authorize(Roles = "Admin,Almacen")]
         public async Task<IActionResult> Almacen()
         {
-            // Filtramos solo los pedidos que necesitan atención del almacén
             var pedidosAlmacen = await _context.Pedidos
                 .Include(p => p.Cliente)
                 .Include(p => p.Detalles).ThenInclude(d => d.Producto)
