@@ -1,0 +1,68 @@
+﻿@model IEnumerable<RefaccionariaWeb.Models.Producto>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-box-arrow-in-right"></i> Entradas de Mercancía</h2>
+        <a asp-controller="Movimientos" asp-action="Index" class="btn btn-secondary">Ver Bitácora</a>
+    </div>
+    <hr />
+
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5>@item.Nombre</h5>
+                        <p class="text-muted small">SKU: @item.SKU | Stock: <strong>@item.Stock</strong></p>
+                        <button type="button" class="btn btn-success w-100"
+                                onclick="abrirModal(@item.Id, '@item.Nombre')">
+                            + Registrar Entrada
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="modalEntrada" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RegistrarEntrada" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Ingreso de Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="productoId" id="prodId" />
+                    <div class="mb-3">
+                        <label>Producto:</label>
+                        <input type="text" id="prodNombre" class="form-control" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label>Cantidad a sumar:</label>
+                        <input type="number" name="cantidad" class="form-control" min="1" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Referencia/Nota:</label>
+                        <input type="text" name="referencia" class="form-control" placeholder="Ej. Factura A-12" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Guardar Entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function abrirModal(id, nombre) {
+            document.getElementById('prodId').value = id;
+            document.getElementById('prodNombre').value = nombre;
+            new bootstrap.Modal(document.getElementById('modalEntrada')).show();
+        }
+    </script>
+}
