@@ -199,9 +199,14 @@
 
                 @if (User.IsInRole("Admin"))
                 {
+                    <div class="ml-menu-section-title">Administración</div>
+                    <div class="ml-card-menu">
+                        <a class="ml-menu-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="personal"><i class="bi bi-person-badge"></i> Personal</a>
+                        <a class="ml-menu-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="clientes"><i class="bi bi-people"></i> Clientes</a>
+                    </div>
+
                     <div class="ml-menu-section-title">Configuración</div>
                     <div class="ml-card-menu">
-                        <a class="ml-menu-item" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people"></i> Usuarios</a>
                         <a class="ml-menu-item" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-geo-alt"></i> Dirección sucursal</a>
                     </div>
                 }
@@ -243,27 +248,28 @@
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
-                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
                             <a class="nav-pc-link" asp-controller="Entradas" asp-action="Index"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i> Entradas</a>
-                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
 
-                            @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                            @if (User.IsInRole("Admin"))
                             {
-                                <div class="dropdown">
-                                    <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión</a>
-                                    <ul class="dropdown-menu shadow">
-                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a></li>
-                                        @if (User.IsInRole("Admin"))
-                                        {
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text"></i> Bitácora Global</a></li>
-                                            <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people"></i> Usuarios</a></li>
-                                        }
-                                    </ul>
-                                </div>
+                                <a class="nav-pc-link" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text me-2 text-primary"></i> Bitácora</a>
                             }
+
+                            <div class="dropdown">
+                                <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión</a>
+                                <ul class="dropdown-menu shadow">
+                                    <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a></li>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="personal"><i class="bi bi-person-badge"></i> Personal</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="clientes"><i class="bi bi-people"></i> Clientes</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-geo-alt"></i> Sucursal</a></li>
+                                    }
+                                </ul>
+                            </div>
                         }
                     }
                     else
