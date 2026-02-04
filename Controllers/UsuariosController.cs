@@ -31,32 +31,35 @@ namespace RefaccionariaWeb.Controllers
         // ==========================================================
         // 1. LISTA DE EMPLEADOS ACTIVOS (Index)
         // ==========================================================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string tipo)
         {
             var usuarios = await _userManager.Users.ToListAsync();
-            var listaUsuariosViewModel = new List<EditarUsuarioViewModel>();
+            var modelo = new List<EditarUsuarioViewModel>();
 
-            foreach (var usuario in usuarios)
+            foreach (var user in usuarios)
             {
-                // FILTRO: Si está bloqueado, NO lo mostramos aquí (se va a la papelera)
-                if (await _userManager.IsLockedOutAsync(usuario))
+                var roles = await _userManager.GetRolesAsync(user);
+                modelo.Add(new EditarUsuarioViewModel
                 {
-                    continue;
-                }
-
-                var roles = await _userManager.GetRolesAsync(usuario);
-
-                listaUsuariosViewModel.Add(new EditarUsuarioViewModel
-                {
-                    Id = usuario.Id,
-                    Email = usuario.Email,
-                    Telefono = usuario.PhoneNumber,
-                    RolSeleccionado = roles.FirstOrDefault() ?? "Sin Rol",
-                    EstaBloqueado = false // Aquí todos son activos
+                    Id = user.Id,
+                    Email = user.Email,
+                    RolSeleccionado = roles.FirstOrDefault()
                 });
             }
 
-            return View(listaUsuariosViewModel);
+            // FILTRO MÁGICO
+            if (tipo == "personal")
+            {
+                modelo = modelo.Where(u => u.RolSeleccionado != "Cliente").ToList();
+                ViewData["Subtitulo"] = "Personal del Sistema";
+            }
+            else if (tipo == "clientes")
+            {
+                modelo = modelo.Where(u => u.RolSeleccionado == "Cliente").ToList();
+                ViewData["Subtitulo"] = "Lista de Clientes";
+            }
+
+            return View(modelo);
         }
 
         // ==========================================================

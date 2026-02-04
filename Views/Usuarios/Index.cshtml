@@ -1,36 +1,47 @@
 ﻿@model IEnumerable<RefaccionariaWeb.Models.ViewModels.EditarUsuarioViewModel>
+
 @{
-    ViewData["Title"] = "Usuarios";
-    var personal = Model.Where(u => u.RolSeleccionado != "Cliente");
-    var clientes = Model.Where(u => u.RolSeleccionado == "Cliente");
+    ViewData["Title"] = "Gestión de Usuarios";
+    string subtitulo = ViewData["Subtitulo"]?.ToString() ?? "Todos los Usuarios";
 }
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-2">
-        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary"></i> Personal</h2>
+        <h2 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-people-fill text-primary"></i> @subtitulo
+        </h2>
         <div class="d-flex gap-2">
             <a asp-action="Papelera" class="btn btn-outline-danger rounded-pill px-3 fw-bold"><i class="bi bi-shield-lock"></i> Papelera</a>
-            <a asp-action="Crear" class="btn btn-primary rounded-pill px-4 shadow fw-bold">Nuevo Empleado</a>
+            <a asp-action="Crear" class="btn btn-primary rounded-pill px-4 shadow fw-bold">Nuevo Registro</a>
         </div>
     </div>
 
+    @* VISTA PC - TABLA ESTANDARIZADA *@
     <div class="table-responsive d-none d-md-block shadow-sm rounded-4 overflow-hidden border mb-5">
         <table class="table table-hover align-middle mb-0 bg-white">
             <thead class="table-dark">
                 <tr>
                     <th class="ps-4">Email / Usuario</th>
-                    <th class="text-center">Rol</th>
-                    <th class="text-end pe-4">Acciones</th>
+                    <th class="text-center">Rol / Perfil</th>
+                    <th class="text-end pe-5">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in personal)
+                @foreach (var item in Model)
                 {
                     <tr>
                         <td class="ps-4 fw-bold">@item.Email</td>
-                        <td class="text-center"><span class="badge bg-primary px-3 py-2 rounded-pill">@item.RolSeleccionado</span></td>
-                        <td class="text-end pe-4">
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn-action btn-edit" style="background:#e3f2fd; color:#0d6efd; padding:6px 12px; border-radius:8px; text-decoration:none;"><i class="bi bi-gear-fill"></i> Administrar</a>
+                        <td class="text-center">
+                            @{
+                                var bClass = item.RolSeleccionado == "Admin" ? "bg-danger" :
+                                (item.RolSeleccionado == "Cliente" ? "bg-info text-dark" : "bg-success");
+                            }
+                            <span class="badge @bClass px-3 py-2 rounded-pill">@item.RolSeleccionado?.ToUpper()</span>
+                        </td>
+                        <td class="text-end pe-5">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" style="background:#e3f2fd; border:none;">
+                                <i class="bi bi-gear-fill me-1"></i> Administrar
+                            </a>
                         </td>
                     </tr>
                 }
@@ -38,16 +49,16 @@
         </table>
     </div>
 
-    @* MÓVIL PERSONAL *@
+    @* VISTA MÓVIL - TARJETAS ESTANDARIZADAS *@
     <div class="d-block d-md-none mb-4">
-        @foreach (var item in personal)
+        @foreach (var item in Model)
         {
-            <div class="card shadow-sm border-0 mb-3 rounded-4 border-start border-5 border-danger">
+            <div class="card mb-3 shadow-sm border-0 rounded-4 border-start border-5 @(item.RolSeleccionado == "Cliente" ? "border-info" : "border-primary")">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-1">@item.Email</h6>
+                    <h6 class="fw-bold text-dark mb-1 text-truncate">@item.Email</h6>
                     <span class="badge bg-light text-primary border mb-3">@item.RolSeleccionado</span>
                     <div class="d-flex justify-content-end">
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold">Administrar Acceso</a>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold">Administrar</a>
                     </div>
                 </div>
             </div>
