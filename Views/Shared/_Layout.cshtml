@@ -174,7 +174,6 @@
                     {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
-                        @* CORRECCIÓN DE ENLACE AQUI *@
                         <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
                     }
                     @if (User.IsInRole("Cliente"))
@@ -240,7 +239,6 @@
                         {
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
-                            @* CORRECCIÓN DE ENLACE PC AQUI *@
                             <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
 
                             @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
