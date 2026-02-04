@@ -213,14 +213,18 @@
                     <div class="d-none d-lg-block"><partial name="_LoginPartial" /></div>
                 </div>
 
-                <div class="row justify-content-center w-100 mt-2 mx-0">
-                    <div class="col-12 col-lg-8">
-                        <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light overflow-hidden shadow-sm">
-                            <input name="searchString" class="form-control border-0 bg-transparent px-3 py-1" type="search" placeholder="Buscar refacción...">
-                            <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
-                        </form>
+                @* AJUSTE: El buscador solo aparece en la pantalla principal del catálogo *@
+                @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index")
+                {
+                    <div class="row justify-content-center w-100 mt-2 mx-0">
+                        <div class="col-12 col-lg-8">
+                            <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light overflow-hidden shadow-sm">
+                                <input name="searchString" class="form-control border-0 bg-transparent px-3 py-1" type="search" placeholder="Buscar refacción...">
+                                <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                }
 
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2 gap-2">
                     <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
@@ -304,7 +308,6 @@
         function toggleMLMenu() { var menu = document.getElementById('ml-menu-overlay'); if(menu) menu.classList.toggle('active'); }
 
         $(document).ready(function() {
-            // Lee el mensaje desde TempData (usado comúnmente en tu controlador de Carrito)
             var successMsg = '@TempData["Success"]' || '@TempData["CartMessage"]';
             var errorMsg = '@TempData["Error"]';
 
