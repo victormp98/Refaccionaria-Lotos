@@ -45,9 +45,155 @@
                 padding-bottom: 140px !important;
             }
         }
+
+        /* --- ESTILOS MENÚ FULL SCREEN (ML STYLE) --- */
+        #ml-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 2000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+            #ml-menu-overlay.active {
+                transform: translateX(0);
+            }
+
+        .ml-menu-header {
+            background: linear-gradient(135deg, #2E86C1 0%, #1B2631 100%);
+            color: white;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+
+        .ml-menu-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        .ml-menu-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ml-menu-section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .ml-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            color: #333;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+            .ml-menu-item i {
+                font-size: 1.4rem;
+                margin-right: 1rem;
+                color: #2E86C1;
+                width: 30px;
+                text-align: center;
+            }
     </style>
 </head>
 <body class="bg-light">
+    @* --- MENÚ FULL SCREEN OVERLAY --- *@
+    <div id="ml-menu-overlay">
+        <div class="ml-menu-header">
+            <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
+            <div class="d-flex align-items-center mt-2">
+                <div class="bg-white rounded-circle p-2 me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-person-fill text-primary fs-2"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h4>
+                    <p class="mb-0 small opacity-75">RefaccionariaUt Panel</p>
+                </div>
+            </div>
+        </div>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            @* SECCIÓN LOGÍSTICA (Admin, Almacén, Mostrador) *@
+            @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
+            {
+                <div class="ml-menu-section">
+                    <div class="ml-menu-section-title">Logística y Almacén</div>
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen">
+                        <i class="bi bi-truck-flatbed"></i> Panel Almacén
+                    </a>
+                    <a class="ml-menu-item" href="#">
+                        <i class="bi bi-trash3 text-danger"></i> Reportes de Scrap (Próximamente)
+                    </a>
+                </div>
+            }
+
+            @* SECCIÓN VENTAS (Admin, Mostrador) *@
+            @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+            {
+                <div class="ml-menu-section">
+                    <div class="ml-menu-section-title">Gestión de Ventas</div>
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index">
+                        <i class="bi bi-cash-stack"></i> Monitor de Ventas
+                    </a>
+                    <a class="ml-menu-item" href="#">
+                        <i class="bi bi-pc-display-horizontal"></i> Venta Mostrador
+                    </a>
+                </div>
+
+                <div class="ml-menu-section">
+                    <div class="ml-menu-section-title">Catálogo y Stock</div>
+                    <a class="ml-menu-item" asp-controller="Productos" asp-action="Index">
+                        <i class="bi bi-box-seam"></i> Inventario
+                    </a>
+                    <a class="ml-menu-item" asp-controller="Vehiculos" asp-action="Index">
+                        <i class="bi bi-car-front"></i> Vehículos
+                    </a>
+                    <a class="ml-menu-item" asp-controller="Compatibilidades" asp-action="Index">
+                        <i class="bi bi-diagram-3"></i> Relaciones
+                    </a>
+                </div>
+            }
+
+            @* SECCIÓN ADMIN *@
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="ml-menu-section">
+                    <div class="ml-menu-section-title">Configuración</div>
+                    <a class="ml-menu-item" asp-controller="Configuracion" asp-action="Edit">
+                        <i class="bi bi-shop"></i> Mi Tienda
+                    </a>
+                    <a class="ml-menu-item" asp-controller="Usuarios" asp-action="Index">
+                        <i class="bi bi-people"></i> Personal
+                    </a>
+                </div>
+            }
+        }
+
+        <div class="ml-menu-section mt-auto">
+            <partial name="_LoginPartial" />
+        </div>
+    </div>
+
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
@@ -60,7 +206,6 @@
                     </div>
                 </div>
 
-                @* Buscador: Oculto para Almacenistas para limpiar su vista *@
                 @if (!User.IsInRole("Almacen"))
                 {
                     <div class="search-container row justify-content-center w-100 mt-2 mx-0">
@@ -73,7 +218,6 @@
                     </div>
                 }
 
-                @* NAVEGACIÓN PC *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
                     @if (!User.IsInRole("Almacen"))
                     {
@@ -102,9 +246,6 @@
                         {
                             <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">
                                 <i class="bi bi-box-seam me-2 text-primary"></i> Inventario
-                            </a>
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Vehiculos" asp-action="Index">
-                                <i class="bi bi-car-front me-2 text-primary"></i> Vehículos
                             </a>
                         }
 
@@ -142,23 +283,20 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL (NAV INFERIOR DINÁMICA) *@
+    @* BARRA MÓVIL (NAV INFERIOR) *@
     <div class="nav-mobile-bottom d-lg-none">
         @if (User.IsInRole("Almacen"))
         {
-            @* Vista Almacenista: Enfoque Logístico *@
             <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
             <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-journal-check"></i><span>Envíos</span></a>
         }
         else if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
         {
-            @* Vista Admin/Mostrador: Enfoque Ventas *@
             <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
             <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Almacén</span></a>
         }
         else
         {
-            @* Vista Cliente / Público: Enfoque Compra *@
             <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
             <a asp-controller="Carrito" asp-action="Index" class="nav-mobile-item position-relative">
                 <i class="bi bi-cart3"></i><span>Carrito</span>
@@ -172,7 +310,6 @@
             </a>
         }
 
-        @* Icono de Pedidos (Para Clientes) *@
         @if (User.IsInRole("Cliente"))
         {
             <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item">
@@ -180,32 +317,10 @@
             </a>
         }
 
-        @* Menú Hamburguesa Contextual *@
-        <div class="dropup nav-mobile-item">
-            <a href="#" class="nav-mobile-item" data-bs-toggle="dropdown"><i class="bi bi-list"></i><span>Menú</span></a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-3">
-                <li class="border-bottom mb-2 pb-2 text-end small text-muted"><strong>@User.Identity?.Name</strong></li>
-
-                @if (User.Identity.IsAuthenticated)
-                {
-                    @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
-                    {
-                        <li><a class="dropdown-item py-2" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam me-2"></i> Inventario</a></li>
-                        <li><a class="dropdown-item py-2" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front me-2"></i> Vehículos</a></li>
-                        <li><a class="dropdown-item py-2" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i> Relaciones</a></li>
-                    }
-
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <hr class="my-2" />
-                        <li><a class="dropdown-item py-2" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-shop me-2"></i> Mi Tienda</a></li>
-                        <li><a class="dropdown-item py-2" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people me-2"></i> Personal</a></li>
-                    }
-                }
-                <hr>
-                <li><partial name="_LoginPartial" /></li>
-            </ul>
-        </div>
+        @* BOTÓN MENÚ QUE ABRE EL OVERLAY *@
+        <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()">
+            <i class="bi bi-list"></i><span>Menú</span>
+        </a>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -214,6 +329,16 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
+        function toggleMLMenu() {
+            document.getElementById('ml-menu-overlay').classList.toggle('active');
+            // Bloquear scroll del body cuando el menú está abierto
+            if(document.getElementById('ml-menu-overlay').classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
         @if (TempData["AlertaCarrito"] != null)
         {
                 <text>

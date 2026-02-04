@@ -157,6 +157,48 @@ namespace RefaccionariaWeb.Controllers
             return RedirectToAction(nameof(Details), new { id = id });
         }
 
+        // ACCIÓN: Confirmar recepción por parte del Cliente
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> ConfirmarEntrega(int id)
+        {
+            var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            if (pedido == null || pedido.ClienteId != currentUser.Id) return NotFound();
+
+            if (pedido.Status == PedidoStatus.Enviado)
+            {
+                pedido.Status = PedidoStatus.Entregado;
+                _context.Update(pedido);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "¡Gracias por confirmar la recepción de tu pedido!";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = id });
+        }
+
+        // ACCIÓN: Reportar Scrap (Pieza dañada)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Almacen")]
+        public async Task<IActionResult> ReportarScrap(int id, string motivo)
+        {
+            var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
+            if (pedido == null) return NotFound();
+
+            // Marcamos como cancelado (en el futuro esto irá a una tabla de scrap)
+            pedido.Status = PedidoStatus.Cancelado;
+
+            // NOTA: No devolvemos el stock porque la pieza está dañada
+            _context.Update(pedido);
+            await _context.SaveChangesAsync();
+
+            TempData["Error"] = $"Pedido #{id} marcado como SCRAP: {motivo}";
+            return RedirectToAction(nameof(Almacen));
+        }
+
         [Authorize(Roles = "Admin,Almacen")]
         public async Task<IActionResult> Almacen()
         {

@@ -17,11 +17,9 @@
 
     // --- LÓGICA DE PASOS (STEPPER) ---
     int pasoActual = (int)Model.Status;
-    // Mapeo visual: 0:Pendiente, 1:Pagado, 2:En Proceso, 3:Enviado, 4:Entregado
 }
 
 <style>
-    /* Estilos para la Barra de Trazabilidad */
     .stepper-wrapper {
         display: flex;
         justify-content: space-between;
@@ -73,7 +71,6 @@
         font-weight: 600;
     }
 
-    /* Estados activos */
     .stepper-item.completed .step-counter {
         background-color: #198754;
     }
@@ -100,7 +97,7 @@
         .step-name {
             display: none;
         }
-        /* Ocultar nombres en móvil muy pequeño para evitar amontonamiento */
+
         .step-counter {
             width: 30px;
             height: 30px;
@@ -119,7 +116,6 @@
     </a>
 </div>
 
-@* --- BARRA DE TRAZABILIDAD (SOLO SI NO ESTÁ CANCELADO) --- *@
 @if (Model.Status != PedidoStatus.Cancelado)
 {
     <div class="card shadow-sm border-0 rounded-4 mb-4">
@@ -214,6 +210,20 @@
                 }
             </div>
         </div>
+
+        @* --- ACCIÓN PARA EL CLIENTE: Confirmar Recepción --- *@
+        @if (esCliente && Model.Status == PedidoStatus.Enviado)
+        {
+            <div class="card shadow-sm border-0 rounded-4 mt-3 bg-primary text-white">
+                <div class="card-body text-center p-4">
+                    <h6>¿Ya recibiste tu producto?</h6>
+                    <form asp-action="ConfirmarEntrega" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-light rounded-pill px-4 fw-bold mt-2">Sí, ya lo recibí</button>
+                    </form>
+                </div>
+            </div>
+        }
     </div>
 
     <div class="col-md-7">
@@ -299,11 +309,25 @@
                         <button type="submit" name="nuevoStatus" value="@PedidoStatus.Entregado" class="btn btn-primary rounded-pill px-4">Entregado</button>
                         <button type="submit" name="nuevoStatus" value="@PedidoStatus.Cancelado" class="btn btn-outline-danger rounded-pill px-4">Cancelar</button>
                     }
+
+                    @* BOTÓN DE SCRAP *@
+                    @if (esAlmacen || esAdmin)
+                    {
+                        <button type="button" onclick="reportarScrap()" class="btn btn-danger rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-trash3 me-1"></i> Scrap
+                        </button>
+                    }
                 </div>
             </form>
         </div>
     </div>
 }
+
+@* Formulario Oculto para Scrap *@
+<form id="formScrap" asp-action="ReportarScrap" method="post" style="display:none;">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="motivo" id="motivoScrap" />
+</form>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -315,26 +339,34 @@
 
             if (!esRetiro) {
                 if (!inputPaq.value.trim() || !inputGuia.value.trim()) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Atención',
-                        text: 'Debes ingresar la Paquetería y el Número de Guía antes de marcar como enviado.',
-                        confirmButtonColor: '#3085d6'
-                    });
+                    Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debes ingresar la Paquetería y el Número de Guía.' });
                     return;
                 }
             }
 
             Swal.fire({
                 title: '¿Confirmar despacho?',
-                text: esRetiro ? "El cliente recibirá una notificación de que ya puede pasar." : "Se registrará el envío con la guía proporcionada.",
+                text: esRetiro ? "El cliente recibirá una notificación." : "Se registrará el envío con la guía proporcionada.",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Sí, confirmar',
-                cancelButtonText: 'Cancelar'
+                confirmButtonText: 'Sí, confirmar'
+            }).then((result) => { if (result.isConfirmed) document.getElementById("submitEnviado").click(); });
+        }
+
+        function reportarScrap() {
+            Swal.fire({
+                title: 'Reportar pieza dañada (Scrap)',
+                text: "Escribe el motivo del daño. Esto cancelará el pedido y NO devolverá el stock.",
+                input: 'text',
+                inputPlaceholder: 'Ej: Faro con mica rota',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Confirmar Scrap'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById("submitEnviado").click();
+                if (result.isConfirmed && result.value) {
+                    document.getElementById("motivoScrap").value = result.value;
+                    document.getElementById("formScrap").submit();
                 }
             });
         }

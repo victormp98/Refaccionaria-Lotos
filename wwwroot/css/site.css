@@ -16,7 +16,7 @@
         display: flex;
         justify-content: space-around;
         align-items: center;
-        box-shadow: 0 -2px 15px rgba(0,0,0,0.2);
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
         z-index: 1050;
         padding-bottom: env(safe-area-inset-bottom);
         border-top: 1px solid #f0f0f0;
@@ -35,7 +35,7 @@
 
         .nav-mobile-item:active {
             color: var(--electric-lotos);
-            transform: scale(0.95);
+            transform: scale(0.9);
         }
 
         .nav-mobile-item i {
@@ -45,7 +45,6 @@
         }
 
     body {
-        /* Espacio suficiente para que la barra no tape el contenido */
         padding-bottom: 85px !important;
     }
 }
@@ -57,14 +56,15 @@
     }
 }
 
-/* Dropup mejorado para el menú móvil */
-.dropup .dropdown-menu {
-    margin-bottom: 15px;
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-    border: 1px solid rgba(0,0,0,0.05);
-    padding: 12px;
-    right: 15px !important;
-    left: auto !important;
-    min-width: 200px;
+/* Mejoras generales de UI */
+.card {
+    transition: transform 0.2s;
+}
+
+.shadow-sm {
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+}
+
+.rounded-4 {
+    border-radius: 1rem !important;
 }
