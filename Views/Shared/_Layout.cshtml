@@ -53,6 +53,7 @@
             overflow: hidden !important;
         }
 
+        /* ESTILOS DE LA BARRA MÓVIL QUE SE HABÍAN BORRADO */
         @@media (max-width: 991.98px) {
             .nav-mobile-bottom {
                 position: fixed;
@@ -69,8 +70,22 @@
                 border-top: 1px solid #f0f0f0;
             }
 
+            .nav-mobile-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                color: #666;
+                font-size: 0.75rem;
+                text-decoration: none !important;
+            }
+
+                .nav-mobile-item i {
+                    font-size: 1.4rem;
+                    color: #2E86C1;
+                }
+
             body {
-                padding-bottom: @( (ViewContext.RouteData.Values["controller"]?.ToString() == "Account") ? "0px" : "85px" ) !important;
+                padding-bottom: 85px !important;
             }
         }
 
@@ -79,7 +94,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: @( (ViewContext.RouteData.Values["controller"]?.ToString() == "Account") ? "100%" : "calc(100% - 70px)" );
+            height: calc(100% - 70px);
             background: #f4f4f4;
             z-index: 3000;
             transform: translateX(100%);
@@ -172,40 +187,33 @@
         <div class="ml-menu-content">
             @if (User.Identity.IsAuthenticated)
             {
-                @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
-                {
-                    <div class="ml-menu-section-title">Operaciones Diarias</div>
-                    <div class="ml-card-menu">
-                        <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Monitor de Ventas</a>
-                        <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén / Surtido</a>
-                        <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
-                        @* ENLACE CORREGIDO *@
-                        <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
-                    </div>
-                }
+                <div class="ml-menu-section-title">Operaciones Diarias</div>
+                <div class="ml-card-menu">
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Monitor de Ventas</a>
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén</a>
+                    <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
+                    <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
+                </div>
             }
+        </div>
+        <div class="mt-auto p-4 bg-white border-top">
+            <partial name="_LoginPartial" />
         </div>
     </div>
 
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
-                    </a>
-                </div>
+                <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
+                </a>
 
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2 gap-2">
                     <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
                     @if (User.Identity.IsAuthenticated)
                     {
-                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
-                        {
-                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
-                            @* ENLACE CORREGIDO PC *@
-                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
-                        }
+                        <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                        <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
                     }
                 </div>
             </div>
@@ -215,6 +223,20 @@
     <div class="container-fluid mb-5 mt-3">
         <main role="main">@RenderBody()</main>
     </div>
+
+    @* BARRA MÓVIL PERSISTENTE - RECUPERADA *@
+    @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
+    {
+        <div class="nav-mobile-bottom d-lg-none">
+            <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
+            @if (User.IsInRole("Almacen") || User.IsInRole("Admin"))
+            {
+                <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
+                <a asp-controller="Scraps" asp-action="Index" class="nav-mobile-item"><i class="bi bi-trash3 text-danger"></i><span>Scrap</span></a>
+            }
+            <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()"><i class="bi bi-list"></i><span>Menú</span></a>
+        </div>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
