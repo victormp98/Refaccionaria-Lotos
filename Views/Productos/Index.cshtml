@@ -1,38 +1,15 @@
 @model IEnumerable<RefaccionariaWeb.Models.Producto>
-
 @{
-    ViewData["Title"] = "Gestión de Inventario";
+    ViewData["Title"] = "Inventario";
 }
 
 <style>
-    /* VARIABLES DE COLOR PARA MANTENER EL ESTÁNDAR */
     :root {
         --primary-soft: #e3f2fd;
-        --success-soft: #e8f5e9;
-        --danger-soft: #ffebee;
         --secondary-soft: #f5f5f5;
+        --danger-soft: #ffebee;
     }
 
-    /* ESTILO DE TABLA PC - MÁS INTUITIVO */
-    .inventory-table {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-
-        .inventory-table thead {
-            background: #212529;
-            color: white;
-        }
-
-        .inventory-table th {
-            padding: 1rem;
-            font-weight: 500;
-            border: none;
-        }
-
-    /* BOTONES DE ACCIÓN PARA PC (Equilibrio texto/icono) */
     .btn-action {
         border-radius: 8px;
         padding: 6px 12px;
@@ -41,8 +18,8 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: 0.2s;
         border: none;
+        text-decoration: none;
     }
 
     .btn-edit {
@@ -50,151 +27,80 @@
         color: #0d6efd;
     }
 
-        .btn-edit:hover {
-            background: #0d6efd;
-            color: white;
-        }
-
     .btn-view {
         background: var(--secondary-soft);
         color: #6c757d;
     }
 
-        .btn-view:hover {
-            background: #6c757d;
-            color: white;
-        }
-
     .btn-del {
         background: var(--danger-soft);
         color: #dc3545;
     }
-
-        .btn-del:hover {
-            background: #dc3545;
-            color: white;
-        }
-
-    /* ESTILO MÓVIL (Mismo que Scrap/Entradas) */
-    .mobile-card {
-        border-radius: 20px;
-        border: 1px solid #eee;
-        position: relative;
-    }
-
-    .side-indicator {
-        position: absolute;
-        left: 0;
-        top: 20px;
-        bottom: 20px;
-        width: 4px;
-        border-radius: 0 4px 4px 0;
-        background: #0d6efd;
-    }
 </style>
 
 <div class="container-fluid py-4">
-    @* CABECERA *@
-    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
-        <h3 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-box-seam-fill text-primary"></i> Control de Inventario
-        </h3>
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-2">
+        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-box-seam-fill text-primary"></i> Inventario</h2>
         <div class="d-flex gap-2">
-            <a asp-action="Papelera" class="btn btn-outline-danger rounded-pill px-3 fw-bold">
-                <i class="bi bi-trash3"></i> <span class="d-none d-md-inline">Papelera</span>
-            </a>
-            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow fw-bold">
-                <i class="bi bi-plus-circle-fill me-1"></i> Agregar Producto
-            </a>
+            <a asp-action="Papelera" class="btn btn-outline-danger rounded-pill px-3 fw-bold"><i class="bi bi-trash3"></i> Papelera</a>
+            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow fw-bold"><i class="bi bi-plus-lg"></i> Nuevo</a>
         </div>
     </div>
 
-    @* VISTA DESKTOP (TABLA CLARA) *@
-    <div class="d-none d-md-block">
-        <div class="table-responsive inventory-table">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
+    @* PC *@
+    <div class="table-responsive d-none d-md-block shadow-sm rounded-4 overflow-hidden border">
+        <table class="table table-hover align-middle mb-0 bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Producto</th>
+                    <th>Marca</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
                     <tr>
-                        <th>Producto</th>
-                        <th>Marca</th>
-                        <th>Precio</th>
-                        <th>Stock Actual</th>
-                        <th class="text-center">Operaciones</th>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" class="rounded-3 me-3 border" style="width: 45px; height: 45px; object-fit: cover;" />
+                                <div><div class="fw-bold">@item.Nombre</div><small class="text-muted">@item.SKU</small></div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">@item.MarcaPieza</span></td>
+                        <td class="fw-bold text-success">$@item.PrecioVenta</td>
+                        <td><span class="badge @(item.Stock < 5 ? "bg-danger" : "bg-dark") rounded-pill px-3">@item.Stock pzas</span></td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn-action btn-edit"><i class="bi bi-pencil-square"></i> Editar</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn-action btn-view"><i class="bi bi-eye"></i> Ver</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn-action btn-del"><i class="bi bi-trash"></i> Quitar</a>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)"
-                                         class="rounded-3 border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;" />
-                                    <div class="ms-3">
-                                        <div class="fw-bold">@item.Nombre</div>
-                                        <span class="text-muted" style="font-size: 0.75rem;">SKU: @item.SKU</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge bg-light text-dark border">@item.MarcaPieza</span></td>
-                            <td><span class="fw-bold text-success">$@item.PrecioVenta</span></td>
-                            <td>
-                                <span class="badge @(item.Stock < 5 ? "bg-danger" : "bg-dark") px-3 py-2">
-                                    @item.Stock pzas
-                                </span>
-                            </td>
-                            <td>
-                                <div class="d-flex justify-content-center gap-2">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn-action btn-edit">
-                                        <i class="bi bi-pencil-square"></i> Editar
-                                    </a>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn-action btn-view">
-                                        <i class="bi bi-eye"></i> Ver
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn-action btn-del">
-                                        <i class="bi bi-trash"></i> Quitar
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
 
-    @* VISTA MÓVIL (TARJETAS "CLEAN") *@
+    @* MÓVIL *@
     <div class="d-block d-md-none">
         @foreach (var item in Model)
         {
-            <div class="card mobile-card shadow-sm mb-3 border-0 bg-white">
-                <div class="side-indicator"></div>
-                <div class="card-body p-3">
+            <div class="card mb-3 shadow-sm border-0 rounded-4 border-start border-5 border-primary">
+                <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
-                        <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)"
-                             class="rounded-3 border" style="width: 65px; height: 65px; object-fit: cover;" />
-                        <div class="ms-3 flex-grow-1">
+                        <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" class="rounded-3 border me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                        <div class="flex-grow-1">
                             <h6 class="fw-bold mb-0">@item.Nombre</h6>
-                            <div class="text-muted x-small">@item.MarcaPieza | SKU: @item.SKU</div>
-                            <div class="fw-bold text-success mt-1">$@item.PrecioVenta</div>
+                            <div class="text-muted small">@item.MarcaPieza | SKU: @item.SKU</div>
                         </div>
                     </div>
-
-                    <div class="bg-light rounded-3 p-2 d-flex justify-content-between align-items-center mb-3">
-                        <small class="text-muted fw-bold">STOCK:</small>
-                        <span class="badge @(item.Stock < 5 ? "bg-danger" : "bg-dark") rounded-pill">@item.Stock unidades</span>
-                    </div>
-
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary w-100 rounded-pill btn-sm fw-bold">Editar</a>
-                        </div>
-                        <div class="col-4">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary w-100 rounded-pill btn-sm fw-bold">Ver</a>
-                        </div>
-                        <div class="col-4">
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger w-100 rounded-pill btn-sm fw-bold">Borrar</a>
-                        </div>
+                    <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold">Editar</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">Papelera</a>
                     </div>
                 </div>
             </div>
