@@ -18,7 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // IDENTITY
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
     options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequireDigit = false; // Ajusta según tus necesidades de seguridad
+    options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
@@ -39,45 +39,18 @@ builder.Services.AddSession(options => {
 
 var app = builder.Build();
 
-// NUCLEO DE INICIALIZACIÓN (MIGRACIONES AUTOMÁTICAS)
+// INICIALIZACIÓN DE DATOS (Sin migraciones automáticas)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    var logger = services.GetRequiredService<ILogger<Program>>();
-
-    const int maxRetries = 5;
-    const int delaySeconds = 5;
-
-    for (int i = 1; i <= maxRetries; i++)
+    try
     {
-        try
-        {
-            logger.LogInformation($"Intento {i} de {maxRetries}: Sincronizando Base de Datos y aplicando migraciones.");
-
-            // APLICA TODAS LAS MIGRACIONES PENDIENTES (Incluye Pedidos, Detalles y SCRAP)
-            context.Database.Migrate();
-
-            // INICIALIZA DATOS (Roles, Admin, Sucursal, etc.)
-            await DbInitializer.Initialize(services);
-
-            logger.LogInformation("¡Base de datos sincronizada y tablas verificadas con éxito!");
-            break;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, $"Intento {i} fallido. Error: {ex.Message}");
-
-            if (i < maxRetries)
-            {
-                logger.LogWarning($"Esperando {delaySeconds} segundos para reintentar...");
-                Thread.Sleep(delaySeconds * 1000);
-            }
-            else
-            {
-                logger.LogError("FATAL ERROR: No se pudo sincronizar la base de datos después de varios intentos.");
-            }
-        }
+        await DbInitializer.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Error al inicializar los datos.");
     }
 }
 
