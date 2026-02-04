@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        /* ESTILOS NAVEGACIÓN PC */
+        /* CSS PARA PC */
         .nav-pc-link {
             font-weight: 600;
             padding: 0.5rem 1rem;
@@ -39,11 +39,6 @@
             padding: 0.6rem 1rem;
             font-weight: 500;
         }
-
-            .dropdown-item i {
-                margin-right: 10px;
-                color: #2E86C1;
-            }
 
         /* BARRA MÓVIL INFERIOR */
         @@media (max-width: 991.98px) {
@@ -82,7 +77,7 @@
             }
         }
 
-        /* OVERLAY SECCIONADO (EL QUE ESTABA CHIDO) */
+        /* OVERLAY SECCIONADO */
         #ml-menu-overlay {
             position: fixed;
             top: 0;
@@ -106,9 +101,9 @@
             background: linear-gradient(135deg, #2E86C1 0%, #1B2631 100%);
             color: white;
             padding: 2.5rem 1.5rem 1.8rem;
-            position: relative;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
+            position: relative;
         }
 
         .ml-menu-close {
@@ -160,7 +155,7 @@
 </head>
 <body class="bg-light">
 
-    @* MENÚ OVERLAY MÓVIL SECCIONADO *@
+    @* 2. MENÚ OVERLAY MÓVIL (CORREGIDO Y SECCIONADO) *@
     <div id="ml-menu-overlay">
         <div class="ml-menu-header shadow">
             <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
@@ -169,8 +164,8 @@
                     <i class="bi bi-person-circle text-primary fs-2"></i>
                 </div>
                 <div>
-                    <h5 class="mb-0 fw-bold">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h5>
-                    <p class="mb-0 small opacity-75">Refaccionaria Lotos</p>
+                    <h5 class="mb-0 fw-bold text-white">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h5>
+                    <p class="mb-0 small text-white opacity-75">Refaccionaria Lotos</p>
                 </div>
             </div>
         </div>
@@ -178,28 +173,37 @@
         <div class="ml-menu-content">
             @if (User.Identity.IsAuthenticated)
             {
-                @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
-                {
-                    <div class="ml-menu-section-title">Operaciones Diarias</div>
-                    <div class="ml-card-menu">
+                <div class="ml-menu-section-title">Operaciones</div>
+                <div class="ml-card-menu">
+                    @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                    {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
-                        <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén</a>
-                        <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 text-danger"></i> Reportar Scrap</a>
-                    </div>
+                    }
+                    @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
+                    {
+                        @* 6. NOMBRE CAMBIADO A SURTIR *@
+                        <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
+                    }
+                    @* BOTÓN SCRAP SOLO AQUÍ (EN EL MENÚ) *@
+                    <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 text-danger"></i> Reportar Scrap</a>
+                </div>
 
-                    <div class="ml-menu-section-title">Catálogo y Red</div>
-                    <div class="ml-card-menu">
-                        <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
+                <div class="ml-menu-section-title">Catálogo e Inventario</div>
+                <div class="ml-card-menu">
+                    <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
+                    @* 5. VEHÍCULOS SOLO PARA ADMIN/MOSTRADOR *@
+                    @if (!User.IsInRole("Almacen"))
+                    {
                         <a class="ml-menu-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a>
                         <a class="ml-menu-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a>
-                    </div>
-                }
+                    }
+                </div>
 
                 @if (User.IsInRole("Admin"))
                 {
-                    <div class="ml-menu-section-title">Configuración Admin</div>
+                    <div class="ml-menu-section-title">Configuración</div>
                     <div class="ml-card-menu">
-                        <a class="ml-menu-item" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people"></i> Personal / Usuarios</a>
+                        <a class="ml-menu-item" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people"></i> Usuarios</a>
                         <a class="ml-menu-item" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-gear"></i> Ajustes</a>
                     </div>
                 }
@@ -210,7 +214,7 @@
         </div>
     </div>
 
-    @* NAVBAR PC - COMPLETA CON TODOS LOS BOTONES *@
+    @* NAVBAR PC *@
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
@@ -223,29 +227,28 @@
                     </div>
                 </div>
 
+                @* 3. BUSCADOR GLOBAL RECUPERADO *@
+                <div class="row justify-content-center w-100 mt-2 mx-0">
+                    <div class="col-12 col-lg-8 px-1">
+                        <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light w-100 overflow-hidden shadow-sm">
+                            <input name="searchString" class="form-control border-0 bg-transparent px-3 py-1" type="search" placeholder="Buscar refacción...">
+                            <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2 gap-2">
                     <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
-                        <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén</a>
-
-                        <div class="dropdown">
-                            <a class="nav-pc-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión
-                            </a>
-                            <ul class="dropdown-menu shadow">
-                                <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
-                                <li><a class="dropdown-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 text-danger"></i> Scrap</a></li>
-                                <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people"></i> Usuarios</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-gear"></i> Ajustes</a></li>
-                                }
-                            </ul>
-                        </div>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                        {
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                        }
+                        @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
+                        {
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
+                        }
                     }
                 </div>
             </div>
@@ -256,11 +259,12 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL INFERIOR SECCIONADA *@
+    @* 1 y 4. BARRA MÓVIL INFERIOR (CORREGIDA) *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
             <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
+
             @if (User.IsInRole("Almacen"))
             {
                 <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
@@ -269,10 +273,22 @@
             {
                 <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
             }
-            @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
+
+            @* 1. RECUPERAMOS EL CARRITO PARA EL CLIENTE *@
+            @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
             {
-                <a asp-controller="Scraps" asp-action="Index" class="nav-mobile-item"><i class="bi bi-trash3 text-danger"></i><span>Scrap</span></a>
+                <a asp-controller="Carrito" asp-action="Index" class="nav-mobile-item position-relative">
+                    <i class="bi bi-cart3"></i><span>Carrito</span>
+                    @{
+                        var tMob = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
+                    }
+                    @if (tMob > 0)
+                    {
+                        <span class="position-absolute top-0 start-60 badge rounded-pill bg-danger" style="font-size:0.6rem">@tMob</span>
+                    }
+                </a>
             }
+
             <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()"><i class="bi bi-list"></i><span>Menú</span></a>
         </div>
     }
