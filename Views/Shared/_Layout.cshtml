@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
+        /* ESTILOS PC */
         .nav-pc-link {
             font-weight: 600;
             padding: 0.5rem 1rem;
@@ -39,21 +40,12 @@
             font-weight: 500;
         }
 
-            .dropdown-item:hover {
-                background: #f0f7ff;
-                color: #2E86C1;
-            }
-
             .dropdown-item i {
                 margin-right: 10px;
                 color: #2E86C1;
             }
 
-        .no-scroll {
-            overflow: hidden !important;
-        }
-
-        /* ESTILOS DE LA BARRA MÓVIL QUE SE HABÍAN BORRADO */
+        /* ESTILOS MÓVIL Y OVERLAY */
         @@media (max-width: 991.98px) {
             .nav-mobile-bottom {
                 position: fixed;
@@ -66,7 +58,7 @@
                 justify-content: space-around;
                 align-items: center;
                 box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-                z-index: 4000 !important;
+                z-index: 4000;
                 border-top: 1px solid #f0f0f0;
             }
 
@@ -77,6 +69,7 @@
                 color: #666;
                 font-size: 0.75rem;
                 text-decoration: none !important;
+                flex: 1;
             }
 
                 .nav-mobile-item i {
@@ -124,7 +117,6 @@
             font-size: 2.5rem;
             color: white;
             cursor: pointer;
-            opacity: 0.8;
         }
 
         .ml-menu-content {
@@ -139,15 +131,6 @@
             overflow: hidden;
         }
 
-        .ml-menu-section-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: #888;
-            font-weight: 800;
-            padding: 1rem 1.2rem 0.5rem;
-            letter-spacing: 0.5px;
-        }
-
         .ml-menu-item {
             display: flex;
             align-items: center;
@@ -157,7 +140,6 @@
             font-size: 1rem;
             font-weight: 500;
             border-bottom: 1px solid #f8f8f8;
-            transition: background 0.2s;
         }
 
             .ml-menu-item i {
@@ -170,6 +152,8 @@
     </style>
 </head>
 <body class="bg-light">
+
+    @* OVERLAY MENÚ (EL QUE SALE DE LADO) *@
     <div id="ml-menu-overlay">
         <div class="ml-menu-header shadow">
             <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
@@ -187,12 +171,11 @@
         <div class="ml-menu-content">
             @if (User.Identity.IsAuthenticated)
             {
-                <div class="ml-menu-section-title">Operaciones Diarias</div>
                 <div class="ml-card-menu">
-                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Monitor de Ventas</a>
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                     <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén</a>
                     <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
-                    <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
+                    <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 text-danger"></i> Reportar Scrap</a>
                 </div>
             }
         </div>
@@ -201,6 +184,7 @@
         </div>
     </div>
 
+    @* NAVBAR SUPERIOR (PC) *@
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
@@ -212,8 +196,11 @@
                     <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
-                        <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
+                        {
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
+                        }
                     }
                 </div>
             </div>
@@ -224,16 +211,26 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL PERSISTENTE - RECUPERADA *@
+    @* BARRA MÓVIL INFERIOR (ESTA ES LA QUE SE HABÍA PERDIDO) *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
             <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
-            @if (User.IsInRole("Almacen") || User.IsInRole("Admin"))
+
+            @if (User.IsInRole("Almacen"))
             {
                 <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
+            }
+            else if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+            {
+                <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
+            }
+
+            @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
+            {
                 <a asp-controller="Scraps" asp-action="Index" class="nav-mobile-item"><i class="bi bi-trash3 text-danger"></i><span>Scrap</span></a>
             }
+
             <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()"><i class="bi bi-list"></i><span>Menú</span></a>
         </div>
     }
