@@ -23,6 +23,7 @@ namespace RefaccionariaWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // Solo mostramos los que están activos en el inventario principal
             return View(await _context.Productos.Where(p => p.EsVisibleEnLinea == true).ToListAsync());
         }
 
@@ -99,7 +100,7 @@ namespace RefaccionariaWeb.Controllers
             return View(producto);
         }
 
-        // --- NUEVO MÓDULO DE COMPRAS (REACONDICIONADO) ---
+        // ACCIÓN PARA EL MÓDULO DE COMPRAS (Suma stock y actualiza precios)
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Compra(int? id)
         {
@@ -165,6 +166,7 @@ namespace RefaccionariaWeb.Controllers
             var producto = await _context.Productos.FindAsync(id);
             if (producto != null)
             {
+                // CAMBIO: Ahora solo lo oculta (lo manda a papelera) en lugar de borrarlo
                 producto.EsVisibleEnLinea = false;
                 _context.Update(producto);
                 await _context.SaveChangesAsync();
