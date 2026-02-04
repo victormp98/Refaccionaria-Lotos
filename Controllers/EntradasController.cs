@@ -57,5 +57,18 @@ namespace RefaccionariaWeb.Controllers
             TempData["Success"] = $"Stock actualizado: +{cantidad} unidades a {producto.Nombre}.";
             return RedirectToAction(nameof(Index));
         }
+
+
+        // Acción para ver solo el historial de entradas
+        public async Task<IActionResult> Historial()
+        {
+            var historial = await _context.MovimientosInventario
+                .Include(m => m.Producto)
+                .Where(m => m.TipoMovimiento == "ENTRADA") // Filtramos solo entradas
+                .OrderByDescending(m => m.FechaRegistro)
+                .ToListAsync();
+
+            return View(historial);
+        }
     }
 }

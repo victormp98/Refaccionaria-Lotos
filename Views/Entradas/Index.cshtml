@@ -5,24 +5,30 @@
 }
 
 <style>
-    /* Ajuste para que en móvil las tarjetas no se vean amontonadas */
     .card-entrada {
         border-radius: 15px;
         transition: transform 0.2s;
         border: none;
+        overflow: hidden;
     }
 
         .card-entrada:hover {
             transform: translateY(-5px);
         }
 
+    .img-producto-entrada {
+        height: 160px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        padding: 10px;
+    }
+
     .badge-stock {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         padding: 0.5em 0.8em;
         border-radius: 10px;
     }
 
-    /* Estilo para el buscador igual al catálogo */
     .search-container {
         border-radius: 50px;
         background: #fff;
@@ -32,41 +38,52 @@
 </style>
 
 <div class="container mt-3 mb-5">
-    @* Cabecera con Botón de Bitácora *@
+    @* Cabecera con Botón de Historial Específico *@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-bold mb-0 text-dark">
             <i class="bi bi-box-arrow-in-right text-success"></i> Entradas
         </h4>
-        <a asp-controller="Movimientos" asp-action="Index" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-            <i class="bi bi-journal-text"></i> Bitácora
+        @* Este botón ahora apunta a una vista de historial de entradas únicamente *@
+        <a asp-action="Historial" class="btn btn-sm btn-outline-success rounded-pill px-3">
+            <i class="bi bi-clock-history"></i> Ver Historial
         </a>
     </div>
 
-    @* Buscador tipo Píldora (Ideal para móvil) *@
+    @* Buscador *@
     <div class="search-container d-flex align-items-center mb-4 border">
         <i class="bi bi-search text-muted"></i>
         <input type="text" id="buscador" class="form-control border-0 bg-transparent"
-               placeholder="Buscar producto o SKU..." onkeyup="filtrar()">
+               placeholder="Buscar producto por nombre o SKU..." onkeyup="filtrar()">
     </div>
 
-    @* Grid de Productos *@
+    @* Grid de Tarjetas con Imagen *@
     <div class="row g-3" id="contenedorProductos">
         @foreach (var item in Model)
         {
             <div class="col-12 col-md-6 col-lg-4 item-producto">
-                <div class="card card-entrada shadow-sm">
-                    <div class="card-body">
+                <div class="card card-entrada shadow-sm h-100">
+                    @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                    {
+                        <img src="@item.ImagenUrl" class="card-img-top img-producto-entrada" alt="@item.Nombre">
+                    }
+                    else
+                    {
+                        <div class="card-img-top img-producto-entrada d-flex align-items-center justify-content-center bg-light">
+                            <i class="bi bi-image text-muted fs-1"></i>
+                        </div>
+                    }
+                    <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="fw-bold mb-0">@item.Nombre</h6>
-                            <span class="badge bg-light text-dark border">@item.SKU</span>
+                            <span class="badge bg-light text-dark border small">@item.SKU</span>
                         </div>
 
-                        <div class="d-flex align-items-center mb-3 text-muted small">
-                            <i class="bi bi-archive me-2"></i> Stock actual:
-                            <span class="ms-1 fw-bold text-primary">@item.Stock</span>
+                        <div class="mb-3 text-muted small">
+                            <i class="bi bi-archive"></i> Stock actual:
+                            <span class="fw-bold text-primary">@item.Stock</span>
                         </div>
 
-                        <button type="button" class="btn btn-success w-100 rounded-pill fw-bold"
+                        <button type="button" class="btn btn-success w-100 rounded-pill fw-bold mt-auto"
                                 onclick="abrirModalEntrada(@item.Id, '@item.Nombre')">
                             <i class="bi bi-plus-lg"></i> Registrar Entrada
                         </button>
@@ -77,41 +94,36 @@
     </div>
 </div>
 
-@* Modal de Registro (Igual al de Scrap pero Verde) *@
+@* Modal de Registro *@
 <div class="modal fade" id="modalEntrada" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 20px;">
             <form asp-action="RegistrarEntrada" method="post">
                 <div class="modal-header border-0 bg-success text-white" style="border-radius: 20px 20px 0 0;">
                     <h5 class="modal-title fw-bold">Ingreso de Mercancía</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <input type="hidden" name="productoId" id="modalId" />
 
                     <div class="mb-3 text-center">
-                        <label class="form-label text-muted small text-uppercase fw-bold">Producto Seleccionado</label>
+                        <label class="form-label text-muted small text-uppercase fw-bold">Producto</label>
                         <h6 id="modalNombre" class="fw-bold text-dark"></h6>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Cantidad que entra</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-plus-square text-success"></i></span>
-                            <input type="number" name="cantidad" class="form-control bg-light border-start-0"
-                                   min="1" placeholder="Ej. 10" required />
-                        </div>
+                        <input type="number" name="cantidad" class="form-control bg-light" min="1" required />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Referencia o Factura</label>
-                        <textarea name="referencia" class="form-control bg-light" rows="2"
-                                  placeholder="Ej. Compra a Proveedor X..."></textarea>
+                        <textarea name="referencia" class="form-control bg-light" rows="2" placeholder="Nota de remisión, factura..."></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-3">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">Confirmar Entrada</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">Guardar Entrada</button>
                 </div>
             </form>
         </div>
