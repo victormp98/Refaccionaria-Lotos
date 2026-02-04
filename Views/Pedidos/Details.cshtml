@@ -14,7 +14,7 @@
     int pasoActual = (int)Model.Status;
 
     // Lógica para detectar si hay datos de facturación (Ajusta los nombres de propiedad según tu modelo)
-    bool requiereFactura = !string.IsNullOrEmpty(Model.RFC) || !string.IsNullOrEmpty(Model.RazonSocial);
+    bool requiereFactura = !string.IsNullOrEmpty(Model.Rfc) || !string.IsNullOrEmpty(Model.RazonSocial);
 }
 
 <style>
@@ -184,7 +184,7 @@
                     <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-file-earmark-text me-2"></i>Datos Fiscales</h5>
                     <div class="bg-light p-3 rounded-3">
                         <p class="mb-1 small"><strong>Razón Social:</strong><br /> @Model.RazonSocial</p>
-                        <p class="mb-0 small"><strong>RFC:</strong><br /> @Model.RFC</p>
+                        <p class="mb-0 small"><strong>RFC:</strong><br /> @Model.Rfc</p>
                     </div>
                 </div>
             </div>
