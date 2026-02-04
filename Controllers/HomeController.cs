@@ -9,22 +9,34 @@ namespace RefaccionariaWeb.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _context; // 1. Referencia a la BD
+        private readonly ApplicationDbContext _context;
 
-        // 2. Inyectamos la BD en el constructor
         public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
             _context = context;
         }
 
-        // 3. Enviamos la lista de productos a la vista
-        public async Task<IActionResult> Index()
+        // MODIFICADO: Ahora recibe el parámetro de búsqueda del Layout
+        public async Task<IActionResult> Index(string searchString)
         {
-            // Solo mostramos los que están marcados como "Visibles en Línea"
-            var productos = await _context.Productos
-                                          .Where(p => p.EsVisibleEnLinea == true)
-                                          .ToListAsync();
+            // Iniciamos la consulta con los productos visibles
+            var productosQuery = _context.Productos
+                                         .Where(p => p.EsVisibleEnLinea == true);
+
+            // Si el usuario escribió algo en el buscador
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                productosQuery = productosQuery.Where(p =>
+                    p.Nombre.ToLower().Contains(searchString) ||
+                    p.MarcaPieza.ToLower().Contains(searchString) ||
+                    (p.Descripcion != null && p.Descripcion.ToLower().Contains(searchString)));
+
+                ViewData["CurrentFilter"] = searchString;
+            }
+
+            var productos = await productosQuery.ToListAsync();
             return View(productos);
         }
 
