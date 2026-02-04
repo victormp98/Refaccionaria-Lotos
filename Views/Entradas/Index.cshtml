@@ -1,23 +1,74 @@
 ﻿@model IEnumerable<RefaccionariaWeb.Models.Producto>
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2><i class="bi bi-box-arrow-in-right"></i> Entradas de Mercancía</h2>
-        <a asp-controller="Movimientos" asp-action="Index" class="btn btn-secondary">Ver Bitácora</a>
-    </div>
-    <hr />
+@{
+    ViewData["Title"] = "Entradas de Almacén";
+}
 
-    <div class="row">
+<style>
+    /* Ajuste para que en móvil las tarjetas no se vean amontonadas */
+    .card-entrada {
+        border-radius: 15px;
+        transition: transform 0.2s;
+        border: none;
+    }
+
+        .card-entrada:hover {
+            transform: translateY(-5px);
+        }
+
+    .badge-stock {
+        font-size: 0.9rem;
+        padding: 0.5em 0.8em;
+        border-radius: 10px;
+    }
+
+    /* Estilo para el buscador igual al catálogo */
+    .search-container {
+        border-radius: 50px;
+        background: #fff;
+        padding: 5px 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+</style>
+
+<div class="container mt-3 mb-5">
+    @* Cabecera con Botón de Bitácora *@
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-box-arrow-in-right text-success"></i> Entradas
+        </h4>
+        <a asp-controller="Movimientos" asp-action="Index" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+            <i class="bi bi-journal-text"></i> Bitácora
+        </a>
+    </div>
+
+    @* Buscador tipo Píldora (Ideal para móvil) *@
+    <div class="search-container d-flex align-items-center mb-4 border">
+        <i class="bi bi-search text-muted"></i>
+        <input type="text" id="buscador" class="form-control border-0 bg-transparent"
+               placeholder="Buscar producto o SKU..." onkeyup="filtrar()">
+    </div>
+
+    @* Grid de Productos *@
+    <div class="row g-3" id="contenedorProductos">
         @foreach (var item in Model)
         {
-            <div class="col-md-4 mb-3">
-                <div class="card shadow-sm">
+            <div class="col-12 col-md-6 col-lg-4 item-producto">
+                <div class="card card-entrada shadow-sm">
                     <div class="card-body">
-                        <h5>@item.Nombre</h5>
-                        <p class="text-muted small">SKU: @item.SKU | Stock: <strong>@item.Stock</strong></p>
-                        <button type="button" class="btn btn-success w-100"
-                                onclick="abrirModal(@item.Id, '@item.Nombre')">
-                            + Registrar Entrada
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">@item.Nombre</h6>
+                            <span class="badge bg-light text-dark border">@item.SKU</span>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3 text-muted small">
+                            <i class="bi bi-archive me-2"></i> Stock actual:
+                            <span class="ms-1 fw-bold text-primary">@item.Stock</span>
+                        </div>
+
+                        <button type="button" class="btn btn-success w-100 rounded-pill fw-bold"
+                                onclick="abrirModalEntrada(@item.Id, '@item.Nombre')">
+                            <i class="bi bi-plus-lg"></i> Registrar Entrada
                         </button>
                     </div>
                 </div>
@@ -26,31 +77,41 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalEntrada" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+@* Modal de Registro (Igual al de Scrap pero Verde) *@
+<div class="modal fade" id="modalEntrada" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px;">
             <form asp-action="RegistrarEntrada" method="post">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">Ingreso de Stock</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0 bg-success text-white" style="border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title fw-bold">Ingreso de Mercancía</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" name="productoId" id="prodId" />
-                    <div class="mb-3">
-                        <label>Producto:</label>
-                        <input type="text" id="prodNombre" class="form-control" readonly />
+                <div class="modal-body p-4">
+                    <input type="hidden" name="productoId" id="modalId" />
+
+                    <div class="mb-3 text-center">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Producto Seleccionado</label>
+                        <h6 id="modalNombre" class="fw-bold text-dark"></h6>
                     </div>
+
                     <div class="mb-3">
-                        <label>Cantidad a sumar:</label>
-                        <input type="number" name="cantidad" class="form-control" min="1" required />
+                        <label class="form-label fw-bold">Cantidad que entra</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-plus-square text-success"></i></span>
+                            <input type="number" name="cantidad" class="form-control bg-light border-start-0"
+                                   min="1" placeholder="Ej. 10" required />
+                        </div>
                     </div>
+
                     <div class="mb-3">
-                        <label>Referencia/Nota:</label>
-                        <input type="text" name="referencia" class="form-control" placeholder="Ej. Factura A-12" />
+                        <label class="form-label fw-bold">Referencia o Factura</label>
+                        <textarea name="referencia" class="form-control bg-light" rows="2"
+                                  placeholder="Ej. Compra a Proveedor X..."></textarea>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Guardar Entrada</button>
+                <div class="modal-footer border-0 p-3">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">Confirmar Entrada</button>
                 </div>
             </form>
         </div>
@@ -59,10 +120,18 @@
 
 @section Scripts {
     <script>
-        function abrirModal(id, nombre) {
-            document.getElementById('prodId').value = id;
-            document.getElementById('prodNombre').value = nombre;
+        function abrirModalEntrada(id, nombre) {
+            document.getElementById('modalId').value = id;
+            document.getElementById('modalNombre').innerText = nombre;
             new bootstrap.Modal(document.getElementById('modalEntrada')).show();
+        }
+
+        function filtrar() {
+            let val = document.getElementById('buscador').value.toLowerCase();
+            let items = document.getElementsByClassName('item-producto');
+            for (let i = 0; i < items.length; i++) {
+                items[i].style.display = items[i].innerText.toLowerCase().includes(val) ? "" : "none";
+            }
         }
     </script>
 }
