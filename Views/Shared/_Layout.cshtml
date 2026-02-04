@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    @{
+        // LÓGICA DE EXCLUSIÓN: Detectamos si estamos en Login o Registro
+        string controladorActual = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        string accionActual = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+        bool esPantallaDeAcceso = (controladorActual == "Account" && (accionActual == "Login" || accionActual == "Register"));
+    }
+
     <style>
         .nav-pc-link {
             font-weight: 600;
@@ -38,11 +45,12 @@
 
         @@media (max-width: 767.98px) {
             .nav-mobile-bottom {
-                z-index: 2010; /* Elevado para estar sobre el overlay */
+                z-index: 2010; /* Sobre el overlay */
             }
 
             body {
-                padding-bottom: 140px !important;
+                /* Solo aplicamos padding si NO es pantalla de acceso */
+                padding-bottom: @(esPantallaDeAcceso ? "0" : "90px") !important;
             }
         }
 
@@ -52,7 +60,8 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: calc(100% - 70px); /* Deja espacio para el nav inferior */
+            /* Si es acceso ocupa todo, si no, deja ver el nav inferior */
+            height: @(esPantallaDeAcceso ? "100%" : "calc(100% - 70px)");
             background: #fff;
             z-index: 2000;
             transform: translateX(100%);
@@ -126,14 +135,14 @@
                 </div>
                 <div>
                     <h4 class="mb-0 fw-bold">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h4>
-                    <p class="mb-0 small opacity-75">RefaccionariaUt Panel</p>
+                    <p class="mb-0 small opacity-75">Panel Refaccionaria</p>
                 </div>
             </div>
         </div>
 
         @if (User.Identity.IsAuthenticated)
         {
-            @* SECCIÓN PARA CLIENTES (Para que no se vea vacío) *@
+            @* SECCIÓN CLIENTE *@
             @if (User.IsInRole("Cliente"))
             {
                 <div class="ml-menu-section">
@@ -144,19 +153,16 @@
                     <a class="ml-menu-item" href="#">
                         <i class="bi bi-person-gear"></i> Mis Datos (Próximamente)
                     </a>
-                    <a class="ml-menu-item" href="#">
-                        <i class="bi bi-geo-alt"></i> Direcciones Guardadas
-                    </a>
                 </div>
                 <div class="ml-menu-section">
                     <div class="ml-menu-section-title">Soporte</div>
                     <a class="ml-menu-item" href="#">
-                        <i class="bi bi-question-circle"></i> Ayuda / FAQ
+                        <i class="bi bi-question-circle"></i> Ayuda y FAQ
                     </a>
                 </div>
             }
 
-            @* SECCIÓN LOGÍSTICA (Admin, Almacén, Mostrador) *@
+            @* SECCIÓN ALMACÉN *@
             @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
             {
                 <div class="ml-menu-section">
@@ -170,7 +176,7 @@
                 </div>
             }
 
-            @* SECCIÓN VENTAS (Admin, Mostrador) *@
+            @* SECCIÓN VENTAS *@
             @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
             {
                 <div class="ml-menu-section">
@@ -178,21 +184,8 @@
                     <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index">
                         <i class="bi bi-cash-stack"></i> Monitor de Ventas
                     </a>
-                    <a class="ml-menu-item" href="#">
-                        <i class="bi bi-pc-display-horizontal"></i> Venta Mostrador
-                    </a>
-                </div>
-
-                <div class="ml-menu-section">
-                    <div class="ml-menu-section-title">Catálogo y Stock</div>
                     <a class="ml-menu-item" asp-controller="Productos" asp-action="Index">
                         <i class="bi bi-box-seam"></i> Inventario
-                    </a>
-                    <a class="ml-menu-item" asp-controller="Vehiculos" asp-action="Index">
-                        <i class="bi bi-car-front"></i> Vehículos
-                    </a>
-                    <a class="ml-menu-item" asp-controller="Compatibilidades" asp-action="Index">
-                        <i class="bi bi-diagram-3"></i> Relaciones
                     </a>
                 </div>
             }
@@ -202,9 +195,6 @@
             {
                 <div class="ml-menu-section">
                     <div class="ml-menu-section-title">Configuración</div>
-                    <a class="ml-menu-item" asp-controller="Configuracion" asp-action="Edit">
-                        <i class="bi bi-shop"></i> Mi Tienda
-                    </a>
                     <a class="ml-menu-item" asp-controller="Usuarios" asp-action="Index">
                         <i class="bi bi-people"></i> Personal
                     </a>
@@ -248,47 +238,23 @@
                             <i class="bi bi-grid me-2 text-primary"></i> Catálogo
                         </a>
                     }
-
                     @if (User.Identity.IsAuthenticated)
                     {
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                         {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
-                                <i class="bi bi-cash-stack me-2 text-primary"></i> Ventas
-                            </a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
                         }
-
                         @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
                         {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Almacen">
-                                <i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén
-                            </a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén</a>
                         }
-
-                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
-                        {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index">
-                                <i class="bi bi-box-seam me-2 text-primary"></i> Inventario
-                            </a>
-                        }
-
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Usuarios" asp-action="Index">
-                                <i class="bi bi-people me-2 text-primary"></i> Personal
-                            </a>
-                        }
-
                         @if (User.IsInRole("Cliente"))
                         {
-                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index">
-                                <i class="bi bi-bag-check me-2 text-primary"></i> Mis Pedidos
-                            </a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-bag-check me-2 text-primary"></i> Mis Pedidos</a>
                             <a class="nav-link text-dark nav-pc-link fs-6 px-3 position-relative" asp-controller="Carrito" asp-action="Index">
                                 <i class="bi bi-cart3 me-2 text-primary"></i> Mi Carrito
                                 @{
-                                    var cPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito");
-                                    var tPC = cPC?.Sum(x => x.Cantidad) ?? 0;
+                                    var tPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
                                 }
                                 @if (tPC > 0)
                                 {
@@ -306,44 +272,43 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL (NAV INFERIOR) *@
-    <div class="nav-mobile-bottom d-lg-none">
-        @if (User.IsInRole("Almacen"))
-        {
-            <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
-            <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-journal-check"></i><span>Envíos</span></a>
-        }
-        else if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
-        {
-            <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
-            <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Almacén</span></a>
-        }
-        else
-        {
-            <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
-            <a asp-controller="Carrito" asp-action="Index" class="nav-mobile-item position-relative">
-                <i class="bi bi-cart3"></i><span>Carrito</span>
-                @{
-                    var tMob = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
-                }
-                @if (tMob > 0)
-                {
-                    <span class="position-absolute top-0 start-60 badge rounded-pill bg-danger" style="font-size:0.6rem">@tMob</span>
-                }
+    @* BARRA MÓVIL: Se oculta si es Login/Registro *@
+    @if (!esPantallaDeAcceso)
+    {
+        <div class="nav-mobile-bottom d-lg-none">
+            @if (User.IsInRole("Almacen"))
+            {
+                <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
+                <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-journal-check"></i><span>Envíos</span></a>
+            }
+            else if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+            {
+                <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
+                <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Almacén</span></a>
+            }
+            else
+            {
+                <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
+                <a asp-controller="Carrito" asp-action="Index" class="nav-mobile-item position-relative">
+                    <i class="bi bi-cart3"></i><span>Carrito</span>
+                    @{
+                        var tMob = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
+                    }
+                    @if (tMob > 0)
+                    {
+                        <span class="position-absolute top-0 start-60 badge rounded-pill bg-danger" style="font-size:0.6rem">@tMob</span>
+                    }
+                </a>
+            }
+            @if (User.IsInRole("Cliente"))
+            {
+                <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-bag-check"></i><span>Pedidos</span></a>
+            }
+            <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()">
+                <i class="bi bi-list"></i><span>Menú</span>
             </a>
-        }
-
-        @if (User.IsInRole("Cliente"))
-        {
-            <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item">
-                <i class="bi bi-bag-check"></i><span>Pedidos</span>
-            </a>
-        }
-
-        <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()">
-            <i class="bi bi-list"></i><span>Menú</span>
-        </a>
-    </div>
+        </div>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -353,32 +318,7 @@
     <script>
         function toggleMLMenu() {
             document.getElementById('ml-menu-overlay').classList.toggle('active');
-            if(document.getElementById('ml-menu-overlay').classList.contains('active')) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = 'auto';
-            }
-        }
-
-        @if (TempData["AlertaCarrito"] != null)
-        {
-                <text>
-                    Swal.fire({
-                        title: '¡Agregado!',
-                        html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
-                        icon: 'success',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2E86C1',
-                        confirmButtonText: 'Ver Carrito',
-                        cancelButtonText: 'Seguir viendo'
-                    }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
-                </text>
-        }
-        @if (TempData["Error"] != null)
-        {
-                <text>
-                    Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
-                </text>
+            document.body.style.overflow = document.getElementById('ml-menu-overlay').classList.contains('active') ? 'hidden' : 'auto';
         }
     </script>
 </body>
