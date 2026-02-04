@@ -17,7 +17,7 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        // Listado de historial de Scrap
+        // 1. Ver el historial de piezas dañadas
         public async Task<IActionResult> Index()
         {
             var historial = await _context.Scraps
@@ -27,34 +27,31 @@ namespace RefaccionariaWeb.Controllers
             return View(historial);
         }
 
-        // Vista para buscar producto y escrapear
+        // 2. Vista para buscar el producto que se va a escrapear
         public async Task<IActionResult> Seleccionar()
         {
             var productos = await _context.Productos.ToListAsync();
             return View(productos);
         }
 
+        // 3. Acción que procesa el reporte y descuenta stock
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reportar(int productoId, int cantidad, string motivo)
         {
             var producto = await _context.Productos.FindAsync(productoId);
 
-            if (producto == null || cantidad <= 0 || string.IsNullOrEmpty(motivo))
-            {
-                return BadRequest("Datos inválidos");
-            }
+            if (producto == null) return NotFound();
 
-            if (cantidad > producto.Stock)
+            if (cantidad <= 0 || cantidad > producto.Stock)
             {
-                TempData["Error"] = "No puedes escrapear más de lo que hay en stock.";
+                TempData["Error"] = "Cantidad inválida o superior al stock disponible.";
                 return RedirectToAction(nameof(Seleccionar));
             }
 
-            // 1. DESCONTAR DEL STOCK
+            // PROCESO DINAMITA: Descontar y registrar
             producto.Stock -= cantidad;
 
-            // 2. CREAR EL REGISTRO DE SCRAP
             var scrap = new Scrap
             {
                 ProductoId = productoId,
@@ -65,11 +62,10 @@ namespace RefaccionariaWeb.Controllers
                 NombreUsuario = User.Identity?.Name
             };
 
-            _context.Add(scrap);
+            _context.Scraps.Add(scrap);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Se han reportado {cantidad} unidades de {producto.Nombre} como scrap.";
-
+            TempData["Success"] = $"Reporte guardado. Se descontaron {cantidad} unidades de {producto.Nombre}.";
             return RedirectToAction(nameof(Index));
         }
     }
