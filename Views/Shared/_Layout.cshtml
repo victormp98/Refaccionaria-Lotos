@@ -38,7 +38,7 @@
 
         @@media (max-width: 767.98px) {
             .nav-mobile-bottom {
-                z-index: 1010;
+                z-index: 2010; /* Elevado para estar sobre el overlay */
             }
 
             body {
@@ -52,7 +52,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100% - 70px); /* Deja espacio para el nav inferior */
             background: #fff;
             z-index: 2000;
             transform: translateX(100%);
@@ -133,6 +133,29 @@
 
         @if (User.Identity.IsAuthenticated)
         {
+            @* SECCIÓN PARA CLIENTES (Para que no se vea vacío) *@
+            @if (User.IsInRole("Cliente"))
+            {
+                <div class="ml-menu-section">
+                    <div class="ml-menu-section-title">Mi Cuenta</div>
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index">
+                        <i class="bi bi-bag-check"></i> Mis Pedidos
+                    </a>
+                    <a class="ml-menu-item" href="#">
+                        <i class="bi bi-person-gear"></i> Mis Datos (Próximamente)
+                    </a>
+                    <a class="ml-menu-item" href="#">
+                        <i class="bi bi-geo-alt"></i> Direcciones Guardadas
+                    </a>
+                </div>
+                <div class="ml-menu-section">
+                    <div class="ml-menu-section-title">Soporte</div>
+                    <a class="ml-menu-item" href="#">
+                        <i class="bi bi-question-circle"></i> Ayuda / FAQ
+                    </a>
+                </div>
+            }
+
             @* SECCIÓN LOGÍSTICA (Admin, Almacén, Mostrador) *@
             @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
             {
@@ -189,7 +212,7 @@
             }
         }
 
-        <div class="ml-menu-section mt-auto">
+        <div class="ml-menu-section mt-auto bg-light">
             <partial name="_LoginPartial" />
         </div>
     </div>
@@ -317,7 +340,6 @@
             </a>
         }
 
-        @* BOTÓN MENÚ QUE ABRE EL OVERLAY *@
         <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()">
             <i class="bi bi-list"></i><span>Menú</span>
         </a>
@@ -331,7 +353,6 @@
     <script>
         function toggleMLMenu() {
             document.getElementById('ml-menu-overlay').classList.toggle('active');
-            // Bloquear scroll del body cuando el menú está abierto
             if(document.getElementById('ml-menu-overlay').classList.contains('active')) {
                 document.body.style.overflow = 'hidden';
             } else {
