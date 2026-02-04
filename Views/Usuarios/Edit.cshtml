@@ -1,23 +1,24 @@
 ﻿@model RefaccionariaWeb.Models.ViewModels.EditarUsuarioViewModel
 
 @{
-    ViewData["Title"] = "Editar Empleado";
+    ViewData["Title"] = "Editar Usuario";
+    string tipoRetorno = ViewBag.TipoRetorno;
 }
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow border-0 rounded-4">
-                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+                <div class="card-header bg-dark text-white py-3 rounded-top-4">
                     <h4 class="mb-0"><i class="bi bi-person-gear"></i> Administrar Usuario</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Edit">
+                    <form asp-action="Edit" asp-route-tipo="@tipoRetorno">
                         <input type="hidden" asp-for="Id" />
 
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label fw-bold">Correo (Usuario)</label>
-                            <input asp-for="Email" class="form-control" />
+                            <input asp-for="Email" class="form-control" readonly />
                         </div>
 
                         <div class="mb-3">
@@ -40,8 +41,8 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary rounded-pill btn-lg">Guardar Cambios</button>
-                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">Cancelar</a>
+                            <button type="submit" class="btn btn-primary rounded-pill btn-lg fw-bold">Guardar Cambios</button>
+                            <a asp-action="Index" asp-route-tipo="@tipoRetorno" class="btn btn-outline-secondary rounded-pill fw-bold">Cancelar</a>
                         </div>
                     </form>
                 </div>

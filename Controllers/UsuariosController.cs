@@ -8,12 +8,11 @@ using System.Threading;
 
 namespace RefaccionariaWeb.Controllers
 {
-    [Authorize(Roles = "Admin")] // <--- ZONA DE ALTA SEGURIDAD
+    [Authorize(Roles = "Admin")]
     public class UsuariosController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        // Inyectamos Stores para poder crear usuarios manualmente
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
 
@@ -28,9 +27,6 @@ namespace RefaccionariaWeb.Controllers
             _emailStore = GetEmailStore();
         }
 
-        // ==========================================================
-        // 1. LISTA DE EMPLEADOS ACTIVOS (Index)
-        // ==========================================================
         public async Task<IActionResult> Index(string tipo)
         {
             var usuarios = await _userManager.Users.ToListAsync();
@@ -47,7 +43,8 @@ namespace RefaccionariaWeb.Controllers
                 });
             }
 
-            // FILTRO MÁGICO
+            ViewData["TipoActual"] = tipo;
+
             if (tipo == "personal")
             {
                 modelo = modelo.Where(u => u.RolSeleccionado != "Cliente").ToList();
@@ -62,9 +59,6 @@ namespace RefaccionariaWeb.Controllers
             return View(modelo);
         }
 
-        // ==========================================================
-        // 2. PAPELERA DE EMPLEADOS (Bloqueados)
-        // ==========================================================
         public async Task<IActionResult> Papelera()
         {
             var usuarios = await _userManager.Users.ToListAsync();
@@ -72,7 +66,6 @@ namespace RefaccionariaWeb.Controllers
 
             foreach (var usuario in usuarios)
             {
-                // FILTRO INVERSO: Solo mostramos los que SÍ están bloqueados
                 if (await _userManager.IsLockedOutAsync(usuario))
                 {
                     var roles = await _userManager.GetRolesAsync(usuario);
@@ -86,13 +79,9 @@ namespace RefaccionariaWeb.Controllers
                     });
                 }
             }
-            // Retornamos la vista (necesitarás crear Papelera.cshtml o reutilizar Index)
             return View(listaBorrados);
         }
 
-        // ==========================================================
-        // 3. CREAR NUEVO EMPLEADO (Sin cerrar sesión)
-        // ==========================================================
         public IActionResult Crear()
         {
             return View();
@@ -105,26 +94,16 @@ namespace RefaccionariaWeb.Controllers
             if (ModelState.IsValid)
             {
                 var user = Activator.CreateInstance<IdentityUser>();
-
-                // Configuramos email y usuario
                 await _userStore.SetUserNameAsync(user, model.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, model.Email, CancellationToken.None);
 
-                // Creamos el usuario con la contraseña
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
-                    // Auto-confirmamos el email para que no haya problemas de login
                     user.EmailConfirmed = true;
                     await _userManager.UpdateAsync(user);
-
-                    // Por defecto le damos rol "Mostrador" (luego lo puedes cambiar en Edit)
                     await _userManager.AddToRoleAsync(user, "Mostrador");
-
-                    // ¡IMPORTANTE! Aquí NO llamamos a SignInManager. 
-                    // Así tú sigues siendo Admin y el nuevo usuario solo se crea en la BD.
-
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -136,15 +115,13 @@ namespace RefaccionariaWeb.Controllers
             return View(model);
         }
 
-        // ==========================================================
-        // 4. EDICIÓN (Cambiar Rol / Bloquear / Desbloquear)
-        // ==========================================================
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(string id, string tipo)
         {
             var usuario = await _userManager.FindByIdAsync(id);
             if (usuario == null) return NotFound();
 
             var rolesUsuario = await _userManager.GetRolesAsync(usuario);
+            ViewBag.TipoRetorno = tipo;
 
             var model = new EditarUsuarioViewModel
             {
@@ -166,7 +143,7 @@ namespace RefaccionariaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(EditarUsuarioViewModel model)
+        public async Task<IActionResult> Edit(EditarUsuarioViewModel model, string tipo)
         {
             var usuario = await _userManager.FindByIdAsync(model.Id);
             if (usuario == null) return NotFound();
@@ -175,15 +152,12 @@ namespace RefaccionariaWeb.Controllers
             usuario.UserName = model.Email;
             usuario.PhoneNumber = model.Telefono;
 
-            // Lógica de Bloqueo/Desbloqueo (Papelera)
             if (model.EstaBloqueado)
             {
-                // Lo mandamos al año 2999 (Bloqueo efectivo)
                 await _userManager.SetLockoutEndDateAsync(usuario, DateTimeOffset.UtcNow.AddYears(100));
             }
             else
             {
-                // Le quitamos el candado (Restaurar)
                 await _userManager.SetLockoutEndDateAsync(usuario, null);
             }
 
@@ -196,42 +170,30 @@ namespace RefaccionariaWeb.Controllers
 
             await _userManager.UpdateAsync(usuario);
 
-            // Si lo bloqueaste, mándalo a la Papelera, si no, al Index
             if (model.EstaBloqueado)
             {
                 return RedirectToAction(nameof(Papelera));
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { tipo = tipo });
         }
 
-        // ==========================================================
-        // 5. ACCIÓN DIRECTA PARA DESBLOQUEAR (Restaurar desde Papelera)
-        // ==========================================================
         [HttpGet]
         public async Task<IActionResult> Desbloquear(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
-
             var usuario = await _userManager.FindByIdAsync(id);
             if (usuario == null) return NotFound();
 
-            // Usamos la misma lógica que ya tienes en el Edit: 
-            // Poner la fecha de bloqueo en null lo activa de inmediato.
             var result = await _userManager.SetLockoutEndDateAsync(usuario, null);
-
             if (result.Succeeded)
             {
-                // Limpiamos los intentos fallidos para que entre limpio
                 await _userManager.ResetAccessFailedCountAsync(usuario);
             }
 
-            // Te regresa a la Papelera. Como ya no está bloqueado, 
-            // el filtro del método Papelera() lo sacará de la lista automáticamente.
             return RedirectToAction(nameof(Papelera));
         }
 
-        // Método auxiliar requerido por Identity para manejar emails
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
