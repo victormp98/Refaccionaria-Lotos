@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        /* ESTILOS NAVEGACIÓN PC */
         .nav-pc-link {
             font-weight: 600;
             padding: 0.5rem 1rem;
@@ -40,7 +39,6 @@
             font-weight: 500;
         }
 
-        /* BARRA MÓVIL INFERIOR */
         @@media (max-width: 991.98px) {
             .nav-mobile-bottom {
                 position: fixed;
@@ -77,7 +75,6 @@
             }
         }
 
-        /* OVERLAY SECCIONADO CORREGIDO */
         #ml-menu-overlay {
             position: fixed;
             top: 0;
@@ -101,9 +98,9 @@
             background: linear-gradient(135deg, #2E86C1 0%, #1B2631 100%);
             color: white;
             padding: 2.5rem 1.5rem 1.8rem;
-            position: relative;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
+            position: relative;
         }
 
         .ml-menu-close {
@@ -155,14 +152,12 @@
 </head>
 <body class="bg-light">
 
-    @* MENÚ LATERAL MÓVIL *@
+    @* MENÚ LATERAL MÓVIL (OVERLAY) *@
     <div id="ml-menu-overlay">
         <div class="ml-menu-header shadow">
             <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
             <div class="d-flex align-items-center mt-2">
-                <div class="bg-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
-                    <i class="bi bi-person-circle text-primary fs-2"></i>
-                </div>
+                <div class="bg-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;"><i class="bi bi-person-circle text-primary fs-2"></i></div>
                 <div>
                     <h5 class="mb-0 fw-bold text-white">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h5>
                     <p class="mb-0 small text-white opacity-75">Refaccionaria Lotos</p>
@@ -173,15 +168,19 @@
         <div class="ml-menu-content">
             @if (User.Identity.IsAuthenticated)
             {
-                @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
-                {
-                    <div class="ml-menu-section-title">Operaciones</div>
-                    <div class="ml-card-menu">
+                <div class="ml-menu-section-title">Operaciones</div>
+                <div class="ml-card-menu">
+                    @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
+                    {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
                         <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
-                    </div>
-                }
+                    }
+                    @if (User.IsInRole("Cliente"))
+                    {
+                        <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-receipt"></i> Mis Pedidos</a>
+                    }
+                </div>
 
                 @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                 {
@@ -190,14 +189,6 @@
                         <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
                         <a class="ml-menu-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a>
                         <a class="ml-menu-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a>
-                    </div>
-                }
-
-                @if (User.IsInRole("Cliente"))
-                {
-                    <div class="ml-menu-section-title">Mi Cuenta</div>
-                    <div class="ml-card-menu">
-                        <a class="ml-menu-item" asp-controller="Pedidos" asp-action="MisPedidos"><i class="bi bi-receipt"></i> Mis Pedidos</a>
                     </div>
                 }
 
@@ -211,9 +202,7 @@
                 }
             }
         </div>
-        <div class="mt-auto p-4 bg-white border-top">
-            <partial name="_LoginPartial" />
-        </div>
+        <div class="mt-auto p-4 bg-white border-top"><partial name="_LoginPartial" /></div>
     </div>
 
     @* NAVBAR PC *@
@@ -221,15 +210,11 @@
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
-                    </a>
-                    <div class="d-none d-lg-block">
-                        <partial name="_LoginPartial" />
-                    </div>
+                    <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">RefaccionariaUt</a>
+                    <div class="d-none d-lg-block"><partial name="_LoginPartial" /></div>
                 </div>
 
-                @* BUSCADOR GLOBAL *@
+                @* Buscador Global *@
                 <div class="row justify-content-center w-100 mt-2 mx-0">
                     <div class="col-12 col-lg-8">
                         <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light overflow-hidden shadow-sm">
@@ -241,70 +226,57 @@
 
                 @* NAVEGACIÓN PC CENTRADA *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2 gap-2">
-                    <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
-
-                    @* 1. CARRITO EN PC PARA CLIENTE *@
-                    @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
-                    {
-                        <a class="nav-pc-link" asp-controller="Carrito" asp-action="Index">
-                            <i class="bi bi-cart3 me-2 text-primary"></i> Carrito
-                            @{
-                                var countPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
-                            }
-                            @if (countPC > 0)
-                            {
-                                <span class="badge rounded-pill bg-danger ms-1">@countPC</span>
-                            }
-                        </a>
-                    }
+                    <a class="nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
 
                     @if (User.Identity.IsAuthenticated)
                     {
-                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                        @if (User.IsInRole("Cliente"))
                         {
-                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index">Mis Pedidos</a>
+                            <a class="nav-pc-link" asp-controller="Carrito" asp-action="Index">Carrito</a>
                         }
-                        @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
-                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
-                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index">Ventas</a>
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen">Surtir</a>
+                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index">Scrap</a>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                            {
+                                <div class="dropdown">
+                                    <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Gestión</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index">Inventario</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index">Vehículos</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index">Compatibilidades</a></li>
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index">Usuarios</a></li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
                         }
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <div class="dropdown">
-                                <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Gestión</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people"></i> Usuarios</a></li>
-                                </ul>
-                            </div>
-                        }
+                    }
+                    else
+                    {
+                        <a class="nav-pc-link" asp-controller="Carrito" asp-action="Index">Carrito</a>
                     }
                 </div>
             </div>
         </nav>
     </header>
 
-    <div class="container-fluid mb-5 mt-3">
-        <main role="main">@RenderBody()</main>
-    </div>
+    <div class="container-fluid mb-5 mt-3"><main role="main">@RenderBody()</main></div>
 
-    @* BARRA MÓVIL INFERIOR *@
+    @* BARRA MÓVIL INFERIOR (MINIMALISTA) *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
             <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
 
-            @if (User.IsInRole("Almacen") || User.IsInRole("Admin"))
+            @if (!User.Identity.IsAuthenticated || User.IsInRole("Cliente"))
             {
-                <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
-                <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
-            }
-
-            @if (User.IsInRole("Cliente") || !User.Identity.IsAuthenticated)
-            {
-                <a asp-controller="Pedidos" asp-action="MisPedidos" class="nav-mobile-item"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
                 <a asp-controller="Carrito" asp-action="Index" class="nav-mobile-item position-relative">
                     <i class="bi bi-cart3"></i><span>Carrito</span>
                     @{
@@ -325,27 +297,13 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
-
     <script>
-        function toggleMLMenu() {
-            var menu = document.getElementById('ml-menu-overlay');
-            if(menu) menu.classList.toggle('active');
-        }
-
-        // Script para las alertas de carrito que mencionaste
+        function toggleMLMenu() { var menu = document.getElementById('ml-menu-overlay'); if(menu) menu.classList.toggle('active'); }
         $(document).ready(function() {
-            var msg = '@TempData["CartMessage"]';
-            if(msg) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Listo!',
-                    text: msg,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            }
+            var success = '@TempData["Success"]';
+            var error = '@TempData["Error"]';
+            if(success) { Swal.fire({ icon: 'success', title: '¡Listo!', text: success, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }); }
+            if(error) { Swal.fire({ icon: 'error', title: 'Atención', text: error, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 }); }
         });
     </script>
 </body>

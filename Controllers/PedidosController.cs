@@ -84,6 +84,18 @@ namespace RefaccionariaWeb.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
 
+            // AJUSTE: Limpiar datos fiscales si no se requieren para que se guarden como NULL
+            if (!pedido.RequiereFactura)
+            {
+                pedido.Rfc = null;
+                pedido.RazonSocial = null;
+            }
+            else
+            {
+                pedido.Rfc = string.IsNullOrWhiteSpace(pedido.Rfc) ? null : pedido.Rfc.Trim();
+                pedido.RazonSocial = string.IsNullOrWhiteSpace(pedido.RazonSocial) ? null : pedido.RazonSocial.Trim();
+            }
+
             ModelState.Remove("ClienteId");
             ModelState.Remove("Cliente");
             ModelState.Remove("TotalPedido");
@@ -157,7 +169,6 @@ namespace RefaccionariaWeb.Controllers
             return RedirectToAction(nameof(Details), new { id = id });
         }
 
-        // ACCIÓN: Confirmar recepción por parte del Cliente
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Cliente")]
@@ -179,7 +190,6 @@ namespace RefaccionariaWeb.Controllers
             return RedirectToAction(nameof(Details), new { id = id });
         }
 
-        // ACCIÓN: Reportar Scrap (Pieza dañada)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Almacen")]
@@ -188,10 +198,7 @@ namespace RefaccionariaWeb.Controllers
             var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
             if (pedido == null) return NotFound();
 
-            // Marcamos como cancelado (en el futuro esto irá a una tabla de scrap)
             pedido.Status = PedidoStatus.Cancelado;
-
-            // NOTA: No devolvemos el stock porque la pieza está dañada
             _context.Update(pedido);
             await _context.SaveChangesAsync();
 
