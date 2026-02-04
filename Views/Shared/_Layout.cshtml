@@ -152,7 +152,7 @@
 </head>
 <body class="bg-light">
 
-    @* MENÚ LATERAL MÓVIL (OVERLAY) *@
+    @* MENÚ LATERAL MÓVIL *@
     <div id="ml-menu-overlay">
         <div class="ml-menu-header shadow">
             <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
@@ -205,16 +205,14 @@
         <div class="mt-auto p-4 bg-white border-top"><partial name="_LoginPartial" /></div>
     </div>
 
-    @* NAVBAR PC *@
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">RefaccionariaUt</a>
+                    <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index"><i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt</a>
                     <div class="d-none d-lg-block"><partial name="_LoginPartial" /></div>
                 </div>
 
-                @* Buscador Global *@
                 <div class="row justify-content-center w-100 mt-2 mx-0">
                     <div class="col-12 col-lg-8">
                         <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light overflow-hidden shadow-sm">
@@ -224,34 +222,33 @@
                     </div>
                 </div>
 
-                @* NAVEGACIÓN PC CENTRADA *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2 gap-2">
-                    <a class="nav-pc-link" asp-controller="Home" asp-action="Index">Catálogo</a>
+                    <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
 
                     @if (User.Identity.IsAuthenticated)
                     {
                         @if (User.IsInRole("Cliente"))
                         {
-                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index">Mis Pedidos</a>
-                            <a class="nav-pc-link" asp-controller="Carrito" asp-action="Index">Carrito</a>
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-receipt me-2 text-primary"></i> Mis Pedidos</a>
+                            <a class="nav-pc-link" asp-controller="Carrito" asp-action="Index"><i class="bi bi-cart3 me-2 text-primary"></i> Carrito</a>
                         }
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
-                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index">Ventas</a>
-                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen">Surtir</a>
-                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index">Scrap</a>
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
+                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
 
                             @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                             {
                                 <div class="dropdown">
-                                    <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Gestión</a>
+                                    <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión</a>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index">Inventario</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index">Vehículos</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index">Compatibilidades</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a></li>
                                         @if (User.IsInRole("Admin"))
                                         {
-                                            <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index">Usuarios</a></li>
+                                            <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people"></i> Usuarios</a></li>
                                         }
                                     </ul>
                                 </div>
@@ -260,7 +257,7 @@
                     }
                     else
                     {
-                        <a class="nav-pc-link" asp-controller="Carrito" asp-action="Index">Carrito</a>
+                        <a class="nav-pc-link" asp-controller="Carrito" asp-action="Index"><i class="bi bi-cart3 me-2 text-primary"></i> Carrito</a>
                     }
                 </div>
             </div>
@@ -269,11 +266,15 @@
 
     <div class="container-fluid mb-5 mt-3"><main role="main">@RenderBody()</main></div>
 
-    @* BARRA MÓVIL INFERIOR (MINIMALISTA) *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
             <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
+
+            @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+            {
+                <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
+            }
 
             @if (!User.Identity.IsAuthenticated || User.IsInRole("Cliente"))
             {
@@ -297,13 +298,40 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    @* SCRIPT DE ALERTAS DINAMITA *@
     <script>
         function toggleMLMenu() { var menu = document.getElementById('ml-menu-overlay'); if(menu) menu.classList.toggle('active'); }
+
         $(document).ready(function() {
-            var success = '@TempData["Success"]';
-            var error = '@TempData["Error"]';
-            if(success) { Swal.fire({ icon: 'success', title: '¡Listo!', text: success, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }); }
-            if(error) { Swal.fire({ icon: 'error', title: 'Atención', text: error, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 }); }
+            // Lee el mensaje desde TempData (usado comúnmente en tu controlador de Carrito)
+            var successMsg = '@TempData["Success"]' || '@TempData["CartMessage"]';
+            var errorMsg = '@TempData["Error"]';
+
+            if(successMsg) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Añadido!',
+                    text: successMsg,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+
+            if(errorMsg) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Atención',
+                    text: errorMsg,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 4000
+                });
+            }
         });
     </script>
 </body>
