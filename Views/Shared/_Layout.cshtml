@@ -10,144 +10,164 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        .nav-pc-link {
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            color: #333;
-            text-decoration: none;
+                .nav-pc-link {
+                        font-weight: 600;
+                        padding: 0.5rem 1rem;
+                        border-radius: 50px;
+                        transition: 0.2s;
+                        display: flex;
+                        align-items: center;
+                        color: #333;
+                        text-decoration: none;
+
         }
 
-            .nav-pc-link:hover {
-                background: #f8f9fa;
-                color: #2E86C1 !important;
+                    .nav-pc-link:hover {
+                            background: #f8f9fa;
+                            color: #2E86C1 !important;
+
+        }
+
+                .dropdown-menu {
+                        border-radius: 15px;
+                        border: none;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                        padding: 1rem;
+
+        }
+
+                .dropdown-item {
+                        border-radius: 10px;
+                        padding: 0.6rem 1rem;
+                        font-weight: 500;
+
+        }
+
+                @@media (max-width: 991.98px) {
+                        .nav-mobile-bottom {
+                                position: fixed;
+                                bottom: 0;
+                                left: 0;
+                                right: 0;
+                                height: 70px;
+                                background: white;
+                                display: flex;
+                                justify-content: space-around;
+                                align-items: center;
+                                box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+                                z-index: 4000;
+                                border-top: 1px solid #f0f0f0;
+
             }
 
-        .dropdown-menu {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 1rem;
-        }
+                        .nav-mobile-item {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                color: #666;
+                                font-size: 0.75rem;
+                                text-decoration: none !important;
+                                flex: 1;
 
-        .dropdown-item {
-            border-radius: 10px;
-            padding: 0.6rem 1rem;
-            font-weight: 500;
-        }
-
-        @@media (max-width: 991.98px) {
-            .nav-mobile-bottom {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 70px;
-                background: white;
-                display: flex;
-                justify-content: space-around;
-                align-items: center;
-                box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-                z-index: 4000;
-                border-top: 1px solid #f0f0f0;
             }
 
-            .nav-mobile-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                color: #666;
-                font-size: 0.75rem;
-                text-decoration: none !important;
-                flex: 1;
+                            .nav-mobile-item i {
+                                    font-size: 1.4rem;
+                                    color: #2E86C1;
+
             }
 
-                .nav-mobile-item i {
-                    font-size: 1.4rem;
-                    color: #2E86C1;
-                }
+                        body {
+                                padding-bottom: 85px !important;
 
-            body {
-                padding-bottom: 85px !important;
-            }
-        }
-
-        #ml-menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: calc(100% - 70px);
-            background: #f4f4f4;
-            z-index: 3000;
-            transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-            #ml-menu-overlay.active {
-                transform: translateX(0);
             }
 
-        .ml-menu-header {
-            background: linear-gradient(135deg, #2E86C1 0%, #1B2631 100%);
-            color: white;
-            padding: 2.5rem 1.5rem 1.8rem;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            position: relative;
+
         }
 
-        .ml-menu-close {
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 2.5rem;
-            color: white;
-            cursor: pointer;
+                #ml-menu-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: calc(100% - 70px);
+                        background: #f4f4f4;
+                        z-index: 3000;
+                        transform: translateX(100%);
+                        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        overflow-y: auto;
+                        display: flex;
+                        flex-direction: column;
+
         }
 
-        .ml-menu-section-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: #888;
-            font-weight: 800;
-            padding: 1rem 1.2rem 0.5rem;
-            letter-spacing: 0.5px;
+                    #ml-menu-overlay.active {
+                            transform: translateX(0);
+
         }
 
-        .ml-card-menu {
-            background: white;
-            border-radius: 15px;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            overflow: hidden;
-            margin: 0 1rem;
+                .ml-menu-header {
+                        background: linear-gradient(135deg, #2E86C1 0%, #1B2631 100%);
+                        color: white;
+                        padding: 2.5rem 1.5rem 1.8rem;
+                        border-bottom-left-radius: 20px;
+                        border-bottom-right-radius: 20px;
+                        position: relative;
+
         }
 
-        .ml-menu-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem 1.2rem;
-            color: #333;
-            text-decoration: none !important;
-            font-size: 1rem;
-            font-weight: 500;
-            border-bottom: 1px solid #f8f8f8;
+                .ml-menu-close {
+                        position: absolute;
+                        top: 1rem;
+                        right: 1.5rem;
+                        font-size: 2.5rem;
+                        color: white;
+                        cursor: pointer;
+
         }
 
-            .ml-menu-item i {
-                font-size: 1.3rem;
-                margin-right: 1.2rem;
-                color: #2E86C1;
-                width: 25px;
-                text-align: center;
-            }
+                .ml-menu-section-title {
+                        font-size: 0.75rem;
+                        text-transform: uppercase;
+                        color: #888;
+                        font-weight: 800;
+                        padding: 1rem 1.2rem 0.5rem;
+                        letter-spacing: 0.5px;
+
+        }
+
+                .ml-card-menu {
+                        background: white;
+                        border-radius: 15px;
+                        margin-bottom: 1rem;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                        overflow: hidden;
+                        margin: 0 1rem;
+
+        }
+
+                .ml-menu-item {
+                        display: flex;
+                        align-items: center;
+                        padding: 1rem 1.2rem;
+                        color: #333;
+                        text-decoration: none !important;
+                        font-size: 1rem;
+                        font-weight: 500;
+                        border-bottom: 1px solid #f8f8f8;
+
+        }
+
+                    .ml-menu-item i {
+                            font-size: 1.3rem;
+                            margin-right: 1.2rem;
+                          color: #2E86C1;
+                            width: 25px;
+                            text-align: center;
+
+        }
+
+
     </style>
 </head>
 <body class="bg-light">
@@ -174,7 +194,7 @@
                     {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
-                        @* CORRECCIÓN ENLACE SCRAP *@
+                        @* CORRECCIÓN: Scraps con 's' *@
                         <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
                     }
                     @if (User.IsInRole("Cliente"))
@@ -214,7 +234,7 @@
                     <div class="d-none d-lg-block"><partial name="_LoginPartial" /></div>
                 </div>
 
-                @* CONDICIONAL PARA EL BUSCADOR GLOBAL: Solo aparece en el Catálogo *@
+                @* BUSCADOR CONDICIONAL *@
                 @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index")
                 {
                     <div class="row justify-content-center w-100 mt-2 mx-0">
@@ -241,6 +261,7 @@
                         {
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
+                            @* CORRECCIÓN: Scraps con 's' *@
                             <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
 
                             @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
@@ -294,6 +315,9 @@
                     }
                 </a>
             }
+
+            @* CORRECCIÓN: Scraps con 's' *@
+            <a asp-controller="Scraps" asp-action="Index" class="nav-mobile-item"><i class="bi bi-trash3"></i><span>Scrap</span></a>
 
             <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()"><i class="bi bi-list"></i><span>Menú</span></a>
         </div>
