@@ -176,7 +176,7 @@
         <div class="ml-menu-content">
             @if (User.Identity.IsAuthenticated)
             {
-                @* 1. SECCIÓN PARA TODOS LOS TRABAJADORES (Admin, Mostrador, Almacen) *@
+                @* 1. SECCIÓN PARA TRABAJADORES (Monitor, Almacén, Inventario, SCRAP) *@
                 @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                 {
                     <div class="ml-menu-section-title">Operaciones Diarias</div>
@@ -184,17 +184,18 @@
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Monitor de Ventas</a>
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén / Surtido</a>
                         <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
+                        @* BOTÓN SCRAP MÓVIL CORREGIDO *@
+                        <a class="ml-menu-item" asp-controller="Scraps" asp-action="Seleccionar"><i class="bi bi-trash3 text-danger"></i> Reportar Scrap</a>
                     </div>
                 }
 
-                @* 2. SECCIÓN PARA GESTIÓN MAESTRA (Admin y Mostrador) *@
+                @* 2. SECCIÓN PARA GESTIÓN MAESTRA (Vehículos y Compatibilidades) *@
                 @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                 {
                     <div class="ml-menu-section-title">Catálogo y Red</div>
                     <div class="ml-card-menu">
                         <a class="ml-menu-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a>
                         <a class="ml-menu-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a>
-                        <a class="ml-menu-item" href="#"><i class="bi bi-trash3"></i> Reportes Scrap</a>
                     </div>
                 }
 
@@ -208,7 +209,7 @@
                     </div>
                 }
 
-                @* 4. SECCIÓN CLIENTE (Aquí estaba el fallo del móvil) *@
+                @* 4. SECCIÓN CLIENTE *@
                 @if (User.IsInRole("Cliente"))
                 {
                     <div class="ml-menu-section-title">Mi Cuenta</div>
@@ -237,7 +238,6 @@
                     </div>
                 </div>
 
-                @* Buscador Global *@
                 @if (!User.IsInRole("Almacen"))
                 {
                     <div class="row justify-content-center w-100 mt-2 mx-0">
@@ -255,14 +255,17 @@
 
                     @if (User.Identity.IsAuthenticated)
                     {
-                        @* Botones para Almacenista, Mostrador y Admin *@
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén</a>
+                            @* BOTÓN SCRAP DIRECTO PARA ALMACÉN EN PC *@
+                            @if (User.IsInRole("Almacen"))
+                            {
+                                <a class="nav-pc-link" asp-controller="Scraps" asp-action="Seleccionar"><i class="bi bi-trash3 me-2 text-danger"></i> Scrap</a>
+                            }
                         }
 
-                        @* Dropdown de Gestión (Solo Admin y Mostrador) *@
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                         {
                             <div class="dropdown">
@@ -271,6 +274,8 @@
                                 </a>
                                 <ul class="dropdown-menu shadow">
                                     <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
+                                    @* BOTÓN SCRAP EN DROPDOWN GESTIÓN *@
+                                    <li><a class="dropdown-item" asp-controller="Scraps" asp-action="Seleccionar"><i class="bi bi-trash3 text-danger"></i> Reportes Scrap</a></li>
                                     <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
                                     <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a></li>
                                     @if (User.IsInRole("Admin"))
@@ -307,7 +312,6 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL PERSISTENTE *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
