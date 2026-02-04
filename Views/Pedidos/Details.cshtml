@@ -151,67 +151,31 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-5 text-muted small">Fecha:</dt>
                     <dd class="col-sm-7 small">@Model.FechaPedido.ToString("dd/MM/yyyy HH:mm")</dd>
-                    <dt class="col-sm-5 text-muted small">Estado:</dt>
-                    <dd class="col-sm-7">
-                        @{
-                            var color = Model.Status == PedidoStatus.Pagado ? "bg-success" :
-                            Model.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" :
-                            Model.Status == PedidoStatus.EnProceso ? "bg-primary" :
-                            Model.Status == PedidoStatus.Cancelado ? "bg-danger" : "bg-info";
-                        }
-                        <span class="badge @color px-3 py-2 rounded-pill small">@Model.Status</span>
-                    </dd>
                     <dt class="col-sm-5 text-muted small">Total:</dt>
                     <dd class="col-sm-7 fw-bold text-success fs-5">$@Model.TotalPedido.ToString("N2")</dd>
                 </dl>
 
-                @* ACCIÓN CLIENTE / BOTÓN QUE PEDISTE (PC Y MÓVIL) *@
+                @* BOTÓN DE RECIBIDO PARA CLIENTE (VISIBLE EN PC) *@
                 @if (esCliente && Model.Status == PedidoStatus.Enviado)
                 {
-                    <div class="mt-3 p-3 bg-primary text-white rounded-4 text-center shadow-sm">
-                        <h6 class="mb-2">¿Ya recibiste tu producto?</h6>
+                    <div class="mt-3 p-3 bg-primary text-white rounded-4 text-center">
+                        <h6 class="mb-2">¿Recibiste tu pedido?</h6>
                         <form asp-action="ConfirmarEntrega" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
-                            <button type="submit" class="btn btn-light rounded-pill px-4 fw-bold">Sí, ya lo recibí</button>
+                            <button type="submit" class="btn btn-light btn-sm rounded-pill px-4 fw-bold shadow-sm">Sí, ya lo recibí</button>
                         </form>
                     </div>
                 }
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 rounded-4 @(esRetiroLocal ? "border-start border-4 border-warning" : "")">
+        <div class="card shadow-sm border-0 rounded-4">
             <div class="card-header bg-light border-0 py-3 rounded-top-4">
-                <h5 class="mb-0 fw-bold">
-                    <i class="bi @(esRetiroLocal ? "bi-shop" : "bi-truck") me-2 text-primary"></i>
-                    @(esRetiroLocal ? "Recoger en Sucursal" : "Entrega a Domicilio")
-                </h5>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt me-2 text-primary"></i>Datos de Entrega</h5>
             </div>
             <div class="card-body">
-                @if (esRetiroLocal)
-                {
-                    <div class="alert alert-warning border-0 py-2 small mb-3">
-                        <i class="bi bi-info-square-fill me-2"></i> Puedes pasar por tu paquete cuando diga "Listo para Retiro".
-                    </div>
-                }
-                <p class="mb-1 fw-bold text-dark">@Model.NombreReceptor</p>
-                <p class="mb-1 text-muted small"><i class="bi bi-geo-alt me-1"></i> @Model.DireccionEnvio</p>
-                <p class="mb-0 text-muted small">@Model.CiudadEnvio, @Model.EstadoEnvio, CP @Model.CodigoPostalEnvio</p>
-
-                @if (!string.IsNullOrEmpty(Model.NumeroGuia))
-                {
-                    <div class="mt-3 p-3 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25 shadow-sm">
-                        <small class="d-block text-primary fw-bold mb-1"><i class="bi bi-truck me-1"></i> RASTREO:</small>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="d-block small">@Model.Paqueteria</span>
-                                <span class="d-block small fw-bold">@Model.NumeroGuia</span>
-                            </div>
-                            <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="navigator.clipboard.writeText('@Model.NumeroGuia')">
-                                <i class="bi bi-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                }
+                <p class="mb-1 fw-bold">@Model.NombreReceptor</p>
+                <p class="mb-0 text-muted small">@Model.DireccionEnvio, @Model.CiudadEnvio</p>
             </div>
         </div>
     </div>
@@ -219,28 +183,21 @@
     <div class="col-md-7">
         <div class="card shadow-sm mb-4 border-0 rounded-4">
             <div class="card-header bg-light border-0 py-3 rounded-top-4">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-cart me-2 text-primary"></i>Productos Comprados</h5>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-cart me-2 text-primary"></i>Productos</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
-                            <tr>
-                                <th class="ps-4 small">Producto</th>
-                                <th class="text-center small">Cant.</th>
-                                <th class="text-end pe-4 small">Subtotal</th>
-                            </tr>
+                            <tr><th>Producto</th><th class="text-center">Cant.</th><th class="text-end pe-4">Subtotal</th></tr>
                         </thead>
                         <tbody>
                             @foreach (var d in Model.Detalles)
                             {
                                 <tr>
-                                    <td class="ps-4">
-                                        <div class="fw-bold small">@d.Producto?.Nombre</div>
-                                        <small class="text-muted" style="font-size: 0.7rem;">SKU: @d.Producto?.SKU</small>
-                                    </td>
-                                    <td class="text-center small">@d.Cantidad</td>
-                                    <td class="text-end pe-4 fw-bold small">$@((d.Cantidad * d.PrecioUnitario).ToString("N2"))</td>
+                                    <td class="ps-4">@d.Producto?.Nombre</td>
+                                    <td class="text-center">@d.Cantidad</td>
+                                    <td class="text-end pe-4 fw-bold">$@((d.Cantidad * d.PrecioUnitario).ToString("N2"))</td>
                                 </tr>
                             }
                         </tbody>
@@ -253,57 +210,24 @@
 
 @if (esAdmin || esMostrador || esAlmacen)
 {
-    <div class="card border-primary mt-4 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-header bg-primary text-white py-3">
-            <h6 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Panel de Gestión (Administrador/Almacén)</h6>
+    <div class="card border-primary mt-4 shadow-sm rounded-4">
+        <div class="card-header bg-primary text-white py-3 rounded-top-4">
+            <h6 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Gestión Administrativa</h6>
         </div>
-        <div class="card-body bg-light">
-            <form asp-action="UpdateStatus" method="post" id="formStatus" class="row g-3 justify-content-center text-center">
+        <div class="card-body bg-light rounded-bottom-4">
+            <form asp-action="UpdateStatus" method="post" class="row g-3 justify-content-center text-center">
                 <input type="hidden" name="id" value="@Model.Id" />
-                <input type="hidden" name="returnUrl" value="@(origen == "almacen" ? Url.Action("Details", new { id = Model.Id, origen = "almacen" }) : "")" />
-
-                @if (!esRetiroLocal && Model.Status != PedidoStatus.Entregado && Model.Status != PedidoStatus.Cancelado)
-                {
-                    <div class="col-md-10 border-bottom pb-3 mb-2">
-                        <div class="row g-2 text-start">
-                            <div class="col-md-6">
-                                <label class="small fw-bold">Paquetería</label>
-                                <input type="text" name="paqueteria" id="inputPaq" class="form-control" placeholder="DHL, FedEx, etc." value="@Model.Paqueteria" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small fw-bold">Número de Guía</label>
-                                <input type="text" name="guia" id="inputGuia" class="form-control" placeholder="Código de rastreo" value="@Model.NumeroGuia" />
-                            </div>
-                        </div>
-                    </div>
-                }
-
                 <div class="col-12 d-flex gap-2 flex-wrap justify-content-center">
                     @if (esAdmin || esMostrador)
                     {
                         <button type="submit" name="nuevoStatus" value="@PedidoStatus.Pagado" class="btn btn-success rounded-pill px-4">Pagado</button>
                         <button type="submit" name="nuevoStatus" value="@PedidoStatus.EnProceso" class="btn btn-primary rounded-pill px-4">En Proceso</button>
                     }
-
-                    @if (Model.Status != PedidoStatus.Enviado && Model.Status != PedidoStatus.Entregado)
-                    {
-                        <button type="button" onclick="confirmarEnvio()" id="btnEnviado" class="btn btn-info text-white rounded-pill px-4 fw-bold shadow-sm">
-                            @(esRetiroLocal ? "Listo para Retiro" : "Marcar como Enviado")
-                        </button>
-                        <button type="submit" name="nuevoStatus" value="@PedidoStatus.Enviado" id="submitEnviado" style="display:none;"></button>
-                    }
-
-                    @if (esAdmin || esMostrador)
-                    {
-                        <button type="submit" name="nuevoStatus" value="@PedidoStatus.Entregado" class="btn btn-primary rounded-pill px-4">Entregado</button>
-                        <button type="submit" name="nuevoStatus" value="@PedidoStatus.Cancelado" class="btn btn-outline-danger rounded-pill px-4">Cancelar</button>
-                    }
-
-                    @* BOTÓN SCRAP PARA PC Y MÓVIL *@
+                    @* BOTÓN SCRAP (VISIBLE EN PC) *@
                     @if (esAlmacen || esAdmin)
                     {
                         <button type="button" onclick="reportarScrap()" class="btn btn-danger rounded-pill px-4 shadow-sm">
-                            <i class="bi bi-trash3"></i> Scrap
+                            <i class="bi bi-trash3 me-1"></i> Scrap
                         </button>
                     }
                 </div>
@@ -319,26 +243,10 @@
 
 @section Scripts {
     <script>
-        function confirmarEnvio() {
-            const inputPaq = document.getElementById("inputPaq");
-            const inputGuia = document.getElementById("inputGuia");
-            const esRetiro = @esRetiroLocal.ToString().ToLower();
-            if (!esRetiro && (!inputPaq.value.trim() || !inputGuia.value.trim())) {
-                Swal.fire({ icon: 'warning', title: 'Atención', text: 'Ingresa Paquetería y Guía.' });
-                return;
-            }
-            Swal.fire({
-                title: '¿Confirmar?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, confirmar'
-            }).then((result) => { if (result.isConfirmed) document.getElementById("submitEnviado").click(); });
-        }
-
         function reportarScrap() {
             Swal.fire({
                 title: 'Reportar Scrap',
-                text: "Motivo del daño. El pedido se cancelará y NO volverá al stock.",
+                text: "Escribe el motivo del daño.",
                 input: 'text',
                 icon: 'warning',
                 showCancelButton: true,
