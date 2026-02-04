@@ -1,0 +1,79 @@
+﻿@model RefaccionariaWeb.Models.Producto
+
+@{
+    ViewData["Title"] = "Registro de Compra";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success p-3 rounded-circle me-3">
+                            <i class="bi bi-cart-plus fs-3 text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 fw-bold">Registro de Compra</h4>
+                            <small class="text-white-50">Ingreso de mercancía al inventario</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 bg-white">
+                    <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-4 border">
+                        <img src="@(string.IsNullOrEmpty(Model.ImagenUrl) ? "/images/no-image.png" : Model.ImagenUrl)" class="rounded-3 border shadow-sm me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">@Model.Nombre</h6>
+                            <span class="badge bg-dark rounded-pill">Stock actual: @Model.Stock pzas</span>
+                        </div>
+                    </div>
+
+                    <form asp-action="Compra" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small">CANTIDAD A INGRESAR</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-2 border-end-0"><i class="bi bi-plus-circle text-success"></i></span>
+                                    <input type="number" name="cantidad" class="form-control form-control-lg border-2 border-start-0" required min="1" placeholder="0" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small">REFERENCIA / NOTA</label>
+                                <input type="text" name="referencia" class="form-control form-control-lg border-2" placeholder="Ej: Factura #123" />
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small">PRECIO COMPRA (COSTO)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-2 border-end-0 text-success fw-bold">$</span>
+                                    <input type="number" step="0.01" name="precioCompra" value="@Model.PrecioCompra" class="form-control form-control-lg border-2 border-start-0 fw-bold" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small text-success">NUEVO PRECIO VENTA</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success text-white border-0">$</span>
+                                    <input type="number" step="0.01" name="precioVenta" value="@Model.PrecioVenta" class="form-control form-control-lg border-2 border-success border-opacity-25 fw-bold text-success" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold shadow py-3">
+                                <i class="bi bi-check2-all me-2"></i> Procesar Ingreso de Mercancía
+                            </button>
+                            <a asp-action="Index" class="btn btn-link text-decoration-none text-muted fw-bold">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar y Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

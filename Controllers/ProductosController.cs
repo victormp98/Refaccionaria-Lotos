@@ -5,6 +5,7 @@ using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using System.Security.Claims;
 
 namespace RefaccionariaWeb.Controllers
 {
@@ -22,7 +23,6 @@ namespace RefaccionariaWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Solo mostramos los que están activos en el inventario principal
             return View(await _context.Productos.Where(p => p.EsVisibleEnLinea == true).ToListAsync());
         }
 
@@ -99,6 +99,55 @@ namespace RefaccionariaWeb.Controllers
             return View(producto);
         }
 
+        // --- NUEVO MÓDULO DE COMPRAS (REACONDICIONADO) ---
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Compra(int? id)
+        {
+            if (id == null) return NotFound();
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null) return NotFound();
+            return View(producto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Compra(int id, int cantidad, decimal precioCompra, decimal precioVenta, string? referencia)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null) return NotFound();
+
+            if (cantidad <= 0)
+            {
+                ModelState.AddModelError("", "La cantidad debe ser mayor a cero.");
+                return View(producto);
+            }
+
+            // 1. Actualizar Datos del Producto
+            producto.Stock += cantidad;
+            producto.PrecioCompra = precioCompra;
+            producto.PrecioVenta = precioVenta;
+
+            // 2. Registrar en Bitácora (Tabla Intermedia)
+            var movimiento = new MovimientoInventario
+            {
+                ProductoId = producto.Id,
+                TipoMovimiento = "ENTRADA",
+                Cantidad = cantidad,
+                FechaRegistro = DateTime.Now,
+                Referencia = referencia ?? "Compra de mercancía",
+                UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                NombreUsuario = User.Identity?.Name
+            };
+
+            _context.Update(producto);
+            _context.Add(movimiento);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Compra registrada: {cantidad} unidades de {producto.Nombre}";
+            return RedirectToAction(nameof(Index));
+        }
+
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -116,7 +165,6 @@ namespace RefaccionariaWeb.Controllers
             var producto = await _context.Productos.FindAsync(id);
             if (producto != null)
             {
-                // CAMBIO: Ahora solo lo oculta (lo manda a papelera) en lugar de borrarlo
                 producto.EsVisibleEnLinea = false;
                 _context.Update(producto);
                 await _context.SaveChangesAsync();
@@ -134,7 +182,6 @@ namespace RefaccionariaWeb.Controllers
             return View(productosOcultos);
         }
 
-        // NUEVA FUNCIÓN: Para regresar el producto al inventario
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Restaurar(int id)
         {

@@ -174,7 +174,13 @@
                     {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
-                        <a class="ml-menu-item" asp-controller="Entradas" asp-action="Index"><i class="bi bi-box-arrow-in-right"></i> Entradas</a>
+
+                        @* RESTRICCIÓN: Solo Admin ve Entradas/Compras *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a class="ml-menu-item" asp-controller="Entradas" asp-action="Index"><i class="bi bi-box-arrow-in-right"></i> Compras / Entradas</a>
+                        }
+
                         <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
                     }
                     @if (User.IsInRole("Cliente"))
@@ -190,6 +196,8 @@
                         <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
                         <a class="ml-menu-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a>
                         <a class="ml-menu-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a>
+
+                        @* RESTRICCIÓN: Solo Admin ve Bitácora *@
                         @if (User.IsInRole("Admin"))
                         {
                             <a class="ml-menu-item" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text"></i> Bitácora Global</a>
@@ -248,10 +256,12 @@
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
-                            <a class="nav-pc-link" asp-controller="Entradas" asp-action="Index"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i> Entradas</a>
+                            <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
 
+                            @* RESTRICCIÓN EN PC: Solo Admin ve Compras y Bitácora *@
                             @if (User.IsInRole("Admin"))
                             {
+                                <a class="nav-pc-link" asp-controller="Entradas" asp-action="Index"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i> Compras</a>
                                 <a class="nav-pc-link" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text me-2 text-primary"></i> Bitácora</a>
                             }
 
@@ -326,7 +336,7 @@
             if(successMsg) {
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Añadido!',
+                    title: '¡Operación Exitosa!',
                     text: successMsg,
                     toast: true,
                     position: 'top-end',
