@@ -11,6 +11,7 @@ namespace RefaccionariaWeb.Data
         public DbSet<Compatibilidad> Compatibilidades { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
         public DbSet<DetallePedido> DetallesPedido { get; set; }
+        public DbSet<Scrap> Scraps { get; set; }
 
         public DbSet<RefaccionariaWeb.Models.SucursalConfig> SucursalConfigs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -23,7 +24,7 @@ namespace RefaccionariaWeb.Data
             modelBuilder.Entity<Compatibilidad>().ToTable("compatibilidades");
             modelBuilder.Entity<Pedido>().ToTable("pedidos");
             modelBuilder.Entity<DetallePedido>().ToTable("detallespedido");
-
+            modelBuilder.Entity<Scrap>().ToTable("scraps");
             // For Identity tables, typically handled by base.OnModelCreating, but if issues arise,
             // they can be mapped explicitly as well:
             // modelBuilder.Entity<IdentityUser>().ToTable("aspnetusers");
