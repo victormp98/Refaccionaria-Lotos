@@ -12,7 +12,7 @@ namespace RefaccionariaWeb.Data
         public DbSet<Pedido> Pedidos { get; set; }
         public DbSet<DetallePedido> DetallesPedido { get; set; }
         public DbSet<Scrap> Scraps { get; set; }
-
+        public DbSet<MovimientoInventario> MovimientosInventario { get; set; }
         public DbSet<RefaccionariaWeb.Models.SucursalConfig> SucursalConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

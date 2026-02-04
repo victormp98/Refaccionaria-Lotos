@@ -45,13 +45,14 @@ namespace RefaccionariaWeb.Controllers
 
             if (cantidad <= 0 || cantidad > producto.Stock)
             {
-                TempData["Error"] = "La cantidad es inválida o supera el stock disponible.";
+                setTempDataError("La cantidad es inválida o supera el stock disponible.");
                 return RedirectToAction(nameof(Index));
             }
 
-            // DESCONTAR Y REGISTRAR
+            // 1. DESCONTAR DEL STOCK PRINCIPAL
             producto.Stock -= cantidad;
 
+            // 2. REGISTRAR EN LA TABLA DE SCRAPS (Historial de daños)
             var scrap = new Scrap
             {
                 ProductoId = productoId,
@@ -62,13 +63,34 @@ namespace RefaccionariaWeb.Controllers
                 NombreUsuario = User.Identity?.Name
             };
 
+            // 3. REGISTRAR EN LA BITÁCORA GLOBAL DE MOVIMIENTOS
+            // Esto es lo que acabamos de crear para que el Admin tenga el rastro completo
+            var movimiento = new MovimientoInventario
+            {
+                ProductoId = productoId,
+                TipoMovimiento = "SCRAP", // Identificador de tipo de movimiento
+                Cantidad = -cantidad,    // Guardamos en negativo porque es una salida
+                FechaRegistro = DateTime.Now,
+                Referencia = $"Motivo: {motivo}", // Para que el Admin sepa por qué fue
+                UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                NombreUsuario = User.Identity?.Name
+            };
+
             _context.Scraps.Add(scrap);
+            _context.MovimientosInventario.Add(movimiento); // Guardamos en la tabla nueva
+
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Reporte de scrap generado exitosamente.";
+            TempData["Success"] = "Reporte de scrap generado y registrado en bitácora.";
 
             // Redirigir al historial para confirmar la baja
             return RedirectToAction(nameof(Historial));
+        }
+
+        // Función auxiliar para mantener consistencia si la llegaras a ocupar
+        private void setTempDataError(string mensaje)
+        {
+            TempData["Error"] = mensaje;
         }
     }
 }
