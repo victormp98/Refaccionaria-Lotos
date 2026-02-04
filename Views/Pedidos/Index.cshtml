@@ -5,117 +5,93 @@
     ViewData["Title"] = User.IsInRole("Cliente") ? "Mis Pedidos" : "Panel de Ventas";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0 fs-2"><i class="bi bi-box-seam text-primary"></i> @ViewData["Title"]</h1>
-</div>
-
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-info text-center shadow-sm" role="alert">
-        <i class="bi bi-info-circle fs-1 d-block mb-2"></i>
-        <h4 class="alert-heading">No hay pedidos registrados</h4>
-        <p class="mb-0">Cuando se realice una compra, aparecerá en esta lista.</p>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-receipt text-primary me-2"></i> @ViewData["Title"]</h2>
     </div>
-}
-else
-{
-    @* --- VISTA PARA COMPUTADORA (TABLA) --- *@
-    <div class="table-responsive d-none d-md-block shadow-sm rounded border bg-white">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    @if (!User.IsInRole("Cliente"))
-                    {
-                        <th class="ps-3"># Pedido</th>
-                    }
-                    <th class="@(User.IsInRole("Cliente") ? "ps-3" : "")">Fecha</th>
-                    @if (!User.IsInRole("Cliente"))
-                    {
-                        <th>Cliente</th>
-                    }
-                    <th>Estado</th>
-                    <th>Total</th>
-                    <th class="text-end pe-3">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-light text-center shadow-sm border rounded-4 py-5">
+            <i class="bi bi-info-circle fs-1 d-block mb-2 text-muted"></i>
+            <h4 class="text-muted">No hay pedidos registrados</h4>
+        </div>
+    }
+    else
+    {
+        @* PC *@
+        <div class="table-responsive d-none d-md-block shadow-sm rounded-4 overflow-hidden border">
+            <table class="table table-hover align-middle mb-0 bg-white">
+                <thead class="table-dark">
                     <tr>
                         @if (!User.IsInRole("Cliente"))
                         {
-                            <td class="ps-3 fw-bold">#@item.Id</td>
+                            <th class="ps-4"># Pedido</th>
                         }
-                        <td class="@(User.IsInRole("Cliente") ? "ps-3" : "")">@item.FechaPedido.ToString("dd/MM/yyyy")</td>
+                        <th class="@(User.IsInRole("Cliente") ? "ps-4" : "")">Fecha</th>
                         @if (!User.IsInRole("Cliente"))
                         {
-                            <td>
-                                <div class="fw-bold">@item.Cliente?.UserName</div>
-                                <small class="text-muted">@item.Cliente?.Email</small>
-                            </td>
+                            <th>Cliente</th>
                         }
-                        <td>
-                            @{
-                                var c = item.Status == PedidoStatus.Pagado ? "bg-success" :
-                                item.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" :
-                                item.Status == PedidoStatus.Cancelado ? "bg-danger" : "bg-info";
-                            }
-                            <span class="badge @c">@item.Status</span>
-                        </td>
-                        <td class="fw-bold text-success">$@item.TotalPedido.ToString("N2")</td>
-                        <td class="text-end pe-3">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                <i class="bi bi-eye"></i> Detalles
-                            </a>
-                        </td>
+                        <th>Estado</th>
+                        <th>Total</th>
+                        <th class="text-end pe-4">Acciones</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    @* --- VISTA PARA MÓVIL (TARJETAS) --- *@
-    <div class="d-md-none">
-        @foreach (var item in Model)
-        {
-            <div class="card mb-3 shadow-sm border-0 rounded-3">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
                             @if (!User.IsInRole("Cliente"))
                             {
-                                <h6 class="fw-bold mb-0 text-primary">Pedido #@item.Id</h6>
+                                <td class="ps-4 fw-bold text-primary">#@item.Id</td>
                             }
-                            else
+                            <td class="@(User.IsInRole("Cliente") ? "ps-4" : "")">@item.FechaPedido.ToString("dd/MM/yyyy")</td>
+                            @if (!User.IsInRole("Cliente"))
                             {
-                                <h6 class="fw-bold mb-0 text-primary">Resumen de Compra</h6>
+                                <td><div class="fw-bold">@item.Cliente?.UserName</div><small class="text-muted">@item.Cliente?.Email</small></td>
                             }
-                            <small class="text-muted">@item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</small>
-                        </div>
-                        @{
-                            var cMob = item.Status == PedidoStatus.Pagado ? "bg-success" :
-                            item.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" :
-                            item.Status == PedidoStatus.Cancelado ? "bg-danger" : "bg-info";
-                        }
-                        <span class="badge @cMob">@item.Status</span>
-                    </div>
-
-                    @if (!User.IsInRole("Cliente"))
-                    {
-                        <div class="bg-light p-2 rounded mb-2">
-                            <small class="d-block text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Cliente:</small>
-                            <div class="small fw-bold text-dark">@item.Cliente?.UserName</div>
-                        </div>
+                            <td>
+                                @{
+                                    var c = item.Status == PedidoStatus.Pagado ? "bg-success" : item.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" : item.Status == PedidoStatus.Cancelado ? "bg-danger" : "bg-info";
+                                }
+                                <span class="badge @c rounded-pill px-3">@item.Status</span>
+                            </td>
+                            <td class="fw-bold text-success">$@item.TotalPedido.ToString("N2")</td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                    <i class="bi bi-eye"></i> Detalles
+                                </a>
+                            </td>
+                        </tr>
                     }
+                </tbody>
+            </table>
+        </div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <span class="fw-bold fs-5 text-success">$@item.TotalPedido.ToString("N2")</span>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-sm rounded-pill px-3">
-                            <i class="bi bi-eye-fill"></i> Ver Detalles
-                        </a>
+        @* MÓVIL *@
+        <div class="d-md-none">
+            @foreach (var item in Model)
+            {
+                <div class="card mb-3 shadow-sm border-0 rounded-4 border-start border-5 border-primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0">@(User.IsInRole("Cliente") ? "Compra" : "Pedido #" + item.Id)</h6>
+                                <small class="text-muted">@item.FechaPedido.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                            @{
+                                var cMob = item.Status == PedidoStatus.Pagado ? "bg-success" : item.Status == PedidoStatus.PendienteDePago ? "bg-warning text-dark" : "bg-info";
+                            }
+                            <span class="badge @cMob rounded-pill">@item.Status</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                            <span class="fw-bold text-success fs-5">$@item.TotalPedido.ToString("N2")</span>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Detalles</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
-}
+            }
+        </div>
+    }
+</div>

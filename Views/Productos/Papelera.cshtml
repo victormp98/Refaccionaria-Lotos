@@ -1,56 +1,52 @@
 ﻿@model IEnumerable<RefaccionariaWeb.Models.Producto>
-
 @{
     ViewData["Title"] = "Papelera de Reciclaje";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="text-danger"><i class="bi bi-trash3-fill"></i> Papelera de Reciclaje</h1>
-    <a asp-action="Index" class="btn btn-secondary rounded-pill">
-        <i class="bi bi-arrow-left"></i> Volver al Inventario
-    </a>
-</div>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-danger fw-bold mb-0"><i class="bi bi-trash3-fill"></i> Papelera de Inventario</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 fw-bold"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
 
-@if (!Model.Any())
-{
-    <div class="alert alert-success text-center shadow-sm">
-        <h4>¡Excelente! La papelera está vacía.</h4>
-        <p>No hay productos eliminados pendiente de restauración.</p>
-    </div>
-}
-else
-{
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover align-middle border">
-            <thead class="table-secondary">
-                <tr>
-                    <th>Producto</th>
-                    <th>SKU</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+    @if (!Model.Any())
+    {
+        <div class="alert alert-success text-center shadow-sm rounded-4 py-5 border-0">
+            <i class="bi bi-check-circle-fill display-4 d-block mb-3"></i>
+            <h4 class="fw-bold">¡Papelera vacía!</h4>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded-4 overflow-hidden border bg-white">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
                     <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                @if (!string.IsNullOrEmpty(item.ImagenUrl))
-                                {
-                                    <img src="@item.ImagenUrl" class="rounded me-3 grayscale" style="width: 40px; height: 40px; object-fit: cover; filter: grayscale(100%);" />
-                                }
-                                <span class="text-decoration-line-through text-muted">@item.Nombre</span>
-                            </div>
-                        </td>
-                        <td class="text-muted">@item.SKU</td>
-                        <td>
-                            <a asp-action="Restaurar" asp-route-id="@item.Id" class="btn btn-success btn-sm rounded-pill px-3" title="Restaurar a la venta">
-                                <i class="bi bi-arrow-counterclockwise"></i> Restaurar
-                            </a>
-                        </td>
+                        <th class="ps-4">Producto</th>
+                        <th>SKU</th>
+                        <th class="text-end pe-4">Acción</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center opacity-75">
+                                    <img src="@item.ImagenUrl" class="rounded me-3 grayscale" style="width: 40px; height: 40px; object-fit: cover; filter: grayscale(100%);" />
+                                    <span class="text-decoration-line-through text-muted fw-bold">@item.Nombre</span>
+                                </div>
+                            </td>
+                            <td class="text-muted">@item.SKU</td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Restaurar" asp-route-id="@item.Id" class="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Restaurar
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
