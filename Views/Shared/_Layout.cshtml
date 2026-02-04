@@ -185,7 +185,7 @@
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén / Surtido</a>
                         <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
                         @* BOTÓN SCRAP MÓVIL CORREGIDO *@
-                        <a class="ml-menu-item" asp-controller="Scraps" asp-action="Seleccionar"><i class="bi bi-trash3 text-danger"></i> Reportar Scrap</a>
+                        <a class="ml-menu-item" asp-controller="Scraps" asp-action="Seleccionar"><i class="bi bi-trash3"></i> Reportar Scrap</a>
                     </div>
                 }
 
@@ -231,7 +231,7 @@
             <div class="container-fluid px-3">
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-gear-wide-connected text-primary"></i> Lotos
+                        <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
                     </a>
                     <div class="ms-auto d-none d-lg-block">
                         <partial name="_LoginPartial" />
@@ -262,7 +262,7 @@
                             @* BOTÓN SCRAP DIRECTO PARA ALMACÉN EN PC *@
                             @if (User.IsInRole("Almacen"))
                             {
-                                <a class="nav-pc-link" asp-controller="Scraps" asp-action="Seleccionar"><i class="bi bi-trash3 me-2 text-danger"></i> Scrap</a>
+                                <a class="nav-pc-link" asp-controller="Scraps" asp-action="Seleccionar"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
                             }
                         }
 

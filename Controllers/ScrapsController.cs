@@ -17,8 +17,15 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        // 1. Ver el historial de piezas dañadas
+        // PANEL PRINCIPAL: El que ya tienes con el buscador y tarjetas
         public async Task<IActionResult> Index()
+        {
+            var productos = await _context.Productos.ToListAsync();
+            return View(productos);
+        }
+
+        // VISTA DE HISTORIAL: La que vamos a crear (Historial.cshtml)
+        public async Task<IActionResult> Historial()
         {
             var historial = await _context.Scraps
                 .Include(s => s.Producto)
@@ -27,14 +34,7 @@ namespace RefaccionariaWeb.Controllers
             return View(historial);
         }
 
-        // 2. Vista para buscar el producto que se va a escrapear
-        public async Task<IActionResult> Seleccionar()
-        {
-            var productos = await _context.Productos.ToListAsync();
-            return View(productos);
-        }
-
-        // 3. Acción que procesa el reporte y descuenta stock
+        // ACCIÓN DEL BOTÓN CONFIRMAR: Procesa el formulario del modal
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reportar(int productoId, int cantidad, string motivo)
@@ -43,13 +43,14 @@ namespace RefaccionariaWeb.Controllers
 
             if (producto == null) return NotFound();
 
+            // Validar que no intenten escrapear más de lo que hay
             if (cantidad <= 0 || cantidad > producto.Stock)
             {
-                TempData["Error"] = "Cantidad inválida o superior al stock disponible.";
-                return RedirectToAction(nameof(Seleccionar));
+                TempData["Error"] = "La cantidad es inválida o supera el stock disponible.";
+                return RedirectToAction(nameof(Index));
             }
 
-            // PROCESO DINAMITA: Descontar y registrar
+            // REDUCCIÓN DE STOCK
             producto.Stock -= cantidad;
 
             var scrap = new Scrap
@@ -65,8 +66,10 @@ namespace RefaccionariaWeb.Controllers
             _context.Scraps.Add(scrap);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Reporte guardado. Se descontaron {cantidad} unidades de {producto.Nombre}.";
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Reporte de scrap generado exitosamente.";
+
+            // Después de confirmar, mandamos al usuario a ver el historial
+            return RedirectToAction(nameof(Historial));
         }
     }
 }
