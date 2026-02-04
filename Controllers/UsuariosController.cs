@@ -80,7 +80,6 @@ namespace RefaccionariaWeb.Controllers
                 }
             }
 
-            // Mantenemos el hilo de navegación para el botón "Volver"
             ViewData["TipoActual"] = tipo;
             return View(listaBorrados);
         }
@@ -175,7 +174,6 @@ namespace RefaccionariaWeb.Controllers
 
             if (model.EstaBloqueado)
             {
-                // Al bloquear, mandamos a la papelera manteniendo el tipo
                 return RedirectToAction(nameof(Papelera), new { tipo = tipo });
             }
 
@@ -195,8 +193,8 @@ namespace RefaccionariaWeb.Controllers
                 await _userManager.ResetAccessFailedCountAsync(usuario);
             }
 
-            // Al desbloquear, podemos decidir si volver a la papelera o ir directo a la lista activa
-            return RedirectToAction(nameof(Index), new { tipo = tipo });
+            // CORRECCIÓN: Retornar a la Papelera manteniendo el tipo
+            return RedirectToAction(nameof(Papelera), new { tipo = tipo });
         }
 
         private IUserEmailStore<IdentityUser> GetEmailStore()
