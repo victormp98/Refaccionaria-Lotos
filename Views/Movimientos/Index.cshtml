@@ -1,48 +1,127 @@
 ﻿@model IEnumerable<RefaccionariaWeb.Models.MovimientoInventario>
 
 @{
-    ViewData["Title"] = "Bitácora de Inventario";
+    ViewData["Title"] = "Movimientos de Inventario";
 }
 
-<div class="container mt-4">
-    <h2><i class="bi bi-journal-text"></i> Bitácora de Movimientos Global</h2>
-    <hr />
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">
+            <i class="bi bi-arrow-left-right text-primary me-2"></i>Movimientos
+        </h2>
+        <span class="badge bg-secondary rounded-pill px-3 py-2">Global</span>
+    </div>
 
-    <table class="table table-hover shadow-sm mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-                <th>Usuario</th>
-                <th>Referencia</th>
-            </tr>
-        </thead>
-        <tbody>
+    @* Buscador Dinámico *@
+    <div class="mb-4">
+        <div class="input-group rounded-pill border bg-white overflow-hidden shadow-sm">
+            <span class="input-group-text border-0 bg-transparent ps-3">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" id="movimientoSearch" class="form-control border-0 bg-transparent py-2"
+                   placeholder="Buscar por producto, usuario o tipo (Venta, Scrap, Entrada)...">
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
+            <i class="bi bi-info-circle display-1 text-muted"></i>
+            <p class="fs-5 text-muted mt-3">No hay movimientos registrados aún.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3" id="movimientosContainer">
             @foreach (var item in Model)
             {
-                var claseBadge = item.TipoMovimiento switch
+                // Lógica de colores según el tipo
+                var colorClase = item.TipoMovimiento switch
                 {
-                    "ENTRADA" => "bg-success",
-                    "VENTA" => "bg-primary",
-                    "SCRAP" => "bg-danger",
-                    _ => "bg-secondary"
+                    "ENTRADA" => "border-success",
+                    "SCRAP" => "border-danger",
+                    "VENTA" => "border-primary",
+                    _ => "border-secondary"
                 };
 
-                <tr>
-                    <td>@item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@item.Producto?.Nombre</td>
-                    <td>
-                        <span class="badge @claseBadge">@item.TipoMovimiento</span>
-                    </td>
-                    <td class="fw-bold @(item.Cantidad > 0 ? "text-success" : "text-danger")">
-                        @(item.Cantidad > 0 ? "+" : "")@item.Cantidad
-                    </td>
-                    <td>@item.NombreUsuario</td>
-                    <td class="small text-muted">@item.Referencia</td>
-                </tr>
+                var iconoClase = item.TipoMovimiento switch
+                {
+                    "ENTRADA" => "bi-box-arrow-in-right text-success",
+                    "SCRAP" => "bi-trash3 text-danger",
+                    "VENTA" => "bi-cart-check text-primary",
+                    _ => "bi-arrow-left-right"
+                };
+
+                <div class="col-12 col-md-6 movimiento-item">
+                    <div class="card shadow-sm border-0 rounded-4 h-100 border-start border-5 @colorClase">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="overflow-hidden">
+                                    <h6 class="fw-bold text-dark mb-0 text-truncate">@item.Producto?.Nombre</h6>
+                                    <small class="text-muted small">SKU: @item.Producto?.SKU</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge @(item.Cantidad > 0 ? "bg-success" : "bg-danger") rounded-pill">
+                                        @(item.Cantidad > 0 ? "+" : "")@item.Cantidad
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center my-2 p-2 bg-light rounded-3">
+                                <i class="bi @iconoClase fs-5 me-2"></i>
+                                <div>
+                                    <small class="d-block text-muted fw-bold" style="font-size: 0.65rem;">TIPO DE MOVIMIENTO:</small>
+                                    <span class="fw-bold small">@item.TipoMovimiento</span>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(item.Referencia))
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted d-block" style="font-size: 0.7rem;">REFERENCIA:</small>
+                                    <p class="mb-0 small italic text-dark">"@item.Referencia"</p>
+                                </div>
+                            }
+
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                <div class="small text-muted">
+                                    <i class="bi bi-person-circle me-1"></i> @item.NombreUsuario
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i> @item.FechaRegistro.ToString("dd/MM/yy HH:mm")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#movimientoSearch").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#movimientosContainer .movimiento-item").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    .movimiento-item {
+        transition: transform 0.2s;
+    }
+
+        .movimiento-item:hover {
+            transform: translateY(-3px);
+        }
+
+    .italic {
+        font-style: italic;
+    }
+</style>

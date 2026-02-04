@@ -1,114 +1,183 @@
 @model IEnumerable<RefaccionariaWeb.Models.Producto>
 
 @{
-    ViewData["Title"] = "Productos";
+    ViewData["Title"] = "Inventario de Productos";
 }
 
-<div class="d-flex justify-content-between align-items-center flex-wrap mb-3 gap-2">
-    <h1 class="mb-0 fs-2 fs-md-1"><i class="bi bi-box-seam"></i> Inventario</h1>
+<style>
+    /* Estilos para Desktop (Tabla Moderna) */
+    .table-modern {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        border: none !important;
+    }
 
-    <div class="d-flex gap-2 ms-auto ms-sm-0">
-        <a asp-action="Papelera" class="btn btn-outline-danger rounded-pill px-3 d-flex align-items-center">
-            <i class="bi bi-trash"></i>
-            <span class="ms-1 d-none d-sm-inline">Papelera</span>
-        </a>
+        .table-modern thead {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #eee;
+        }
 
-        <a asp-action="Create" class="btn btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center">
-            <i class="bi bi-plus-lg"></i>
-            <span class="ms-1 d-none d-sm-inline">Nuevo Producto</span>
-            <span class="ms-1 d-inline d-sm-none">Nuevo</span>
-        </a>
+        .table-modern th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            color: #666;
+            padding: 1.2rem;
+        }
+
+        .table-modern td {
+            padding: 1rem 1.2rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f8f8f8;
+        }
+
+    .product-img-table {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Estilos para Móvil (Tarjetas estandarizadas con Scrap/Entradas) */
+    .product-card-mobile {
+        border-radius: 15px;
+        border-left: 5px solid #2E86C1; /* Color azul de tu marca */
+        transition: transform 0.2s;
+    }
+
+        .product-card-mobile:hover {
+            transform: translateY(-3px);
+        }
+</style>
+
+<div class="container-fluid py-4">
+    @* CABECERA ESTANDARIZADA *@
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-0"><i class="bi bi-box-seam text-primary me-2"></i>Gestión de Inventario</h2>
+            <p class="text-muted small mb-0">Administra el stock, precios y detalles de tus productos.</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a asp-action="Papelera" class="btn btn-outline-danger rounded-pill px-3 shadow-sm">
+                <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Papelera</span>
+            </a>
+            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo Producto
+            </a>
+        </div>
     </div>
-</div>
 
-<div class="table-responsive d-none d-md-block shadow-sm rounded">
-    <table class="table table-hover align-middle border">
-        <thead class="table-light">
-            <tr>
-                <th>Foto</th>
-                <th>Producto</th>
-                <th>Marca</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        @if (!string.IsNullOrEmpty(item.ImagenUrl))
-                        {
-                            <img src="@item.ImagenUrl" class="rounded" style="width: 50px; height: 50px; object-fit: cover;" />
-                        }
-                        else
-                        {
-                            <span class="text-muted small">Sin foto</span>
-                        }
-                    </td>
-                    <td>
-                        <div class="fw-bold">@item.Nombre</div>
-                        <div class="text-muted small">SKU: @item.SKU</div>
-                    </td>
-                    <td>@item.MarcaPieza</td>
-                    <td class="fw-bold text-success">$@item.PrecioVenta</td>
-                    <td>
-                        <span class="badge @(item.Stock < 5 ? "bg-danger" : "bg-success")">@item.Stock</span>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary"><i class="bi bi-eye"></i></a>
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+    @* VISTA DESKTOP (TABLA) *@
+    <div class="d-none d-md-block">
+        <div class="table-responsive shadow-sm table-modern">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Marca</th>
+                        <th>Precio Venta</th>
+                        <th>Stock</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                                    {
+                                        <img src="@item.ImagenUrl" class="product-img-table me-3" />
+                                    }
+                                    else
+                                    {
+                                        <div class="product-img-table me-3 bg-light d-flex align-items-center justify-content-center text-muted">
+                                            <i class="bi bi-image"></i>
+                                        </div>
+                                    }
+                                    <div>
+                                        <div class="fw-bold text-dark">@item.Nombre</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">SKU: @item.SKU</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">@item.MarcaPieza</span></td>
+                            <td><span class="fw-bold text-success">$@item.PrecioVenta</span></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge @(item.Stock < 5 ? "bg-danger" : "bg-dark") rounded-pill px-3">@item.Stock pzas</span>
+                                    @if (item.Stock < 5)
+                                    {
+                                        <i class="bi bi-exclamation-triangle-fill text-danger ms-2" title="Stock Bajo"></i>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-circle"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger rounded-circle"><i class="bi bi-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @* VISTA MÓVIL (TARJETAS) *@
+    <div class="d-block d-md-none">
+        @foreach (var item in Model)
+        {
+            <div class="card product-card-mobile shadow-sm mb-3 border-0">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                            {
+                                <img src="@item.ImagenUrl" class="rounded-3 shadow-sm" style="width: 70px; height: 70px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 70px; height: 70px;">
+                                    <i class="bi bi-image text-muted fs-3"></i>
+                                </div>
+                            }
                         </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-<div class="d-block d-md-none">
-    @foreach (var item in Model)
-    {
-        <div class="card mb-3 shadow-sm border-0 rounded-3">
-            <div class="card-body">
-                <div class="d-flex gap-3">
-                    <div class="flex-shrink-0">
-                        @if (!string.IsNullOrEmpty(item.ImagenUrl))
-                        {
-                            <img src="@item.ImagenUrl" class="rounded" style="width: 80px; height: 80px; object-fit: cover;" />
-                        }
-                        else
-                        {
-                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                                <i class="bi bi-image text-muted"></i>
+                        <div class="flex-grow-1 min-width-0">
+                            <h6 class="fw-bold text-dark mb-1 text-truncate">@item.Nombre</h6>
+                            <div class="d-flex gap-2 mb-1">
+                                <span class="badge bg-light text-dark border fw-normal" style="font-size: 0.65rem;">@item.SKU</span>
+                                <span class="badge bg-light text-primary border fw-normal" style="font-size: 0.65rem;">@item.MarcaPieza</span>
                             </div>
-                        }
-                    </div>
-
-                    <div class="flex-grow-1">
-                        <h6 class="fw-bold mb-1">@item.Nombre</h6>
-                        <small class="text-muted d-block">SKU: @item.SKU</small>
-                        <small class="text-muted d-block">Marca: @item.MarcaPieza</small>
-
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="fw-bold text-primary fs-5">$@item.PrecioVenta</span>
-                            <span class="badge bg-secondary">Stock: @item.Stock</span>
+                            <div class="fw-bold text-success">$@item.PrecioVenta</div>
                         </div>
                     </div>
-                </div>
 
-                <div class="d-grid gap-2 d-flex mt-3 border-top pt-2">
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-light flex-grow-1 text-primary">
-                        <i class="bi bi-pencil-fill"></i> Editar
-                    </a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-light flex-grow-1 text-danger">
-                        <i class="bi bi-trash-fill"></i> Borrar
-                    </a>
+                    <div class="d-flex justify-content-between align-items-center bg-light rounded-3 p-2 mb-3">
+                        <span class="text-muted small">Estado de Almacén:</span>
+                        <span class="badge @(item.Stock < 5 ? "bg-danger" : "bg-dark") rounded-pill px-3">@item.Stock pzas</span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary flex-grow-1 rounded-pill">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary flex-grow-1 rounded-pill">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger flex-grow-1 rounded-pill">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 </div>
