@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
+        /* Estilos PC */
         .nav-pc-link {
             font-weight: 600;
             padding: 0.5rem 1rem;
@@ -24,30 +25,57 @@
                 color: #2E86C1 !important;
             }
 
-            .nav-pc-link i {
-                font-size: 1.1rem;
+        /* Ajuste de scroll para el body cuando el menú está abierto */
+        .no-scroll {
+            overflow: hidden !important;
+        }
+
+        @@media (max-width: 991.98px) {
+            .nav-mobile-bottom {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 70px;
+                background: white;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+                z-index: 3000 !important;
+                border-top: 1px solid #f0f0f0;
             }
 
-        @@media (max-width: 767.98px) {
-            .nav-mobile-bottom {
-                z-index: 3000 !important;
+            .nav-mobile-item {
+                color: #1B2631;
+                text-decoration: none !important;
+                text-align: center;
+                font-size: 0.7rem;
+                font-weight: 700;
+                flex: 1;
             }
+
+                .nav-mobile-item i {
+                    font-size: 1.4rem;
+                    display: block;
+                    margin-bottom: 2px;
+                }
 
             body {
-                /* Lógica In-line: Sin variables previas */
-                padding-bottom: @( (ViewContext.RouteData.Values["controller"]?.ToString() == "Account") ? "0px" : "90px" ) !important;
+                /* Si no es cuenta de acceso, dejamos espacio para la barra */
+                padding-bottom: @( (ViewContext.RouteData.Values["controller"]?.ToString() == "Account") ? "0px" : "80px" ) !important;
             }
         }
 
+        /* --- MENÚ OVERLAY ML STYLE --- */
         #ml-menu-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            /* Lógica In-line para altura */
             height: @( (ViewContext.RouteData.Values["controller"]?.ToString() == "Account") ? "100%" : "calc(100% - 70px)" );
             background: #fff;
-            z-index: 2000;
+            z-index: 2500;
             transform: translateX(100%);
             transition: transform 0.3s ease-in-out;
             overflow-y: auto;
@@ -62,7 +90,7 @@
         .ml-menu-header {
             background: linear-gradient(135deg, #2E86C1 0%, #1B2631 100%);
             color: white;
-            padding: 2rem 1.5rem;
+            padding: 2.5rem 1.5rem 1.5rem;
             position: relative;
         }
 
@@ -70,29 +98,29 @@
             position: absolute;
             top: 1rem;
             right: 1.5rem;
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: white;
             cursor: pointer;
+            line-height: 1;
         }
 
         .ml-menu-section {
-            padding: 1.5rem;
+            padding: 1.2rem 1.5rem;
             border-bottom: 1px solid #f0f0f0;
         }
 
         .ml-menu-section-title {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            color: #999;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            letter-spacing: 1px;
+            color: #aaa;
+            font-weight: 800;
+            margin-bottom: 0.8rem;
         }
 
         .ml-menu-item {
             display: flex;
             align-items: center;
-            padding: 0.8rem 0;
+            padding: 0.7rem 0;
             color: #333;
             text-decoration: none;
             font-size: 1.1rem;
@@ -100,11 +128,10 @@
         }
 
             .ml-menu-item i {
-                font-size: 1.4rem;
+                font-size: 1.3rem;
                 margin-right: 1rem;
                 color: #2E86C1;
-                width: 30px;
-                text-align: center;
+                width: 25px;
             }
     </style>
 </head>
@@ -113,12 +140,12 @@
         <div class="ml-menu-header">
             <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
             <div class="d-flex align-items-center mt-2">
-                <div class="bg-white rounded-circle p-2 me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-person-fill text-primary fs-2"></i>
+                <div class="bg-white rounded-circle me-3 shadow-sm" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-person-fill text-primary fs-3"></i>
                 </div>
                 <div>
-                    <h4 class="mb-0 fw-bold">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h4>
-                    <p class="mb-0 small opacity-75">RefaccionariaUt</p>
+                    <h5 class="mb-0 fw-bold">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h5>
+                    <p class="mb-0 small opacity-75">Refaccionaria Lotos</p>
                 </div>
             </div>
         </div>
@@ -128,21 +155,29 @@
             @if (User.IsInRole("Cliente"))
             {
                 <div class="ml-menu-section">
-                    <div class="ml-menu-section-title">Mi Cuenta</div>
+                    <div class="ml-menu-section-title">Mi Actividad</div>
                     <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-bag-check"></i> Mis Pedidos</a>
-                    <a class="ml-menu-item" href="#"><i class="bi bi-person-gear"></i> Mis Datos</a>
+                    <a class="ml-menu-item" href="#"><i class="bi bi-person-gear"></i> Mi Perfil</a>
                 </div>
             }
             @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
             {
                 <div class="ml-menu-section">
-                    <div class="ml-menu-section-title">Logística</div>
-                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Panel Almacén</a>
+                    <div class="ml-menu-section-title">Operaciones</div>
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén</a>
                     <a class="ml-menu-item" href="#"><i class="bi bi-trash3 text-danger"></i> Scrap (Prox.)</a>
                 </div>
             }
+            @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+            {
+                <div class="ml-menu-section">
+                    <div class="ml-menu-section-title">Administración</div>
+                    <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
+                    <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
+                </div>
+            }
         }
-        <div class="ml-menu-section mt-auto bg-light">
+        <div class="ml-menu-section mt-auto bg-light border-top">
             <partial name="_LoginPartial" />
         </div>
     </div>
@@ -151,12 +186,55 @@
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <a class="navbar-brand fw-bold fs-3" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
+                    <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-gear-wide-connected text-primary"></i> Lotos
                     </a>
-                    <div class="ms-auto d-none d-md-block">
+                    <div class="ms-auto">
                         <partial name="_LoginPartial" />
                     </div>
+                </div>
+
+                @* Buscador Movil y PC *@
+                @if (!User.IsInRole("Almacen"))
+                {
+                    <div class="row justify-content-center w-100 mt-2 mx-0">
+                        <div class="col-12 col-lg-8 px-1">
+                            <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light w-100 overflow-hidden shadow-sm">
+                                <input name="searchString" class="form-control border-0 bg-transparent px-3 py-1" type="search" placeholder="Buscar refacción...">
+                                <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                @* Navegación PC *@
+                <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2">
+                    <a class="nav-link text-dark nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                        {
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam me-2 text-primary"></i> Inventario</a>
+                        }
+                        @if (User.IsInRole("Admin") || User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
+                        {
+                            <a class="nav-link text-dark nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Almacén</a>
+                        }
+                        @if (User.IsInRole("Cliente"))
+                        {
+                            <a class="nav-link text-dark nav-pc-link position-relative" asp-controller="Carrito" asp-action="Index">
+                                <i class="bi bi-cart3 me-2 text-primary"></i> Carrito
+                                @{
+                                    var tPC = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
+                                }
+                                @if (tPC > 0)
+                                {
+                                    <span class="badge rounded-pill bg-danger ms-1">@tPC</span>
+                                }
+                            </a>
+                        }
+                    }
                 </div>
             </div>
         </nav>
@@ -166,7 +244,7 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL: Lógica In-line directa en el IF *@
+    @* BARRA MÓVIL PERSISTENTE *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
@@ -194,9 +272,7 @@
                     }
                 </a>
             }
-            <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()">
-                <i class="bi bi-list"></i><span>Menú</span>
-            </a>
+            <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()"><i class="bi bi-list"></i><span>Menú</span></a>
         </div>
     }
 
@@ -204,13 +280,35 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
     <script>
         function toggleMLMenu() {
             var menu = document.getElementById('ml-menu-overlay');
             if(menu) {
                 menu.classList.toggle('active');
-                document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : 'auto';
+                document.body.classList.toggle('no-scroll');
             }
+        }
+
+        @if (TempData["AlertaCarrito"] != null)
+        {
+                <text>
+                    Swal.fire({
+                        title: '¡Agregado!',
+                        html: 'Añadiste <strong>@TempData["CantidadAgregada"]</strong> de:<br>@TempData["ProductoAgregado"]',
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#2E86C1',
+                        confirmButtonText: 'Ver Carrito',
+                        cancelButtonText: 'Seguir viendo'
+                    }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
+                </text>
+        }
+        @if (TempData["Error"] != null)
+        {
+                <text>
+                    Swal.fire({ icon: 'warning', title: 'Atención', text: '@TempData["Error"]' });
+                </text>
         }
     </script>
 </body>
