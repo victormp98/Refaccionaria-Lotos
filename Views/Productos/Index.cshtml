@@ -21,16 +21,16 @@
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
-    .inventory-table thead {
-        background: #212529;
-        color: white;
-    }
+        .inventory-table thead {
+            background: #212529;
+            color: white;
+        }
 
-    .inventory-table th {
-        padding: 1rem;
-        font-weight: 500;
-        border: none;
-    }
+        .inventory-table th {
+            padding: 1rem;
+            font-weight: 500;
+            border: none;
+        }
 
     /* BOTONES DE ACCIÓN PARA PC (Equilibrio texto/icono) */
     .btn-action {
@@ -45,14 +45,35 @@
         border: none;
     }
 
-    .btn-edit { background: var(--primary-soft); color: #0d6efd; }
-    .btn-edit:hover { background: #0d6efd; color: white; }
+    .btn-edit {
+        background: var(--primary-soft);
+        color: #0d6efd;
+    }
 
-    .btn-view { background: var(--secondary-soft); color: #6c757d; }
-    .btn-view:hover { background: #6c757d; color: white; }
+        .btn-edit:hover {
+            background: #0d6efd;
+            color: white;
+        }
 
-    .btn-del { background: var(--danger-soft); color: #dc3545; }
-    .btn-del:hover { background: #dc3545; color: white; }
+    .btn-view {
+        background: var(--secondary-soft);
+        color: #6c757d;
+    }
+
+        .btn-view:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+    .btn-del {
+        background: var(--danger-soft);
+        color: #dc3545;
+    }
+
+        .btn-del:hover {
+            background: #dc3545;
+            color: white;
+        }
 
     /* ESTILO MÓVIL (Mismo que Scrap/Entradas) */
     .mobile-card {
@@ -107,7 +128,7 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" 
+                                    <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)"
                                          class="rounded-3 border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;" />
                                     <div class="ms-3">
                                         <div class="fw-bold">@item.Nombre</div>
@@ -150,7 +171,7 @@
                 <div class="side-indicator"></div>
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center mb-3">
-                        <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" 
+                        <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)"
                              class="rounded-3 border" style="width: 65px; height: 65px; object-fit: cover;" />
                         <div class="ms-3 flex-grow-1">
                             <h6 class="fw-bold mb-0">@item.Nombre</h6>
