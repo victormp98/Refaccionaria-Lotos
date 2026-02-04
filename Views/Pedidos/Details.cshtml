@@ -8,12 +8,9 @@
     bool esCliente = User.IsInRole("Cliente");
 
     ViewData["Title"] = !esCliente ? $"Detalle Pedido #{Model.Id}" : "Detalle de mi Compra";
-
     bool esRetiroLocal = Model.TipoEntrega == 1;
-
     var origen = Context.Request.Query["origen"].ToString();
     var accionVolver = (origen == "almacen") ? "Almacen" : "Index";
-
     int pasoActual = (int)Model.Status;
 }
 
@@ -168,14 +165,14 @@
                     <dd class="col-sm-7 fw-bold text-success fs-5">$@Model.TotalPedido.ToString("N2")</dd>
                 </dl>
 
-                @* ACCIÓN CLIENTE / PC Y MÓVIL *@
+                @* ACCIÓN CLIENTE / BOTÓN QUE PEDISTE (PC Y MÓVIL) *@
                 @if (esCliente && Model.Status == PedidoStatus.Enviado)
                 {
-                    <div class="mt-3 p-3 bg-primary text-white rounded-4 text-center">
-                        <small class="d-block mb-2">¿Ya recibiste tu producto?</small>
+                    <div class="mt-3 p-3 bg-primary text-white rounded-4 text-center shadow-sm">
+                        <h6 class="mb-2">¿Ya recibiste tu producto?</h6>
                         <form asp-action="ConfirmarEntrega" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
-                            <button type="submit" class="btn btn-light btn-sm rounded-pill px-4 fw-bold shadow-sm">Sí, ya lo recibí</button>
+                            <button type="submit" class="btn btn-light rounded-pill px-4 fw-bold">Sí, ya lo recibí</button>
                         </form>
                     </div>
                 }
@@ -193,7 +190,7 @@
                 @if (esRetiroLocal)
                 {
                     <div class="alert alert-warning border-0 py-2 small mb-3">
-                        <i class="bi bi-info-square-fill me-2"></i> Puedes pasar por tu paquete una vez que el estado cambie a "Listo para Retiro".
+                        <i class="bi bi-info-square-fill me-2"></i> Puedes pasar por tu paquete cuando diga "Listo para Retiro".
                     </div>
                 }
                 <p class="mb-1 fw-bold text-dark">@Model.NombreReceptor</p>
@@ -203,11 +200,11 @@
                 @if (!string.IsNullOrEmpty(Model.NumeroGuia))
                 {
                     <div class="mt-3 p-3 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25 shadow-sm">
-                        <small class="d-block text-primary fw-bold mb-1"><i class="bi bi-truck me-1"></i> RASTREO DE ENVÍO:</small>
+                        <small class="d-block text-primary fw-bold mb-1"><i class="bi bi-truck me-1"></i> RASTREO:</small>
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="d-block small"><strong>Paquetería:</strong> @Model.Paqueteria</span>
-                                <span class="d-block small"><strong>Guía:</strong> @Model.NumeroGuia</span>
+                                <span class="d-block small">@Model.Paqueteria</span>
+                                <span class="d-block small fw-bold">@Model.NumeroGuia</span>
                             </div>
                             <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="navigator.clipboard.writeText('@Model.NumeroGuia')">
                                 <i class="bi bi-copy"></i>
@@ -256,11 +253,11 @@
 
 @if (esAdmin || esMostrador || esAlmacen)
 {
-    <div class="card border-primary mt-4 shadow-sm rounded-4">
-        <div class="card-header bg-primary text-white py-3 rounded-top-4">
-            <h6 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Panel de Gestión de Orden</h6>
+    <div class="card border-primary mt-4 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white py-3">
+            <h6 class="mb-0"><i class="bi bi-gear-fill me-2"></i> Panel de Gestión (Administrador/Almacén)</h6>
         </div>
-        <div class="card-body bg-light rounded-bottom-4">
+        <div class="card-body bg-light">
             <form asp-action="UpdateStatus" method="post" id="formStatus" class="row g-3 justify-content-center text-center">
                 <input type="hidden" name="id" value="@Model.Id" />
                 <input type="hidden" name="returnUrl" value="@(origen == "almacen" ? Url.Action("Details", new { id = Model.Id, origen = "almacen" }) : "")" />
@@ -291,7 +288,6 @@
                     @if (Model.Status != PedidoStatus.Enviado && Model.Status != PedidoStatus.Entregado)
                     {
                         <button type="button" onclick="confirmarEnvio()" id="btnEnviado" class="btn btn-info text-white rounded-pill px-4 fw-bold shadow-sm">
-                            <i class="bi bi-send-check me-1"></i>
                             @(esRetiroLocal ? "Listo para Retiro" : "Marcar como Enviado")
                         </button>
                         <button type="submit" name="nuevoStatus" value="@PedidoStatus.Enviado" id="submitEnviado" style="display:none;"></button>
@@ -303,10 +299,11 @@
                         <button type="submit" name="nuevoStatus" value="@PedidoStatus.Cancelado" class="btn btn-outline-danger rounded-pill px-4">Cancelar</button>
                     }
 
+                    @* BOTÓN SCRAP PARA PC Y MÓVIL *@
                     @if (esAlmacen || esAdmin)
                     {
                         <button type="button" onclick="reportarScrap()" class="btn btn-danger rounded-pill px-4 shadow-sm">
-                            <i class="bi bi-trash3 me-1"></i> Scrap
+                            <i class="bi bi-trash3"></i> Scrap
                         </button>
                     }
                 </div>
@@ -321,23 +318,17 @@
 </form>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function confirmarEnvio() {
             const inputPaq = document.getElementById("inputPaq");
             const inputGuia = document.getElementById("inputGuia");
             const esRetiro = @esRetiroLocal.ToString().ToLower();
-
-            if (!esRetiro) {
-                if (!inputPaq.value.trim() || !inputGuia.value.trim()) {
-                    Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debes ingresar la Paquetería y el Número de Guía.' });
-                    return;
-                }
+            if (!esRetiro && (!inputPaq.value.trim() || !inputGuia.value.trim())) {
+                Swal.fire({ icon: 'warning', title: 'Atención', text: 'Ingresa Paquetería y Guía.' });
+                return;
             }
-
             Swal.fire({
-                title: '¿Confirmar despacho?',
-                text: esRetiro ? "El cliente recibirá una notificación." : "Se registrará el envío con la guía proporcionada.",
+                title: '¿Confirmar?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Sí, confirmar'
@@ -346,14 +337,13 @@
 
         function reportarScrap() {
             Swal.fire({
-                title: 'Reportar pieza dañada (Scrap)',
-                text: "Escribe el motivo del daño. Esto cancelará el pedido y NO devolverá el stock.",
+                title: 'Reportar Scrap',
+                text: "Motivo del daño. El pedido se cancelará y NO volverá al stock.",
                 input: 'text',
-                inputPlaceholder: 'Ej: Faro con mica rota',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                confirmButtonText: 'Confirmar Scrap'
+                confirmButtonText: 'Confirmar'
             }).then((result) => {
                 if (result.isConfirmed && result.value) {
                     document.getElementById("motivoScrap").value = result.value;
