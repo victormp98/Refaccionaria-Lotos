@@ -59,12 +59,12 @@ namespace RefaccionariaWeb.Controllers
         }
 
 
-        // Acción para ver solo el historial de entradas
         public async Task<IActionResult> Historial()
         {
+            // Solo traemos los movimientos que sean del tipo ENTRADA
             var historial = await _context.MovimientosInventario
                 .Include(m => m.Producto)
-                .Where(m => m.TipoMovimiento == "ENTRADA") // Filtramos solo entradas
+                .Where(m => m.TipoMovimiento == "ENTRADA")
                 .OrderByDescending(m => m.FechaRegistro)
                 .ToListAsync();
 
