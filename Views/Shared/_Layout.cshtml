@@ -27,25 +27,7 @@
                 color: #2E86C1 !important;
             }
 
-        .dropdown-menu {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 1rem;
-        }
-
-        .dropdown-item {
-            border-radius: 10px;
-            padding: 0.6rem 1rem;
-            font-weight: 500;
-        }
-
-            .dropdown-item i {
-                margin-right: 10px;
-                color: #2E86C1;
-            }
-
-        /* ESTILOS MÓVIL Y OVERLAY */
+        /* ESTILOS MÓVIL Y BARRA INFERIOR */
         @@media (max-width: 991.98px) {
             .nav-mobile-bottom {
                 position: fixed;
@@ -105,7 +87,6 @@
             background: linear-gradient(135deg, #2E86C1 0%, #1B2631 100%);
             color: white;
             padding: 2.5rem 1.5rem 1.8rem;
-            position: relative;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
         }
@@ -119,27 +100,15 @@
             cursor: pointer;
         }
 
-        .ml-menu-content {
-            padding: 1rem;
-        }
-
-        .ml-card-menu {
-            background: white;
-            border-radius: 15px;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-
         .ml-menu-item {
             display: flex;
             align-items: center;
             padding: 1rem 1.2rem;
             color: #333;
             text-decoration: none !important;
-            font-size: 1rem;
-            font-weight: 500;
             border-bottom: 1px solid #f8f8f8;
+            background: white;
+            margin-bottom: 2px;
         }
 
             .ml-menu-item i {
@@ -153,25 +122,25 @@
 </head>
 <body class="bg-light">
 
-    @* OVERLAY MENÚ (EL QUE SALE DE LADO) *@
+    @* MENÚ LATERAL (MOBILE OVERLAY) *@
     <div id="ml-menu-overlay">
         <div class="ml-menu-header shadow">
             <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
             <div class="d-flex align-items-center mt-2">
-                <div class="bg-white rounded-circle me-3 shadow-sm" style="width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;">
+                <div class="bg-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
                     <i class="bi bi-person-circle text-primary fs-2"></i>
                 </div>
                 <div>
-                    <h5 class="mb-0 fw-bold">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h5>
-                    <p class="mb-0 small opacity-75">Refaccionaria Lotos App</p>
+                    <h5 class="mb-0 fw-bold text-white">Hola, @(User.Identity.IsAuthenticated? User.Identity.Name : "Invitado")</h5>
+                    <p class="mb-0 small text-white opacity-75">Refaccionaria Lotos</p>
                 </div>
             </div>
         </div>
 
-        <div class="ml-menu-content">
+        <div class="p-3">
             @if (User.Identity.IsAuthenticated)
             {
-                <div class="ml-card-menu">
+                <div class="rounded-4 overflow-hidden shadow-sm">
                     <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                     <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Almacén</a>
                     <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a>
@@ -184,14 +153,34 @@
         </div>
     </div>
 
-    @* NAVBAR SUPERIOR (PC) *@
+    @* NAVBAR PRINCIPAL (PC Y MÓVIL SUPERIOR) *@
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
-                <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
-                </a>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <a class="navbar-brand fw-bold fs-4" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-gear-wide-connected text-primary"></i> RefaccionariaUt
+                    </a>
+                    @* AQUÍ RECUPERAMOS LOS BOTONES DE LOGIN PARA PC *@
+                    <div class="d-none d-lg-block">
+                        <partial name="_LoginPartial" />
+                    </div>
+                </div>
 
+                @* BUSCADOR GLOBAL (Solo si no es Almacén) *@
+                @if (!User.IsInRole("Almacen"))
+                {
+                    <div class="row justify-content-center w-100 mt-2 mx-0">
+                        <div class="col-12 col-lg-8">
+                            <form asp-controller="Home" asp-action="Index" method="get" class="d-flex rounded-pill border bg-light overflow-hidden shadow-sm">
+                                <input name="searchString" class="form-control border-0 bg-transparent px-3 py-1" type="search" placeholder="Buscar refacción...">
+                                <button class="btn border-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                @* NAVEGACIÓN PC (CENTRAL) *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2 gap-2">
                     <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
                     @if (User.Identity.IsAuthenticated)
@@ -199,7 +188,7 @@
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
-                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-primary"></i> Scrap</a>
+                            <a class="nav-pc-link" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2 text-danger"></i> Scrap</a>
                         }
                     }
                 </div>
@@ -211,12 +200,11 @@
         <main role="main">@RenderBody()</main>
     </div>
 
-    @* BARRA MÓVIL INFERIOR (ESTA ES LA QUE SE HABÍA PERDIDO) *@
+    @* BARRA MÓVIL INFERIOR PERSISTENTE *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
             <a asp-controller="Home" asp-action="Index" class="nav-mobile-item"><i class="bi bi-house"></i><span>Inicio</span></a>
-
             @if (User.IsInRole("Almacen"))
             {
                 <a asp-controller="Pedidos" asp-action="Almacen" class="nav-mobile-item"><i class="bi bi-truck-flatbed"></i><span>Surtir</span></a>
@@ -225,12 +213,10 @@
             {
                 <a asp-controller="Pedidos" asp-action="Index" class="nav-mobile-item"><i class="bi bi-cash-stack"></i><span>Ventas</span></a>
             }
-
             @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
             {
                 <a asp-controller="Scraps" asp-action="Index" class="nav-mobile-item"><i class="bi bi-trash3 text-danger"></i><span>Scrap</span></a>
             }
-
             <a href="javascript:void(0)" class="nav-mobile-item" onclick="toggleMLMenu()"><i class="bi bi-list"></i><span>Menú</span></a>
         </div>
     }
