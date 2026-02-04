@@ -1,34 +1,59 @@
 ﻿@model IEnumerable<RefaccionariaWeb.Models.MovimientoInventario>
 
-<div class="container mt-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold"><i class="bi bi-clock-history text-success"></i> Historial de Entradas</h4>
-        <a asp-action="Index" class="btn btn-sm btn-secondary rounded-pill">Volver</a>
+@{
+    ViewData["Title"] = "Historial de Entradas";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history text-primary me-2"></i>Historial de Entradas</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left"></i> Volver al Panel
+        </a>
     </div>
 
-    <div class="table-responsive shadow-sm rounded-4 bg-white p-3">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Fecha</th>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Usuario</th>
-                    <th>Referencia</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td class="small">@item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td class="fw-bold">@item.Producto?.Nombre</td>
-                        <td class="text-success fw-bold">+@item.Cantidad</td>
-                        <td>@item.NombreUsuario</td>
-                        <td class="small text-muted">@item.Referencia</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
+            <i class="bi bi-info-circle display-1 text-muted"></i>
+            <p class="fs-5 text-muted mt-3">No hay registros de entradas en la bitácora.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                <div class="col-12 col-md-6">
+                    <div class="card shadow-sm border-0 rounded-4 h-100 border-start border-5 border-success">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="overflow-hidden">
+                                    <h5 class="fw-bold text-dark mb-0 text-truncate">@item.Producto?.Nombre</h5>
+                                    <small class="text-muted">SKU: @item.Producto?.SKU</small>
+                                </div>
+                                <div class="text-end ms-2">
+                                    <span class="badge bg-success rounded-pill px-3 py-2 fs-6">+@item.Cantidad</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-light p-3 rounded-3 my-3 border">
+                                <small class="d-block text-success fw-bold mb-1" style="font-size:0.7rem">REFERENCIA REGISTRADA:</small>
+                                <p class="mb-0 text-dark small" style="font-style: italic;">"@item.Referencia"</p>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                <div class="small text-muted">
+                                    <i class="bi bi-person-badge me-1"></i> @item.NombreUsuario
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i> @item.FechaRegistro.ToString("dd/MM/yy HH:mm")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
