@@ -12,12 +12,13 @@
         </a>
     </div>
 
+    @* Buscador en tiempo real (JavaScript) *@
     <div class="mb-4">
         <div class="input-group rounded-pill border bg-white overflow-hidden shadow-sm">
             <span class="input-group-text border-0 bg-transparent ps-3">
                 <i class="bi bi-search text-muted"></i>
             </span>
-            <input type="text" id="scrapSearch" class="form-control border-0 bg-transparent py-2" placeholder="Filtrar por nombre de producto o motivo...">
+            <input type="text" id="scrapSearch" class="form-control border-0 bg-transparent py-2" placeholder="Filtrar por nombre de producto o marca...">
         </div>
     </div>
 
@@ -29,9 +30,9 @@
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center mb-3">
                             <div class="flex-shrink-0 me-3">
-                                @if (item.Producto != null && !string.IsNullOrEmpty(item.Producto.ImagenUrl))
+                                @if (!string.IsNullOrEmpty(item.ImagenUrl))
                                 {
-                                    <img src="@item.Producto.ImagenUrl" class="rounded-3 object-fit-cover shadow-sm" style="width: 60px; height: 60px;" alt="@item.Producto.Nombre">
+                                    <img src="@item.ImagenUrl" class="rounded-3 object-fit-cover shadow-sm" style="width: 60px; height: 60px;" alt="@item.Nombre">
                                 }
                                 else
                                 {
@@ -42,48 +43,57 @@
                             </div>
 
                             <div class="flex-grow-1 min-width-0">
-                                <h6 class="fw-bold text-dark mb-0 text-truncate">@(item.Producto?.Nombre ?? "Producto no encontrado")</h6>
-                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">ID Producto: @item.ProductoId</small>
+                                <h6 class="fw-bold text-dark mb-0 text-truncate">@item.Nombre</h6>
+                                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">@item.MarcaPieza</small>
                             </div>
                         </div>
 
                         <div class="bg-light rounded-3 p-3 mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <span class="text-muted small">Cantidad:</span>
-                                <span class="badge bg-danger rounded-pill">@item.Cantidad pza(s)</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted small">Fecha:</span>
-                                <span class="small fw-bold">@item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</span>
+                                <span class="text-muted small">Stock Actual:</span>
+                                <span class="badge bg-dark rounded-pill">@item.Stock pza(s)</span>
                             </div>
                         </div>
 
-                        <div class="mb-2">
-                            <label class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Motivo del Daño:</label>
-                            <p class="small text-dark mb-0 border-start border-2 border-secondary ps-2 mt-1 fst-italic">
-                                "@item.Motivo"
-                            </p>
-                        </div>
+                        @* Botón para abrir modal de reporte *@
+                        <button type="button" class="btn btn-danger w-100 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalScrap-@item.Id">
+                            <i class="bi bi-megaphone me-1"></i> Reportar Daño
+                        </button>
                     </div>
-                    <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
-                        <div class="d-flex align-items-center text-muted border-top pt-2" style="font-size: 0.8rem;">
-                            <i class="bi bi-person-circle me-1 text-primary"></i>
-                            <span>Registrado por: <strong>@item.NombreUsuario</strong></span>
-                        </div>
+                </div>
+            </div>
+
+            @* MODAL PARA CADA PRODUCTO *@
+            <div class="modal fade" id="modalScrap-@item.Id" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow rounded-4">
+                        <form asp-action="Reportar" method="post">
+                            <div class="modal-header border-0 bg-danger text-white">
+                                <h5 class="modal-title fw-bold">Reportar Scrap: @item.Nombre</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="productoId" value="@item.Id" />
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Cantidad de piezas dañadas</label>
+                                    <input type="number" name="cantidad" class="form-control rounded-pill" min="1" max="@item.Stock" required />
+                                    <small class="text-muted">Máximo disponible: @item.Stock</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Motivo o Descripción del daño</label>
+                                    <textarea name="motivo" class="form-control rounded-4" rows="3" placeholder="Ej: Empaque roto, rayadura en superficie..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-danger rounded-pill px-4">Confirmar Baja</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         }
     </div>
-
-    @if (!Model.Any())
-    {
-        <div class="text-center py-5">
-            <i class="bi bi-check2-circle text-success" style="font-size: 4rem;"></i>
-            <h4 class="mt-3 text-muted">No hay registros de scrap pendientes</h4>
-            <p>Todo el inventario parece estar en buen estado.</p>
-        </div>
-    }
 </div>
 
 @section Scripts {
