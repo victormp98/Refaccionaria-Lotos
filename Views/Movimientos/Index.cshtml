@@ -1,0 +1,48 @@
+﻿@model IEnumerable<RefaccionariaWeb.Models.MovimientoInventario>
+
+@{
+    ViewData["Title"] = "Bitácora de Inventario";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-journal-text"></i> Bitácora de Movimientos Global</h2>
+    <hr />
+
+    <table class="table table-hover shadow-sm mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Usuario</th>
+                <th>Referencia</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var claseBadge = item.TipoMovimiento switch
+                {
+                    "ENTRADA" => "bg-success",
+                    "VENTA" => "bg-primary",
+                    "SCRAP" => "bg-danger",
+                    _ => "bg-secondary"
+                };
+
+                <tr>
+                    <td>@item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.Producto?.Nombre</td>
+                    <td>
+                        <span class="badge @claseBadge">@item.TipoMovimiento</span>
+                    </td>
+                    <td class="fw-bold @(item.Cantidad > 0 ? "text-success" : "text-danger")">
+                        @(item.Cantidad > 0 ? "+" : "")@item.Cantidad
+                    </td>
+                    <td>@item.NombreUsuario</td>
+                    <td class="small text-muted">@item.Referencia</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
