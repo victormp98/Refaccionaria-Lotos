@@ -17,14 +17,14 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        // PANEL PRINCIPAL: El que ya tienes con el buscador y tarjetas
+        // PANEL PRINCIPAL: Buscador y tarjetas de productos
         public async Task<IActionResult> Index()
         {
             var productos = await _context.Productos.ToListAsync();
             return View(productos);
         }
 
-        // VISTA DE HISTORIAL: La que vamos a crear (Historial.cshtml)
+        // VISTA DE HISTORIAL: Lista de piezas dañadas (Historial.cshtml)
         public async Task<IActionResult> Historial()
         {
             var historial = await _context.Scraps
@@ -43,14 +43,13 @@ namespace RefaccionariaWeb.Controllers
 
             if (producto == null) return NotFound();
 
-            // Validar que no intenten escrapear más de lo que hay
             if (cantidad <= 0 || cantidad > producto.Stock)
             {
                 TempData["Error"] = "La cantidad es inválida o supera el stock disponible.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // REDUCCIÓN DE STOCK
+            // DESCONTAR Y REGISTRAR
             producto.Stock -= cantidad;
 
             var scrap = new Scrap
@@ -68,7 +67,7 @@ namespace RefaccionariaWeb.Controllers
 
             TempData["Success"] = "Reporte de scrap generado exitosamente.";
 
-            // Después de confirmar, mandamos al usuario a ver el historial
+            // Redirigir al historial para confirmar la baja
             return RedirectToAction(nameof(Historial));
         }
     }

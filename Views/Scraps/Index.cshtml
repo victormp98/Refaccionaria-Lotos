@@ -1,28 +1,19 @@
 ﻿@model IEnumerable<RefaccionariaWeb.Models.Producto>
 
-@{
-    ViewData["Title"] = "Reportar Piezas Dañadas";
-}
-
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0 text-danger">
-            <i class="bi bi-search text-dark me-2"></i>Seleccionar para Scrap
-        </h2>
+        <h2 class="fw-bold mb-0 text-danger"><i class="bi bi-search text-dark me-2"></i>Seleccionar para Scrap</h2>
         <a asp-action="Historial" class="btn btn-outline-secondary rounded-pill px-4">
-            <i class="bi bi-clock-history me-1"></i> Historial Reportes
+            <i class="bi bi-clock-history me-1"></i> Ver Historial
         </a>
     </div>
 
-    @* BUSCADOR INTELIGENTE *@
+    @* BUSCADOR *@
     <div class="row mb-4">
         <div class="col-md-8 mx-auto">
             <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
-                <span class="input-group-text bg-white border-0 ps-4">
-                    <i class="bi bi-search text-muted"></i>
-                </span>
-                <input type="text" id="txtBuscador" class="form-control border-0 fs-6 py-3"
-                       placeholder="Escribe el nombre del producto o el SKU...">
+                <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="txtBuscador" class="form-control border-0 fs-6 py-3" placeholder="Buscar producto...">
             </div>
         </div>
     </div>
@@ -30,30 +21,17 @@
     <div class="row g-3" id="contenedorTarjetas">
         @foreach (var item in Model)
         {
-            <div class="col-12 col-md-6 col-lg-4 tarjeta-producto"
-                 data-search="@item.Nombre.ToLower() @item.SKU.ToLower()">
-                <div class="card h-100 shadow-sm border-0 rounded-4 transition-hover">
+            <div class="col-12 col-md-6 col-lg-4 tarjeta-producto" data-search="@item.Nombre.ToLower() @item.SKU.ToLower()">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-light rounded-circle p-3 me-3">
-                                <i class="bi bi-box-seam text-primary fs-4"></i>
-                            </div>
-                            <div class="overflow-hidden">
-                                <h6 class="fw-bold text-dark mb-0 text-truncate">@item.Nombre</h6>
-                                <small class="text-muted d-block">SKU: @item.SKU</small>
-                            </div>
+                        <h6 class="fw-bold text-dark">@item.Nombre</h6>
+                        <small class="text-muted d-block mb-3">SKU: @item.SKU</small>
+                        <div class="p-2 bg-light rounded-3 d-flex justify-content-between mb-3">
+                            <span class="small fw-bold">Stock:</span>
+                            <span class="badge bg-success rounded-pill">@item.Stock pzas</span>
                         </div>
-
-                        <div class="p-2 bg-light rounded-3 d-flex justify-content-between align-items-center mb-3">
-                            <span class="small text-muted fw-bold ps-2">En Existencia:</span>
-                            <span class="badge @(item.Stock > 0 ? "bg-success" : "bg-danger") rounded-pill px-3">
-                                @item.Stock pzas
-                            </span>
-                        </div>
-
-                        <button type="button" class="btn btn-danger w-100 rounded-pill fw-bold py-2 shadow-sm"
-                                onclick="prepararScrap(@item.Id, '@item.Nombre', @item.Stock)">
-                            <i class="bi bi-trash3 me-1"></i> Reportar Scrap
+                        <button type="button" class="btn btn-danger w-100 rounded-pill fw-bold" onclick="prepararScrap(@item.Id, '@item.Nombre', @item.Stock)">
+                            Reportar Scrap
                         </button>
                     </div>
                 </div>
@@ -62,38 +40,26 @@
     </div>
 </div>
 
-@* MODAL PARA CAPTURAR EL MOTIVO *@
-<div class="modal fade" id="modalConfirmarScrap" tabindex="-1" aria-hidden="true">
+@* MODAL *@
+<div class="modal fade" id="modalConfirmarScrap" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow-lg">
-            <div class="modal-header bg-danger text-white border-0 py-3 rounded-top-4">
-                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Detalle de la Merma</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
             <form asp-action="Reportar" method="post">
                 <div class="modal-body p-4">
                     <input type="hidden" name="productoId" id="scrapProductoId" />
-
-                    <div class="text-center mb-4">
-                        <h5 class="fw-bold text-dark mb-1" id="scrapNombreDisplay"></h5>
-                        <p class="text-muted small mb-0" id="scrapStockDisplay"></p>
-                    </div>
-
+                    <h5 class="fw-bold text-center" id="scrapNombreDisplay"></h5>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">¿Cuántas piezas se dañaron?</label>
-                        <input type="number" name="cantidad" id="scrapCantidad" class="form-control form-control-lg rounded-pill border-2"
-                               min="1" value="1" required />
+                        <label class="form-label small fw-bold">Cantidad</label>
+                        <input type="number" name="cantidad" id="scrapCantidad" class="form-control rounded-pill" min="1" required />
                     </div>
-
                     <div class="mb-0">
-                        <label class="form-label small fw-bold text-danger">Explica qué pasó (Motivo):</label>
-                        <textarea name="motivo" class="form-control rounded-4 border-2" rows="4"
-                                  placeholder="Ej: Se cayó al mover el anaquel y se rompió la base..." required></textarea>
+                        <label class="form-label small fw-bold">Motivo</label>
+                        <textarea name="motivo" class="form-control rounded-4" rows="3" required></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pb-4 justify-content-center">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger rounded-pill px-5 fw-bold shadow">Confirmar y Descontar</button>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">Confirmar</button>
                 </div>
             </form>
         </div>
@@ -102,24 +68,17 @@
 
 @section Scripts {
     <script>
-        // FILTRO DE BÚSQUEDA EN TIEMPO REAL
         document.getElementById('txtBuscador').addEventListener('input', function(e) {
             let valor = e.target.value.toLowerCase();
             document.querySelectorAll('.tarjeta-producto').forEach(t => {
-                let coincide = t.getAttribute('data-search').includes(valor);
-                t.style.display = coincide ? "block" : "none";
+                t.style.display = t.getAttribute('data-search').includes(valor) ? "block" : "none";
             });
         });
-
-        // CARGAR DATOS EN EL MODAL
         function prepararScrap(id, nombre, stock) {
             document.getElementById('scrapProductoId').value = id;
             document.getElementById('scrapNombreDisplay').innerText = nombre;
-            document.getElementById('scrapStockDisplay').innerText = "Stock disponible actual: " + stock;
-            document.getElementById('scrapCantidad').max = stock; // No dejar que escrapee más de lo que hay
-
-            var miModal = new bootstrap.Modal(document.getElementById('modalConfirmarScrap'));
-            miModal.show();
+            document.getElementById('scrapCantidad').max = stock;
+            new bootstrap.Modal(document.getElementById('modalConfirmarScrap')).show();
         }
     </script>
 }
