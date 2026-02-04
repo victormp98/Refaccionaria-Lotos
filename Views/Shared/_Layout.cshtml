@@ -174,6 +174,7 @@
                     {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
+                        @* CORRECCIÓN ENLACE SCRAP *@
                         <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
                     }
                     @if (User.IsInRole("Cliente"))
@@ -213,7 +214,7 @@
                     <div class="d-none d-lg-block"><partial name="_LoginPartial" /></div>
                 </div>
 
-                @* AJUSTE: El buscador solo aparece en la pantalla principal del catálogo *@
+                @* CONDICIONAL PARA EL BUSCADOR GLOBAL: Solo aparece en el Catálogo *@
                 @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index")
                 {
                     <div class="row justify-content-center w-100 mt-2 mx-0">
@@ -246,7 +247,7 @@
                             {
                                 <div class="dropdown">
                                     <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión</a>
-                                    <ul class="dropdown-menu">
+                                    <ul class="dropdown-menu shadow">
                                         <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
                                         <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
                                         <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a></li>
@@ -303,7 +304,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
-    @* SCRIPT DE ALERTAS DINAMITA *@
     <script>
         function toggleMLMenu() { var menu = document.getElementById('ml-menu-overlay'); if(menu) menu.classList.toggle('active'); }
 
