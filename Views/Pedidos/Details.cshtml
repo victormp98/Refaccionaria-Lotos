@@ -176,8 +176,11 @@
                                 <tr>
                                     <th class="ps-4 border-0 py-3">REFACCIÓN</th>
                                     <th class="text-center border-0 py-3">CANT.</th>
-                                    <th class="text-end border-0 py-3">UNITARIO</th>
-                                    <th class="text-end pe-4 border-0 py-3">SUBTOTAL</th>
+                                    @if (!esAlmacen)
+                                    {
+                                        <th class="text-end border-0 py-3">UNITARIO</th>
+                                        <th class="text-end pe-4 border-0 py-3">SUBTOTAL</th>
+                                    }
                                 </tr>
                             </thead>
                             <tbody>
@@ -189,34 +192,46 @@
                                             <small class="text-muted">SKU: @d.Producto?.SKU | Marca: @d.Producto?.MarcaPieza</small>
                                         </td>
                                         <td class="text-center fw-bold">@d.Cantidad</td>
-                                        <td class="text-end">$@d.PrecioUnitario.ToString("N2")</td>
-                                        <td class="text-end pe-4 fw-bold">$@((d.Cantidad * d.PrecioUnitario).ToString("N2"))</td>
+                                        @if (!esAlmacen)
+                                        {
+                                            <td class="text-end">$@d.PrecioUnitario.ToString("N2")</td>
+                                            <td class="text-end pe-4 fw-bold">$@((d.Cantidad * d.PrecioUnitario).ToString("N2"))</td>
+                                        }
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-light p-4 border-0">
-                    <div class="row justify-content-end">
-                        <div class="col-md-6 col-lg-5 text-end">
-                            <h6 class="text-muted small fw-bold">RESUMEN DE PAGO</h6>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Subtotal:</span>
-                                <span class="fw-bold">$@Model.TotalPedido.ToString("N2")</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Entrega:</span>
-                                <span class="text-success fw-bold">GRATIS</span>
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="h5 fw-bold text-dark mb-0">TOTAL:</span>
-                                <span class="h4 fw-bold text-success mb-0">$@Model.TotalPedido.ToString("N2")</span>
+                @if (!esAlmacen)
+                {
+                    <div class="card-footer bg-light p-4 border-0">
+                        <div class="row justify-content-end">
+                            <div class="col-md-6 col-lg-5 text-end">
+                                <h6 class="text-muted small fw-bold">RESUMEN DE PAGO</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Subtotal:</span>
+                                    <span class="fw-bold">$@Model.TotalPedido.ToString("N2")</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Entrega:</span>
+                                    <span class="text-success fw-bold">GRATIS</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 fw-bold text-dark mb-0">TOTAL:</span>
+                                    <span class="h4 fw-bold text-success mb-0">$@Model.TotalPedido.ToString("N2")</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="card-footer bg-white p-4 border-0 text-center">
+                        <span class="text-muted small fw-bold text-uppercase"><i class="bi bi-info-circle me-1"></i> Información de precios restringida para Almacén</span>
+                    </div>
+                }
             </div>
         </div>
 
