@@ -12,7 +12,6 @@
                 @if (!string.IsNullOrEmpty(filtro))
                 {
                     <i class="bi bi-search me-2"></i>
-                
                     <span>Resultados para: "@filtro"</span>
                 }
                 else
@@ -104,7 +103,8 @@
                                         <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline position-relative z-2">
                                             <input type="hidden" name="id" value="@item.Id" />
                                             <input type="hidden" name="cantidad" value="1" />
-                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                            @* PASAMOS LA URL ACTUAL PARA QUE SWEETALERT SE DISPARE AL VOLVER *@
+                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
 
                                             <button type="submit" class="btn btn-primary rounded-circle shadow-sm btn-sm d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="Agregar 1 al carrito">
                                                 <i class="bi bi-cart-plus-fill fs-6"></i>

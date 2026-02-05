@@ -85,7 +85,6 @@ namespace RefaccionariaWeb.Controllers
 
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
 
-            // --- LÓGICA UNIFICADA DE AGREGAR (OPCIÓN B) ---
             var item = carrito.FirstOrDefault(c => c.ProductoId == id);
             int cantidadEnCarrito = item?.Cantidad ?? 0;
             int totalDeseado = cantidadEnCarrito + cantidad;
@@ -121,22 +120,19 @@ namespace RefaccionariaWeb.Controllers
                     ImagenUrl = producto.ImagenUrl
                 });
 
-                // Solo mostramos la alerta de SweetAlert si NO va a redirigir al checkout
                 if (!comprarAhora)
                 {
+                    // DATOS PARA LA ALERTA DE SWEETALERT EN EL LAYOUT
                     TempData["AlertaCarrito"] = "true";
                     TempData["ProductoAgregado"] = producto.Nombre;
                     TempData["CantidadAgregada"] = cantidad;
                 }
             }
 
-            // Guardamos los cambios en la sesión (manteniendo lo que ya estaba)
             HttpContext.Session.SetObject("Carrito", carrito);
 
-            // --- REDIRECCIÓN SEGÚN EL BOTÓN PRESIONADO ---
             if (comprarAhora)
             {
-                // Si es "Comprar Ahora", saltamos directo al proceso de dirección sin borrar el carrito
                 return RedirectToAction("Create", "Pedidos");
             }
 
