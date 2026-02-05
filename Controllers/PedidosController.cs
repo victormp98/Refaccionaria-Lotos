@@ -133,8 +133,8 @@ namespace RefaccionariaWeb.Controllers
                             TipoMovimiento = "Salida", // Salida de inventario
                             Cantidad = item.Cantidad,
                             FechaRegistro = DateTime.Now,
-                            UsuarioId = currentUser.Id, // El cliente que compró (o null si prefieres que sea system)
-                            Comentarios = $"Venta Web Folio #{pedido.Id}"
+                            UsuarioId = currentUser.Id // El cliente que compró (o null si prefieres que sea system)
+                            
                         });
 
                         total += (item.Cantidad * item.Precio);
