@@ -1,128 +1,119 @@
 ﻿@{
-    ViewData["Title"] = "Punto de Venta";
+    ViewData["Title"] = "Terminal Punto de Venta";
 }
 
-@* --- ESTILOS CSS PERSONALIZADOS --- *@
 <style>
+    /* --- ESTRUCTURA GENERAL (GRID) --- */
     :root {
-        --pos-dark-bg: #1e293b; /* Azul noche profundo */
-        --pos-dark-accent: #334155; /* Azul grisáceo para items */
-        --pos-highlight: #4ade80; /* Verde neón para precios */
-        --pos-delete: #ef4444; /* Rojo alerta */
+        --pos-bg: #e2e8f0;
+        --pos-sidebar: #ffffff;
+        --pos-footer: #1e293b; /* Barra negra abajo */
+        --pos-accent: #3b82f6;
     }
 
     body {
-        background-color: #f1f5f9;
+        background-color: var(--pos-bg);
+        overflow: hidden; /* Sin scroll en la ventana principal */
     }
 
-    /* LAYOUT PC: Ocultamos scroll del body para tener "App Feel" */
-    /* CORRECCIÓN AQUÍ: Usamos @@media para escapar el arroba */
-    @@media (min-width: 992px) {
-        body {
-            overflow: hidden;
-        }
-
-        .pos-container {
-            height: calc(100vh - 70px);
-            display: flex;
-            gap: 0;
-            padding: 0;
-        }
-
-        .catalog-section {
-            flex: 65%;
-            height: 100%;
-            overflow-y: hidden;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        .ticket-section {
-            flex: 35%;
-            height: 100%;
-            background-color: var(--pos-dark-bg);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
-        }
+    .pos-layout {
+        display: grid;
+        grid-template-rows: 1fr 90px; /* El contenido ocupa todo, menos 90px para la barra de abajo */
+        height: calc(100vh - 70px); /* Ajuste por el navbar superior de tu layout base */
+        width: 100%;
     }
 
-    /* CATALOGO (IZQUIERDA) */
-    .search-bar-container {
-        margin-bottom: 20px;
+    /* --- ZONA SUPERIOR (CONTENIDO) --- */
+    .pos-workspace {
+        display: grid;
+        grid-template-columns: 65% 35%; /* 65% Catálogo, 35% Ticket */
+        overflow: hidden;
     }
 
-    .catalog-list {
+    /* IZQUIERDA: CATÁLOGO */
+    .catalog-area {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: hidden;
+    }
+
+    .search-header {
+        margin-bottom: 15px;
+    }
+
+    .product-list-container {
         flex-grow: 1;
         overflow-y: auto;
-        padding-right: 10px;
+        padding-right: 5px;
+        /* Scrollbar discreto */
         scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 transparent;
     }
 
-    .product-row {
+    /* Tarjeta de Producto (Estilo Renglón Tecnológico) */
+    .prod-card {
         background: white;
-        border: 1px solid #e2e8f0;
         border-radius: 8px;
         padding: 10px;
         margin-bottom: 10px;
+        border-left: 5px solid transparent;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         display: flex;
         align-items: center;
         cursor: pointer;
-        transition: transform 0.1s, border-color 0.1s;
+        transition: 0.1s;
     }
 
-        .product-row:hover {
-            border-color: #3b82f6;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        .prod-card:active {
+            transform: scale(0.98);
         }
 
-    .prod-thumb {
+        .prod-card:hover {
+            border-left-color: var(--pos-accent);
+            background: #f8fafc;
+        }
+
+    .pc-img {
         width: 50px;
         height: 50px;
+        border-radius: 5px;
         object-fit: cover;
-        border-radius: 6px;
-        background: #f8fafc;
+        background: #eee;
         margin-right: 15px;
     }
 
-    .prod-details {
+    .pc-info {
         flex-grow: 1;
     }
 
-    .prod-sku {
-        font-size: 0.75rem;
-        color: #64748b;
+    .pc-title {
         font-weight: 700;
-        letter-spacing: 0.5px;
+        color: #334155;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .pc-sku {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 600;
         text-transform: uppercase;
     }
 
-    .prod-title {
-        font-weight: 600;
-        color: #0f172a;
-        margin: 0;
-        line-height: 1.2;
-        font-size: 1rem;
-    }
-
-    .prod-price-tag {
+    .pc-price {
         font-size: 1.1rem;
         font-weight: 800;
         color: #0f172a;
     }
 
-    .prod-stock-badge {
+    .pc-stock {
         font-size: 0.7rem;
-        padding: 2px 8px;
-        border-radius: 4px;
         font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
     }
 
-    .stock-ok {
+    .stock-high {
         background: #dcfce7;
         color: #166534;
     }
@@ -132,250 +123,300 @@
         color: #991b1b;
     }
 
-    /* TICKET (DERECHA - DARK MODE) */
-    .ticket-header {
+    /* DERECHA: TICKET (VISUALIZACIÓN TIPO PAPEL) */
+    .ticket-area {
+        background: #cbd5e1; /* Fondo gris oscuro para resaltar el papel */
         padding: 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow-y: hidden;
     }
 
-    .ticket-body {
+    .paper-receipt {
+        background: white;
+        width: 100%;
+        height: 100%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border-radius: 5px; /* Solo un poco redondeado arriba */
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+        /* Efecto de dientes de sierra abajo del ticket */
+        .paper-receipt::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(135deg, transparent 50%, white 50%), linear-gradient(45deg, white 50%, transparent 50%);
+            background-size: 20px 20px;
+        }
+
+    .receipt-header {
+        background: #f1f5f9;
+        padding: 15px;
+        text-align: center;
+        border-bottom: 2px dashed #cbd5e1;
+    }
+
+    .receipt-body {
         flex-grow: 1;
         overflow-y: auto;
-        padding: 15px;
+        padding: 0;
     }
 
-    .ticket-footer {
-        padding: 20px;
-        background: rgba(0,0,0,0.2);
-        border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .ticket-item {
-        background: var(--pos-dark-accent);
-        border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 10px;
+    .receipt-item {
+        padding: 10px 15px;
+        border-bottom: 1px dashed #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border: 1px solid transparent;
     }
 
-        .ticket-item:hover {
-            border-color: rgba(255,255,255,0.2);
+        .receipt-item:hover {
+            background-color: #fff1f2;
         }
+    /* Rojo suave al pasar mouse para indicar borrar */
 
-    .t-qty {
-        background: #0f172a;
+    .ri-qty {
+        font-weight: bold;
         width: 30px;
-        height: 30px;
+    }
+
+    .ri-desc {
+        flex-grow: 1;
+        font-size: 0.9rem;
+    }
+
+    .ri-total {
+        font-weight: bold;
+    }
+
+    .ri-del {
+        color: red;
+        cursor: pointer;
+        visibility: hidden;
+    }
+
+    .receipt-item:hover .ri-del {
+        visibility: visible;
+    }
+
+    .receipt-summary {
+        padding: 15px;
+        background: #f8fafc;
+        border-top: 2px dashed #cbd5e1;
+    }
+
+    /* --- ZONA INFERIOR (BARRA DE COMANDOS) --- */
+    .command-bar {
+        background: var(--pos-footer);
+        color: white;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        justify-content: space-between;
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+        z-index: 100;
+    }
+
+    .cmd-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .cmd-actions {
+        display: flex;
+        gap: 10px;
+        height: 70%;
+    }
+
+    /* BOTONES CUADRADOS/RECTANGULARES */
+    .btn-cmd {
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0 25px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 50%;
-        font-weight: bold;
+        transition: 0.1s;
+        height: 100%;
         font-size: 0.9rem;
-        margin-right: 10px;
-        flex-shrink: 0;
     }
 
-    .t-info {
-        flex-grow: 1;
-        overflow: hidden;
-    }
-
-    .t-name {
-        font-size: 0.9rem;
-        color: #e2e8f0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .t-price {
-        font-size: 0.8rem;
-        color: #94a3b8;
-    }
-
-    .t-subtotal {
-        font-weight: bold;
-        font-size: 1rem;
-        color: var(--pos-highlight);
-        margin-left: 10px;
-    }
-
-    .btn-del {
-        color: #ef4444;
-        background: transparent;
-        border: none;
-        padding: 5px;
-        opacity: 0.7;
-        transition: 0.2s;
-    }
-
-        .btn-del:hover {
-            opacity: 1;
-            transform: scale(1.1);
+        .btn-cmd:active {
+            transform: translateY(2px);
         }
 
-    /* MÓVIL STICKY FOOTER */
-    .mobile-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--pos-dark-bg);
+    .btn-cancel {
+        background: #ef4444;
         color: white;
-        padding: 15px;
-        z-index: 1050;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
-        border-radius: 15px 15px 0 0;
     }
 
-    /* AJUSTES RESPONSIVOS */
-    /* CORRECCIÓN AQUÍ TAMBIÉN: @@media */
-    @@media (max-width: 991.98px) {
-        .pos-container {
-            display: block;
-            height: auto;
-            padding-bottom: 90px;
+    .btn-client {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-pay {
+        background: #22c55e;
+        color: white;
+        font-size: 1.4rem;
+        padding: 0 40px;
+        box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+    }
+
+        .btn-pay:hover {
+            background: #16a34a;
         }
 
-        .ticket-section {
+    /* RESPONSIVE MÓVIL */
+    @@media (max-width: 991.98px) {
+        .pos-layout {
+            height: auto;
+            display: block;
+            padding-bottom: 100px;
+        }
+
+        .pos-workspace {
+            display: block;
+        }
+
+        .ticket-area {
             display: none;
         }
-
-        .offcanvas-bottom {
-            height: 80vh !important;
-            background: var(--pos-dark-bg);
-            color: white;
+        /* Ocultamos el ticket visual en móvil */
+        /* En móvil, la barra de abajo cambia */
+        .command-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            padding: 10px;
         }
 
-        .offcanvas-header .btn-close {
-            filter: invert(1);
+        .btn-pay {
+            flex-grow: 1;
+            font-size: 1.2rem;
         }
+
+        .cmd-info {
+            display: none;
+        }
+        /* Ocultamos info extra en móvil */
     }
 </style>
 
-<div class="pos-container">
-    @* --- SECCIÓN CATÁLOGO (IZQUIERDA / MAIN) --- *@
-    <div class="catalog-section">
-        <div class="search-bar-container">
-            <div class="input-group input-group-lg shadow-sm">
-                <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" id="inputBusqueda" class="form-control border-0 py-3" placeholder="Buscar producto o escanear (F2)..." autocomplete="off" autofocus>
-                <button class="btn btn-white border-0 pe-3" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-circle-fill text-muted"></i></button>
+<div class="pos-layout">
+
+    @* --- ZONA DE TRABAJO --- *@
+    <div class="pos-workspace">
+
+        @* 1. CATÁLOGO *@
+        <div class="catalog-area">
+            <div class="search-header">
+                <div class="input-group input-group-lg shadow-sm">
+                    <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-primary"></i></span>
+                    <input type="text" id="inputBusqueda" class="form-control border-0" placeholder="Buscar producto o escanear (F2)..." autocomplete="off" autofocus>
+                    <button class="btn btn-white border-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </div>
+
+            <div id="contenedorResultados" class="product-list-container">
+                @* Estado inicial *@
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                    <i class="bi bi-upc-scan display-1"></i>
+                    <p class="mt-3 fw-bold">Listo para vender</p>
+                </div>
             </div>
         </div>
 
-        <div id="contenedorResultados" class="catalog-list">
-            @* ESTADO INICIAL *@
-            <div class="d-flex flex-column align-items-center justify-content-center h-75 text-muted opacity-50">
-                <i class="bi bi-upc-scan display-1 mb-3"></i>
-                <h4>Listo para vender</h4>
-                <p>Usa el buscador o la pistola de código</p>
+        @* 2. TICKET VISUAL (Papel) *@
+        <div class="ticket-area">
+            <div class="paper-receipt">
+                <div class="receipt-header">
+                    <h5 class="fw-bold mb-0">TICKET DE VENTA</h5>
+                    <small class="text-muted">@(DateTime.Now.ToString("dd/MM/yyyy"))</small>
+                </div>
+
+                <div id="listaTicket" class="receipt-body">
+                    @* Items van aquí *@
+                </div>
+
+                <div class="receipt-summary">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Subtotal:</span>
+                        <span id="lblSubtotal">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>IVA:</span>
+                        <span>$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+                        <span class="fs-5 fw-bold">TOTAL:</span>
+                        <span class="fs-3 fw-bold text-dark" id="lblTotal">$0.00</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    @* --- SECCIÓN TICKET PC (DERECHA / DARK MODE) --- *@
-    <div class="ticket-section d-none d-lg-flex">
-        <div class="d-flex flex-column h-100" id="pcTicketContainer">
-            @* El contenido se inyecta vía JS usando el template *@
+    @* --- BARRA DE COMANDOS (SIEMPRE ABAJO) --- *@
+    <div class="command-bar">
+        <div class="cmd-info">
+            <div class="d-flex align-items-center text-white-50">
+                <i class="bi bi-person-circle fs-4 me-2"></i>
+                <div>
+                    <div class="small fw-bold text-white">@User.Identity.Name</div>
+                    <div style="font-size: 0.7rem;">Caja Principal</div>
+                </div>
+            </div>
+
+            @* Input Cliente Integrado en la barra *@
+            <div class="input-group input-group-sm" style="width: 250px;">
+                <span class="input-group-text bg-dark border-0 text-white"><i class="bi bi-people"></i></span>
+                <input type="text" id="nombreCliente" class="form-control bg-dark border-0 text-white" placeholder="Cliente (Público General)">
+            </div>
         </div>
-    </div>
-</div>
 
-@* --- COMPONENTE MÓVIL: OFFCANVAS TICKET --- *@
-<div class="offcanvas offcanvas-bottom rounded-top-4" tabindex="-1" id="offcanvasTicket">
-    <div class="offcanvas-header border-bottom border-secondary">
-        <h5 class="offcanvas-title fw-bold"><i class="bi bi-receipt me-2"></i>Ticket de Venta</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body d-flex flex-column bg-dark p-0">
-        <div id="mobileTicketContainer" class="flex-grow-1 d-flex flex-column h-100"></div>
-    </div>
-</div>
+        <div class="cmd-actions">
+            <button class="btn-cmd btn-cancel" onclick="limpiarTicket()" title="Borrar Todo">
+                <i class="bi bi-trash3-fill me-2"></i> <span class="d-none d-md-inline">Borrar</span>
+            </button>
 
-@* --- MÓVIL: STICKY FOOTER --- *@
-<div class="mobile-footer d-lg-none" id="mobileFooterBar" style="display:none !important;">
-    <div>
-        <small class="d-block text-secondary" style="font-size: 0.75rem;">Total a Pagar</small>
-        <span class="fw-bold fs-3 text-white" id="mobileTotalDisplay">$0.00</span>
-        <span class="badge bg-primary ms-2 rounded-pill" id="mobileCountBadge">0 items</span>
-    </div>
-    <button class="btn btn-success fw-bold rounded-pill px-4 shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTicket">
-        Ver Ticket <i class="bi bi-chevron-up ms-1"></i>
-    </button>
-</div>
+            <button class="btn-cmd btn-client d-md-none" onclick="$('#nombreCliente').focus()">
+                <i class="bi bi-person-plus-fill"></i>
+            </button>
 
-@* --- TEMPLATE DEL TICKET (PARA REUTILIZAR EN JS) --- *@
-<script id="ticketTemplate" type="text/template">
-    <div class="d-flex flex-column h-100">
-        <div class="ticket-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-white"><i class="bi bi-cart3 me-2"></i>Venta Actual</h5>
-            <button class="btn btn-sm btn-outline-danger border-0 text-danger-emphasis" onclick="limpiarTicket()" title="Vaciar">
-                <i class="bi bi-trash3-fill"></i> Limpiar
+            <button class="btn-cmd btn-pay" onclick="finalizarVenta()">
+                <span class="me-2">COBRAR</span> <span id="btnTotal">$0.00</span>
             </button>
         </div>
-
-        <div class="px-3 py-2 border-bottom border-secondary">
-            <div class="input-group input-group-sm">
-                <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="bi bi-person-fill"></i></span>
-                <input type="text" id="nombreCliente" class="form-control bg-transparent border-secondary text-white" placeholder="Cliente (Opcional - Público General)">
-            </div>
-        </div>
-
-        <div id="listaTicketItems" class="ticket-body">
-            </div>
-
-        <div class="ticket-footer mt-auto">
-            <div class="d-flex justify-content-between align-items-end mb-3">
-                <span class="text-secondary fw-bold small">TOTAL:</span>
-                <span class="h1 fw-bold mb-0" style="color: var(--pos-highlight);" id="displayTotalVenta">$0.00</span>
-            </div>
-            <div class="d-grid">
-                <button class="btn btn-success btn-lg fw-bold rounded-3 shadow py-3" onclick="finalizarVenta()">
-                    <i class="bi bi-cash-coin me-2"></i> COBRAR (F12)
-                </button>
-            </div>
-        </div>
     </div>
-</script>
+</div>
 
 @section Scripts {
     <script>
         let debounceTimer;
 
         $(document).ready(function() {
-            // Inicializar estructuras
-            renderTicketStructure();
             cargarTicket();
 
-            // Atajos
+            // Atajos de teclado
             $(document).keydown(function(e) {
                 if(e.key === "F12") { e.preventDefault(); finalizarVenta(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
+                if(e.key === "Escape") { limpiarTicket(); }
             });
         });
-
-        // --- RENDERIZADO DE ESTRUCTURA DEL TICKET (PC Y MOVIL) ---
-        function renderTicketStructure() {
-            const template = document.getElementById('ticketTemplate').innerHTML;
-            // Poner en PC
-            $('#pcTicketContainer').html(template);
-            // Poner en Móvil
-            $('#mobileTicketContainer').html(template);
-
-            // Sincronizar inputs de cliente (si escribes en uno, se copia al otro)
-            $(document).on('input', '#nombreCliente', function() {
-                const val = $(this).val();
-                $('[id="nombreCliente"]').val(val);
-            });
-        }
 
         // --- BUSCADOR ---
         $('#inputBusqueda').on('keyup', function() {
@@ -383,7 +424,7 @@
             const term = $(this).val();
 
             if (term.length < 2) {
-                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center h-75 text-muted opacity-50"><i class="bi bi-upc-scan display-1 mb-3"></i><h4>Listo para vender</h4><p>Usa el buscador o la pistola de código</p></div>');
+                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50"><i class="bi bi-upc-scan display-1"></i><p class="mt-3 fw-bold">Listo para vender</p></div>');
                 return;
             }
 
@@ -404,83 +445,67 @@
             }
 
             productos.forEach(p => {
-                const stockClass = p.stock < 5 ? 'stock-low' : 'stock-ok';
-                const stockText = p.stock < 5 ? '¡Poco Stock!' : 'Disponible';
+                const stockStyle = p.stock < 5 ? 'stock-low' : 'stock-high';
 
                 container.append(`
-                    <div class="product-row" onclick="agregarAlTicket(${p.id})">
-                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-thumb">
-                        <div class="prod-details">
+                    <div class="prod-card" onclick="agregarAlTicket(${p.id})">
+                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="pc-img">
+                        <div class="pc-info">
                             <div class="d-flex justify-content-between">
-                                <span class="prod-sku">${p.sku}</span>
-                                <span class="prod-brand">${p.marcaPieza}</span>
+                                <span class="pc-title">${p.nombre}</span>
+                                <span class="pc-price">$${p.precioVenta.toFixed(2)}</span>
                             </div>
-                            <h6 class="prod-title text-truncate">${p.nombre}</h6>
-                            <div class="d-flex justify-content-between align-items-center mt-1">
-                                <span class="prod-stock-badge ${stockClass}">${p.stock} ${stockText}</span>
-                                <span class="prod-price-tag">$${p.precioVenta.toFixed(2)}</span>
+                            <div class="d-flex justify-content-between mt-1">
+                                <span class="pc-sku">${p.sku} | ${p.marcaPieza}</span>
+                                <span class="pc-stock ${stockStyle}">${p.stock} pzas</span>
                             </div>
                         </div>
-                        <div class="ms-3 text-primary"><i class="bi bi-plus-circle-fill fs-3"></i></div>
                     </div>
                 `);
             });
         }
 
-        // --- LÓGICA DEL TICKET ---
+        // --- TICKET ---
         function agregarAlTicket(id) {
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
                 if (res.success) {
                     cargarTicket();
-                    // Feedback sonoro o visual rápido
-                    const Toast = Swal.mixin({ toast: true, position: 'bottom-start', showConfirmButton: false, timer: 1000, background: '#1e293b', color: '#fff' });
-                    Toast.fire({ icon: 'success', title: 'Producto agregado' });
+                    // Feedback sutil
+                    const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1000 });
+                    Toast.fire({ icon: 'success', title: 'Agregado' });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Atención', text: res.message });
+                    Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top', timer: 2000 });
                 }
             });
         }
 
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
-                // Actualizar TODOS los contenedores de items (PC y Móvil)
-                const listas = $('[id="listaTicketItems"]');
-                listas.empty();
+                const lista = $('#listaTicket');
+                lista.empty();
 
-                // Actualizar Totales
-                $('[id="displayTotalVenta"]').text('$' + data.total);
-                $('#mobileTotalDisplay').text('$' + data.total);
-                $('#mobileCountBadge').text(data.count + ' items');
-
-                // Mostrar/Ocultar Footer Móvil
-                if(data.count > 0) {
-                    $('#mobileFooterBar').attr('style', 'display: flex !important');
-                } else {
-                    $('#mobileFooterBar').hide();
-                }
+                // Actualizar Textos
+                $('#lblTotal').text('$' + data.total);
+                $('#btnTotal').text('$' + data.total);
+                $('#lblSubtotal').text('$' + data.total); // Simplificado sin IVA por ahora
 
                 if (data.items.length === 0) {
-                    listas.html('<div class="text-center py-5 text-secondary opacity-50"><i class="bi bi-cart-x display-4"></i><p class="mt-2">Vacío</p></div>');
+                    lista.html('<div class="text-center py-5 text-muted opacity-50"><p>Ticket vacío</p></div>');
                     return;
                 }
 
                 data.items.forEach(item => {
-                    const htmlItem = `
-                        <div class="ticket-item">
-                            <div class="d-flex align-items-center overflow-hidden flex-grow-1">
-                                <div class="t-qty">${item.cantidad}</div>
-                                <div class="t-info">
-                                    <div class="t-name">${item.nombre}</div>
-                                    <div class="t-price">$${item.precio.toFixed(2)} c/u</div>
-                                </div>
+                    lista.append(`
+                        <div class="receipt-item" onclick="eliminarDelTicket(${item.productoId})">
+                            <div class="ri-qty">${item.cantidad}</div>
+                            <div class="ri-desc">
+                                <div>${item.nombre}</div>
+                                <small class="text-muted">$${item.precio.toFixed(2)} c/u</small>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <div class="t-subtotal">$${(item.precio * item.cantidad).toFixed(2)}</div>
-                                <button class="btn-del ms-3" onclick="eliminarDelTicket(${item.productoId})"><i class="bi bi-trash"></i></button>
-                            </div>
+                            <div class="ri-total">$${(item.precio * item.cantidad).toFixed(2)}</div>
+                            <div class="ri-del"><i class="bi bi-x-circle-fill"></i></div>
                         </div>
-                    `;
-                    listas.append(htmlItem);
+                    `);
                 });
             });
         }
@@ -493,44 +518,57 @@
             $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); });
         }
 
+        // --- FINALIZAR VENTA (EL NUEVO FLUJO) ---
         function finalizarVenta() {
-            // Obtenemos el nombre del cliente desde CUALQUIERA de los inputs visibles
-            const cliente = $('input[id="nombreCliente"]').filter(':visible').val() || $('input[id="nombreCliente"]').val();
+            const cliente = $('#nombreCliente').val();
+            const total = $('#lblTotal').text();
 
-            if ($('[id="listaTicketItems"]').first().find('.ticket-item').length === 0) {
-                Swal.fire('Ticket Vacío', 'Agrega productos primero.', 'warning');
+            if (total === "$0.00") {
+                Swal.fire('Ticket Vacío', 'Agrega productos primero.', 'info');
                 return;
             }
 
+            // 1. Confirmar Cobro
             Swal.fire({
-                title: '¿Cobrar?',
-                text: "Total: " + $('[id="displayTotalVenta"]').first().text(),
+                title: 'Cobrar ' + total,
+                text: "¿Confirmar la venta?",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#10b981', // Verde
+                confirmButtonColor: '#22c55e',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, Cobrar',
-                cancelButtonText: 'Cancelar',
-                background: '#fff'
+                cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // 2. Procesar en Backend
                     $.post('/Ventas/FinalizarVenta', { nombreCliente: cliente }, function(res) {
                         if (res.success) {
-                            // Cerrar Offcanvas si está abierto
-                            const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasTicket'));
-                            if(offcanvas) offcanvas.hide();
-
+                            // 3. MOSTRAR OPCIONES DE POST-VENTA (Imprimir, Correo, Nuevo)
                             Swal.fire({
                                 title: '¡Venta Exitosa!',
-                                html: `<h3 class="text-success">Folio #${res.pedidoId}</h3><p>Salida de inventario registrada.</p>`,
-                                icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false
+                                html: `
+                                    <h3 class="text-success mb-3">Folio #${res.pedidoId}</h3>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-lg btn-outline-dark" onclick="imprimirTicket(${res.pedidoId})">
+                                            <i class="bi bi-printer-fill me-2"></i> Imprimir Ticket
+                                        </button>
+                                        <button class="btn btn-lg btn-outline-primary" onclick="enviarCorreo(${res.pedidoId})">
+                                            <i class="bi bi-envelope-fill me-2"></i> Enviar por Correo
+                                        </button>
+                                        <hr>
+                                        <button class="btn btn-lg btn-success" onclick="Swal.close()">
+                                            <i class="bi bi-cart-plus-fill me-2"></i> Nueva Venta
+                                        </button>
+                                    </div>
+                                `,
+                                showConfirmButton: false,
+                                allowOutsideClick: false
                             }).then(() => {
+                                // Al cerrar el modal, limpiamos todo
                                 limpiarTicket();
                                 $('#inputBusqueda').val('').focus();
                                 $('#contenedorResultados').empty();
-                                $('[id="nombreCliente"]').val('');
+                                $('#nombreCliente').val('');
                             });
                         } else {
                             Swal.fire('Error', res.message, 'error');
@@ -538,6 +576,16 @@
                     });
                 }
             });
+        }
+
+        // --- FUNCIONES DUMMY PARA IMPRIMIR (POR AHORA) ---
+        function imprimirTicket(id) {
+            // Aquí luego pondremos la lógica real para abrir una ventana nueva con el ticket
+            window.open('/Pedidos/Details/' + id, '_blank');
+        }
+
+        function enviarCorreo(id) {
+            Swal.fire('Enviado', 'El ticket se envió al correo del cliente (Simulado)', 'success');
         }
     </script>
 }
