@@ -84,7 +84,6 @@ namespace RefaccionariaWeb.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
 
-            // AJUSTE: Limpiar datos fiscales si no se requieren para que se guarden como NULL
             if (!pedido.RequiereFactura)
             {
                 pedido.Rfc = null;
@@ -119,14 +118,32 @@ namespace RefaccionariaWeb.Controllers
                     {
                         var prod = await _context.Productos.FindAsync(item.ProductoId);
                         if (prod == null || prod.Stock < item.Cantidad) throw new Exception("Error de stock");
+
+                        // A) Restar Stock
                         prod.Stock -= item.Cantidad;
                         _context.Update(prod);
+
+                        // B) Crear Detalle
                         _context.Add(new DetallePedido { PedidoId = pedido.Id, ProductoId = prod.Id, Cantidad = item.Cantidad, PrecioUnitario = item.Precio });
+
+                        // C) 🟢 REGISTRAR EN BITÁCORA (Salida por Venta Web) 🟢
+                        _context.MovimientosInventario.Add(new MovimientoInventario
+                        {
+                            ProductoId = prod.Id,
+                            TipoMovimiento = "Salida", // Salida de inventario
+                            Cantidad = item.Cantidad,
+                            FechaRegistro = DateTime.Now,
+                            UsuarioId = currentUser.Id, // El cliente que compró (o null si prefieres que sea system)
+                            Comentarios = $"Venta Web Folio #{pedido.Id}"
+                        });
+
                         total += (item.Cantidad * item.Precio);
                     }
+
                     pedido.TotalPedido = total;
                     _context.Update(pedido);
                     await _context.SaveChangesAsync();
+
                     await transaction.CommitAsync();
                     HttpContext.Session.Remove("Carrito");
                     return RedirectToAction(nameof(Details), new { id = pedido.Id });
