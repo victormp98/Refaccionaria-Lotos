@@ -20,13 +20,11 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        // Vista Principal del POS
         public IActionResult Mostrador()
         {
             return View();
         }
 
-        // BUSCADOR NINJA (AJAX)
         [HttpGet]
         public async Task<JsonResult> BuscarProductos(string term)
         {
@@ -50,7 +48,78 @@ namespace RefaccionariaWeb.Controllers
             return Json(productos);
         }
 
-        // FINALIZAR VENTA (MOSTRADOR)
+        // --- API INTERNA PARA EL TICKET (SIN RECARGAS) ---
+
+        [HttpPost]
+        public async Task<JsonResult> AgregarAlTicket(int id)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null) return Json(new { success = false, message = "Producto no encontrado" });
+
+            // Usamos una sesión DIFERENTE para el POS para no mezclar con el carrito web del usuario
+            // O podemos usar la misma si quieres que se sincronicen. Usaremos la misma "Carrito" por simplicidad.
+            var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
+
+            var item = carrito.FirstOrDefault(c => c.ProductoId == id);
+
+            if (item != null)
+            {
+                if (item.Cantidad + 1 > producto.Stock)
+                    return Json(new { success = false, message = "Stock insuficiente" });
+                item.Cantidad++;
+            }
+            else
+            {
+                carrito.Add(new ItemCarrito
+                {
+                    ProductoId = producto.Id,
+                    Nombre = producto.Nombre,
+                    Precio = producto.PrecioVenta,
+                    Cantidad = 1,
+                    StockMaximo = producto.Stock,
+                    ImagenUrl = producto.ImagenUrl
+                });
+            }
+
+            HttpContext.Session.SetObject("Carrito", carrito);
+            return Json(new { success = true });
+        }
+
+        [HttpGet]
+        public JsonResult ObtenerTicket()
+        {
+            var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito") ?? new List<ItemCarrito>();
+            return Json(new
+            {
+                items = carrito,
+                total = carrito.Sum(x => x.SubTotal).ToString("N2"),
+                count = carrito.Sum(x => x.Cantidad)
+            });
+        }
+
+        [HttpPost]
+        public JsonResult EliminarDelTicket(int id)
+        {
+            var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
+            if (carrito != null)
+            {
+                var item = carrito.FirstOrDefault(c => c.ProductoId == id);
+                if (item != null)
+                {
+                    carrito.Remove(item);
+                    HttpContext.Session.SetObject("Carrito", carrito);
+                }
+            }
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public JsonResult LimpiarTicket()
+        {
+            HttpContext.Session.Remove("Carrito");
+            return Json(new { success = true });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FinalizarVenta(string nombreCliente, string rfc = null)
@@ -65,19 +134,18 @@ namespace RefaccionariaWeb.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Crear el Pedido
                 var pedido = new Pedido
                 {
                     ClienteId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     FechaPedido = DateTime.Now,
-                    Status = PedidoStatus.Entregado, // Venta en mostrador se marca como entregada
+                    Status = PedidoStatus.Entregado,
                     TotalPedido = carrito.Sum(x => x.Cantidad * x.Precio),
                     NombreReceptor = nombreCliente ?? "Público General",
                     DireccionEnvio = "Venta en Mostrador",
                     CiudadEnvio = "N/A",
                     EstadoEnvio = "N/A",
                     CodigoPostalEnvio = "00000",
-                    TipoEntrega = 2, // 2 = Venta Mostrador
+                    TipoEntrega = 2,
                     RequiereFactura = !string.IsNullOrEmpty(rfc),
                     Rfc = rfc
                 };
@@ -85,7 +153,6 @@ namespace RefaccionariaWeb.Controllers
                 _context.Pedidos.Add(pedido);
                 await _context.SaveChangesAsync();
 
-                // 2. Detalles y Stock
                 foreach (var item in carrito)
                 {
                     var producto = await _context.Productos.FindAsync(item.ProductoId);
@@ -105,7 +172,6 @@ namespace RefaccionariaWeb.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // Limpiar carrito de mostrador
                 HttpContext.Session.Remove("Carrito");
 
                 return Json(new { success = true, pedidoId = pedido.Id });

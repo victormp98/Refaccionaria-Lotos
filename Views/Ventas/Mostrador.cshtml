@@ -1,61 +1,61 @@
 ﻿@{
-    ViewData["Title"] = "Punto de Venta - Mostrador";
+    ViewData["Title"] = "Punto de Venta";
 }
 
 <div class="container-fluid py-3">
     <div class="row g-3">
-        @* COLUMNA IZQUIERDA: BÚSQUEDA *@
+        @* IZQUIERDA: BUSCADOR *@
         <div class="col-lg-7">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-body p-4">
-                    <h4 class="fw-bold mb-3"><i class="bi bi-search text-primary me-2"></i>Buscador de Refacciones</h4>
+            <div class="card shadow-sm border-0 rounded-4" style="min-height: 85vh;">
+                <div class="card-body p-4 d-flex flex-column">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-search text-primary me-2"></i>Catálogo Rápido</h4>
 
-                    @* Input de búsqueda rápida *@
                     <div class="input-group input-group-lg mb-4 shadow-sm">
                         <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-4"><i class="bi bi-search text-muted"></i></span>
                         <input type="text" id="inputBusqueda" class="form-control border-start-0 rounded-end-pill py-3"
-                               placeholder="Escribe Nombre, Marca o SKU..." autofocus autocomplete="off">
+                               placeholder="Buscar por Nombre, Marca o SKU..." autofocus autocomplete="off">
                     </div>
 
-                    @* Contenedor de Resultados *@
-                    <div id="contenedorResultados" class="row row-cols-1 row-cols-md-2 g-3">
-                        @* Los resultados de AJAX se inyectan aquí *@
+                    <div id="contenedorResultados" class="row row-cols-1 row-cols-md-2 g-3 flex-grow-1 align-content-start overflow-auto" style="max-height: 65vh;">
+                        <div class="col-12 text-center text-muted mt-5">
+                            <i class="bi bi-upc-scan fs-1 d-block mb-2"></i>
+                            <p>Escanea un código o escribe para buscar.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        @* COLUMNA DERECHA: TICKET DE VENTA *@
+        @* DERECHA: TICKET *@
         <div class="col-lg-5">
-            <div class="card shadow-lg border-0 rounded-4 sticky-top" style="top: 90px; z-index: 1000;">
+            <div class="card shadow-lg border-0 rounded-4 sticky-top" style="top: 20px; height: 85vh;">
                 <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Ticket de Venta</h5>
-                    <button class="btn btn-sm btn-outline-danger" onclick="limpiarVenta()"><i class="bi bi-trash"></i></button>
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Ticket Actual</h5>
+                    <button class="btn btn-sm btn-outline-danger text-white border-light" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i> Limpiar</button>
                 </div>
-                <div class="card-body p-0">
-                    @* Lista de items en el ticket *@
-                    <div id="listaTicket" style="max-height: 400px; overflow-y: auto;">
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
-                            <p>Ticket vacío. Agrega productos.</p>
-                        </div>
+
+                <div class="card-body p-0 d-flex flex-column overflow-hidden">
+                    <div id="listaTicket" class="flex-grow-1 overflow-auto p-3 bg-light">
+                        @* ITEMS SE PINTAN AQUÍ *@
                     </div>
                 </div>
-                <div class="card-footer bg-light p-4 border-0 rounded-bottom-4">
+
+                <div class="card-footer bg-white p-4 border-top">
                     <div class="row g-2 mb-3">
                         <div class="col-12">
-                            <input type="text" id="nombreCliente" class="form-control" placeholder="Nombre del Cliente (Opcional)">
+                            <label class="small fw-bold text-muted">Cliente</label>
+                            <input type="text" id="nombreCliente" class="form-control bg-light" placeholder="Público General">
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="fw-bold mb-0">TOTAL:</h4>
-                        <h3 class="fw-bold text-success mb-0" id="totalVenta">$0.00</h3>
+                    <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded-3">
+                        <span class="h4 text-muted mb-0">Total:</span>
+                        <span class="h2 fw-bold text-primary mb-0" id="totalVenta">$0.00</span>
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary btn-lg rounded-pill fw-bold shadow" onclick="finalizarVenta()">
-                            <i class="bi bi-check2-circle me-2"></i> COBRAR E IMPRIMIR
+                    <div class="d-grid">
+                        <button class="btn btn-primary btn-lg rounded-pill fw-bold shadow py-3" onclick="finalizarVenta()">
+                            <i class="bi bi-check2-circle me-2"></i> COBRAR
                         </button>
                     </div>
                 </div>
@@ -68,19 +68,24 @@
     <script>
         let debounceTimer;
 
-        // --- BUSCADOR CON DEBOUNCE (Para no saturar el servidor) ---
+        $(document).ready(function() {
+            cargarTicket(); // Cargar ticket al iniciar por si recargan la página
+        });
+
+        // --- BUSCADOR ---
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer);
             const term = $(this).val();
 
+            if (term.length < 2) {
+                $('#contenedorResultados').html('<div class="col-12 text-center text-muted mt-5"><i class="bi bi-upc-scan fs-1 d-block mb-2"></i><p>Escanea un código o escribe para buscar.</p></div>');
+                return;
+            }
+
             debounceTimer = setTimeout(() => {
-                if (term.length >= 2) {
-                    $.get('/Ventas/BuscarProductos', { term: term }, function(data) {
-                        renderizarResultados(data);
-                    });
-                } else {
-                    $('#contenedorResultados').empty();
-                }
+                $.get('/Ventas/BuscarProductos', { term: term }, function(data) {
+                    renderizarResultados(data);
+                });
             }, 300);
         });
 
@@ -89,25 +94,25 @@
             container.empty();
 
             if (productos.length === 0) {
-                container.append('<div class="col-12 text-center py-3 text-muted">Sin coincidencias</div>');
+                container.append('<div class="col-12 text-center py-5 text-muted">Sin coincidencias</div>');
                 return;
             }
 
             productos.forEach(p => {
                 container.append(`
                     <div class="col">
-                        <div class="card h-100 border rounded-3 hover-effect shadow-sm">
+                        <div class="card h-100 border-0 shadow-sm hover-card" onclick="agregarAlTicket(${p.id})">
                             <div class="card-body p-2 d-flex align-items-center">
-                                <img src="${p.imagenUrl || '/images/no-image.png'}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                <img src="${p.imagenUrl || '/images/no-image.png'}" class="rounded me-3 border" style="width: 60px; height: 60px; object-fit: cover;">
                                 <div class="flex-grow-1 overflow-hidden">
-                                    <h6 class="mb-0 fw-bold text-truncate">${p.nombre}</h6>
-                                    <small class="text-muted d-block">${p.marcaPieza} | SKU: ${p.sku}</small>
-                                    <span class="fw-bold text-primary">$${p.precioVenta.toFixed(2)}</span>
-                                    <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-dark'} ms-2">${p.stock} pzas</span>
+                                    <h6 class="mb-0 fw-bold text-truncate text-dark">${p.nombre}</h6>
+                                    <small class="text-muted d-block">${p.sku} | ${p.marcaPieza}</small>
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <span class="fw-bold text-primary">$${p.precioVenta.toFixed(2)}</span>
+                                        <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-secondary'} rounded-pill">${p.stock} disp.</span>
+                                    </div>
                                 </div>
-                                <button class="btn btn-primary btn-sm rounded-circle ms-2" onclick="agregarAlTicket(${p.id}, '${p.nombre}', ${p.precioVenta})">
-                                    <i class="bi bi-plus-lg"></i>
-                                </button>
+                                <div class="ms-2"><i class="bi bi-plus-circle-fill text-primary fs-3"></i></div>
                             </div>
                         </div>
                     </div>
@@ -115,42 +120,89 @@
             });
         }
 
-        // --- LÓGICA DEL TICKET (Frontend) ---
-        function agregarAlTicket(id, nombre, precio) {
-            // Aquí usamos AJAX para llamar a tu CarritoController/Agregar
-            $.post('/Carrito/Agregar', { id: id, cantidad: 1 }, function() {
-                actualizarTicketVisual();
-                $('#inputBusqueda').val('').focus();
-                $('#contenedorResultados').empty();
+        // --- TICKET ---
+        function agregarAlTicket(id) {
+            $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
+                if (res.success) {
+                    cargarTicket();
+                    const toast = Swal.mixin({ toast: true, position: 'bottom-start', showConfirmButton: false, timer: 1500 });
+                    toast.fire({ icon: 'success', title: 'Agregado' });
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
             });
         }
 
-        function actualizarTicketVisual() {
-            // Cargamos la vista parcial del carrito o refrescamos la lista
-            // Por velocidad en mostrador, simularemos la carga o haremos un GET rápido
-            $.get('/Carrito/Index', function(html) {
-                // Aquí podrías optimizar devolviendo solo el JSON del carrito
-                // Pero para empezar, redirigiremos la lógica a una función que pinte el HTML
-                location.reload(); // Ajustaremos esto a puro AJAX en el siguiente paso
+        function cargarTicket() {
+            $.get('/Ventas/ObtenerTicket', function(data) {
+                const lista = $('#listaTicket');
+                lista.empty();
+                $('#totalVenta').text('$' + data.total);
+
+                if (data.items.length === 0) {
+                    lista.html('<div class="text-center py-5 text-muted"><i class="bi bi-cart4 fs-1 d-block mb-2"></i><p>Ticket vacío</p></div>');
+                    return;
+                }
+
+                data.items.forEach(item => {
+                    lista.append(`
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div class="d-flex align-items-center overflow-hidden">
+                                <span class="badge bg-primary rounded-pill me-2">${item.cantidad}</span>
+                                <div class="text-truncate" style="max-width: 180px;">
+                                    <div class="fw-bold text-dark small">${item.nombre}</div>
+                                    <div class="text-muted small">$${item.precio.toFixed(2)} c/u</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold me-3">$${(item.precio * item.cantidad).toFixed(2)}</span>
+                                <button class="btn btn-sm text-danger p-0" onclick="eliminarDelTicket(${item.productoId})"><i class="bi bi-x-circle-fill"></i></button>
+                            </div>
+                        </div>
+                    `);
+                });
             });
+        }
+
+        function eliminarDelTicket(id) {
+            $.post('/Ventas/EliminarDelTicket', { id: id }, function() { cargarTicket(); });
+        }
+
+        function limpiarTicket() {
+            $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); });
         }
 
         function finalizarVenta() {
             const cliente = $('#nombreCliente').val();
+            // Validar que haya items
+            if ($('#listaTicket').find('.text-muted').length > 0) {
+                Swal.fire('Ticket Vacío', 'Agrega productos antes de cobrar.', 'warning');
+                return;
+            }
 
             Swal.fire({
-                title: '¿Confirmar Venta?',
-                text: "Se descontará el stock y se registrará la venta.",
+                title: '¿Procesar Cobro?',
+                text: "Se registrará la salida del inventario.",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Sí, cobrar',
+                confirmButtonColor: '#2E86C1',
+                confirmButtonText: 'Sí, Cobrar',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.post('/Ventas/FinalizarVenta', { nombreCliente: cliente }, function(res) {
                         if (res.success) {
-                            Swal.fire('¡Venta Exitosa!', `Pedido #${res.pedidoId} registrado.`, 'success')
-                            .then(() => location.reload());
+                            Swal.fire({
+                                title: '¡Venta Exitosa!',
+                                text: `Folio #${res.pedidoId} generado.`,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                limpiarTicket();
+                                $('#inputBusqueda').val('').focus();
+                                $('#contenedorResultados').empty();
+                            });
                         } else {
                             Swal.fire('Error', res.message, 'error');
                         }
@@ -161,11 +213,15 @@
     </script>
 
     <style>
-        .hover-effect:hover {
-            border-color: #0d6efd !important;
+        .hover-card {
             cursor: pointer;
-            transform: scale(1.02);
-            transition: 0.2s;
+            transition: all 0.2s;
         }
+
+            .hover-card:hover {
+                transform: translateY(-3px);
+                border: 1px solid #0d6efd !important;
+                background-color: #f8f9fa;
+            }
     </style>
 }
