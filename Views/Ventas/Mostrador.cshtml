@@ -7,57 +7,63 @@
     :root {
         --pos-bg: #e2e8f0;
         --pos-sidebar: #ffffff;
-        --pos-footer: #1e293b; /* Barra negra abajo */
+        --pos-footer: #1e293b;
         --pos-accent: #3b82f6;
     }
 
+    /* Solo en esta vista quitamos el scroll general para dar efecto App */
     body {
         background-color: var(--pos-bg);
-        overflow: hidden; /* Sin scroll en la ventana principal */
-    }
-
-    .pos-layout {
-        display: grid;
-        grid-template-rows: 1fr 90px; /* El contenido ocupa todo, menos 90px para la barra de abajo */
-        height: calc(100vh - 70px); /* Ajuste por el navbar superior de tu layout base */
-        width: 100%;
-    }
-
-    /* --- ZONA SUPERIOR (CONTENIDO) --- */
-    .pos-workspace {
-        display: grid;
-        grid-template-columns: 65% 35%; /* 65% Catálogo, 35% Ticket */
         overflow: hidden;
+    }
+
+    /* LAYOUT PRINCIPAL: USAMOS 'dvh' PARA QUE NO SE CORTE EN MÓVILES/LAPTOPS */
+    .pos-layout {
+        display: flex;
+        flex-direction: column;
+        /* Restamos 60px aproximados del Navbar superior del Layout */
+        height: calc(100dvh - 60px);
+        width: 100%;
+        overflow: hidden; /* Seguridad */
+    }
+
+    /* --- ZONA SUPERIOR (CONTENIDO EXPANDIBLE) --- */
+    .pos-workspace {
+        flex-grow: 1; /* Ocupa todo el espacio disponible */
+        display: grid;
+        grid-template-columns: 65% 35%; /* PC: 65% Catálogo, 35% Ticket */
+        overflow: hidden; /* Para que el scroll sea interno en cada panel */
     }
 
     /* IZQUIERDA: CATÁLOGO */
     .catalog-area {
-        padding: 20px;
+        padding: 15px;
         display: flex;
         flex-direction: column;
-        overflow-y: hidden;
+        height: 100%; /* Forzamos altura */
+        overflow: hidden;
     }
 
     .search-header {
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+        flex-shrink: 0;
     }
 
     .product-list-container {
         flex-grow: 1;
-        overflow-y: auto;
+        overflow-y: auto; /* Scroll solo aquí */
         padding-right: 5px;
-        /* Scrollbar discreto */
-        scrollbar-width: thin;
+        padding-bottom: 10px; /* Colchón para que el último item se vea bien */
     }
 
-    /* Tarjeta de Producto (Estilo Renglón Tecnológico) */
+    /* Tarjeta de Producto */
     .prod-card {
         background: white;
         border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-left: 5px solid transparent;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        border-left: 4px solid transparent;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         display: flex;
         align-items: center;
         cursor: pointer;
@@ -74,42 +80,46 @@
         }
 
     .pc-img {
-        width: 50px;
-        height: 50px;
+        width: 45px;
+        height: 45px;
         border-radius: 5px;
         object-fit: cover;
         background: #eee;
-        margin-right: 15px;
+        margin-right: 12px;
     }
 
     .pc-info {
         flex-grow: 1;
+        min-width: 0;
     }
-
+    /* min-width ayuda a text-truncate */
     .pc-title {
         font-weight: 700;
         color: #334155;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .pc-sku {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         color: #94a3b8;
         font-weight: 600;
         text-transform: uppercase;
     }
 
     .pc-price {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 800;
         color: #0f172a;
     }
 
     .pc-stock {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         font-weight: 600;
-        padding: 2px 6px;
+        padding: 1px 5px;
         border-radius: 4px;
     }
 
@@ -125,42 +135,31 @@
 
     /* DERECHA: TICKET (VISUALIZACIÓN TIPO PAPEL) */
     .ticket-area {
-        background: #cbd5e1; /* Fondo gris oscuro para resaltar el papel */
-        padding: 20px;
+        background: #cbd5e1;
+        padding: 15px;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        overflow-y: hidden;
+        height: 100%;
+        overflow: hidden;
     }
 
     .paper-receipt {
         background: white;
         width: 100%;
         height: 100%;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        border-radius: 5px; /* Solo un poco redondeado arriba */
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-radius: 5px;
         display: flex;
         flex-direction: column;
         position: relative;
     }
 
-        /* Efecto de dientes de sierra abajo del ticket */
-        .paper-receipt::after {
-            content: "";
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: linear-gradient(135deg, transparent 50%, white 50%), linear-gradient(45deg, white 50%, transparent 50%);
-            background-size: 20px 20px;
-        }
-
     .receipt-header {
         background: #f1f5f9;
-        padding: 15px;
+        padding: 10px;
         text-align: center;
         border-bottom: 2px dashed #cbd5e1;
+        flex-shrink: 0;
     }
 
     .receipt-body {
@@ -170,7 +169,7 @@
     }
 
     .receipt-item {
-        padding: 10px 15px;
+        padding: 8px 12px;
         border-bottom: 1px dashed #e2e8f0;
         display: flex;
         justify-content: space-between;
@@ -180,75 +179,80 @@
         .receipt-item:hover {
             background-color: #fff1f2;
         }
-    /* Rojo suave al pasar mouse para indicar borrar */
 
     .ri-qty {
         font-weight: bold;
-        width: 30px;
+        width: 25px;
+        font-size: 0.9rem;
     }
 
     .ri-desc {
         flex-grow: 1;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        line-height: 1.1;
     }
 
     .ri-total {
         font-weight: bold;
+        font-size: 0.9rem;
     }
 
     .ri-del {
         color: red;
         cursor: pointer;
-        visibility: hidden;
+        opacity: 0;
+        transition: 0.2s;
     }
 
     .receipt-item:hover .ri-del {
-        visibility: visible;
+        opacity: 1;
     }
 
     .receipt-summary {
-        padding: 15px;
+        padding: 10px 15px;
         background: #f8fafc;
         border-top: 2px dashed #cbd5e1;
+        flex-shrink: 0;
     }
 
     /* --- ZONA INFERIOR (BARRA DE COMANDOS) --- */
     .command-bar {
         background: var(--pos-footer);
         color: white;
+        flex-shrink: 0; /* NO permitimos que se encoja */
+        height: 80px; /* Altura fija segura */
         display: flex;
         align-items: center;
-        padding: 0 20px;
         justify-content: space-between;
-        box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
-        z-index: 100;
+        padding: 0 20px;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+        z-index: 1000;
     }
 
     .cmd-info {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 15px;
     }
 
     .cmd-actions {
         display: flex;
         gap: 10px;
-        height: 70%;
+        height: 50px;
     }
 
-    /* BOTONES CUADRADOS/RECTANGULARES */
     .btn-cmd {
         border: none;
         border-radius: 6px;
         font-weight: 700;
         text-transform: uppercase;
-        padding: 0 25px;
+        padding: 0 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: 0.1s;
         height: 100%;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        cursor: pointer;
     }
 
         .btn-cmd:active {
@@ -268,9 +272,9 @@
     .btn-pay {
         background: #22c55e;
         color: white;
-        font-size: 1.4rem;
-        padding: 0 40px;
-        box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+        font-size: 1.2rem;
+        padding: 0 30px;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
     }
 
         .btn-pay:hover {
@@ -279,54 +283,77 @@
 
     /* RESPONSIVE MÓVIL */
     @@media (max-width: 991.98px) {
+        /* Ajuste clave para móviles: Altura dinámica real */
         .pos-layout {
-            height: auto;
-            display: block;
-            padding-bottom: 100px;
+            height: calc(100dvh - 55px); /* dynamic viewport height */
         }
 
         .pos-workspace {
-            display: block;
+            display: block; /* Una sola columna */
+            overflow-y: auto; /* Scroll general en el workspace si es necesario */
         }
 
         .ticket-area {
             display: none;
         }
-        /* Ocultamos el ticket visual en móvil */
-        /* En móvil, la barra de abajo cambia */
-        .command-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
+        /* Ocultamos ticket visual */
+        /* Ajustamos el catálogo para que llene el espacio restante */
+        .catalog-area {
+            height: 100%;
             padding: 10px;
         }
 
-        .btn-pay {
-            flex-grow: 1;
-            font-size: 1.2rem;
+        .product-list-container {
+            padding-bottom: 20px; /* Espacio extra para scroll táctil */
+        }
+        /* Barra de comandos móvil */
+        .command-bar {
+            height: auto;
+            min-height: 70px;
+            padding: 10px;
+            /* Padding bottom seguro para iPhone X y Android modernos */
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
         }
 
         .cmd-info {
             display: none;
         }
-        /* Ocultamos info extra en móvil */
+        /* Ocultamos info usuario */
+        .cmd-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .btn-pay {
+            flex-grow: 1;
+            margin-left: 10px;
+            font-size: 1.1rem;
+        }
+
+        .btn-cancel {
+            padding: 0 15px;
+        }
+
+        .btn-client {
+            display: flex !important;
+            padding: 0 15px;
+        }
+        /* Mostramos botón cliente */
     }
 </style>
 
 <div class="pos-layout">
 
-    @* --- ZONA DE TRABAJO --- *@
+    @* --- ZONA DE TRABAJO (Catálogo y Ticket) --- *@
     <div class="pos-workspace">
 
         @* 1. CATÁLOGO *@
         <div class="catalog-area">
             <div class="search-header">
-                <div class="input-group input-group-lg shadow-sm">
+                <div class="input-group shadow-sm">
                     <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-primary"></i></span>
-                    <input type="text" id="inputBusqueda" class="form-control border-0" placeholder="Buscar producto o escanear (F2)..." autocomplete="off" autofocus>
-                    <button class="btn btn-white border-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg"></i></button>
+                    <input type="text" id="inputBusqueda" class="form-control border-0 py-2" placeholder="Buscar producto o escanear (F2)..." autocomplete="off" autofocus>
+                    <button class="btn btn-white border-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg text-muted"></i></button>
                 </div>
             </div>
 
@@ -334,17 +361,17 @@
                 @* Estado inicial *@
                 <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
                     <i class="bi bi-upc-scan display-1"></i>
-                    <p class="mt-3 fw-bold">Listo para vender</p>
+                    <p class="mt-2 fw-bold small">Listo para vender</p>
                 </div>
             </div>
         </div>
 
-        @* 2. TICKET VISUAL (Papel) *@
+        @* 2. TICKET VISUAL (Papel - Solo PC) *@
         <div class="ticket-area">
             <div class="paper-receipt">
                 <div class="receipt-header">
-                    <h5 class="fw-bold mb-0">TICKET DE VENTA</h5>
-                    <small class="text-muted">@(DateTime.Now.ToString("dd/MM/yyyy"))</small>
+                    <h6 class="fw-bold mb-0">TICKET DE VENTA</h6>
+                    <small class="text-muted" style="font-size: 0.7rem">@(DateTime.Now.ToString("dd/MM/yyyy HH:mm"))</small>
                 </div>
 
                 <div id="listaTicket" class="receipt-body">
@@ -352,52 +379,52 @@
                 </div>
 
                 <div class="receipt-summary">
-                    <div class="d-flex justify-content-between mb-1">
+                    <div class="d-flex justify-content-between mb-1 small">
                         <span>Subtotal:</span>
                         <span id="lblSubtotal">$0.00</span>
                     </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>IVA:</span>
-                        <span>$0.00</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
-                        <span class="fs-5 fw-bold">TOTAL:</span>
-                        <span class="fs-3 fw-bold text-dark" id="lblTotal">$0.00</span>
+                    <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-1">
+                        <span class="fw-bold">TOTAL:</span>
+                        <span class="fs-4 fw-bold text-dark" id="lblTotal">$0.00</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    @* --- BARRA DE COMANDOS (SIEMPRE ABAJO) --- *@
+    @* --- BARRA DE COMANDOS (Footer) --- *@
     <div class="command-bar">
+        @* Info Usuario (Solo PC) *@
         <div class="cmd-info">
             <div class="d-flex align-items-center text-white-50">
-                <i class="bi bi-person-circle fs-4 me-2"></i>
-                <div>
+                <div class="bg-white bg-opacity-10 rounded-circle p-2 me-2"><i class="bi bi-person-fill text-white"></i></div>
+                <div style="line-height: 1.1;">
                     <div class="small fw-bold text-white">@User.Identity.Name</div>
-                    <div style="font-size: 0.7rem;">Caja Principal</div>
+                    <div style="font-size: 0.65rem;">Caja Principal</div>
                 </div>
             </div>
 
-            @* Input Cliente Integrado en la barra *@
-            <div class="input-group input-group-sm" style="width: 250px;">
+            <div class="input-group input-group-sm" style="width: 220px;">
                 <span class="input-group-text bg-dark border-0 text-white"><i class="bi bi-people"></i></span>
-                <input type="text" id="nombreCliente" class="form-control bg-dark border-0 text-white" placeholder="Cliente (Público General)">
+                <input type="text" id="nombreCliente" class="form-control bg-dark border-0 text-white shadow-none" placeholder="Cliente (General)">
             </div>
         </div>
 
+        @* Acciones (PC y Móvil) *@
         <div class="cmd-actions">
             <button class="btn-cmd btn-cancel" onclick="limpiarTicket()" title="Borrar Todo">
-                <i class="bi bi-trash3-fill me-2"></i> <span class="d-none d-md-inline">Borrar</span>
+                <i class="bi bi-trash3-fill"></i>
             </button>
 
-            <button class="btn-cmd btn-client d-md-none" onclick="$('#nombreCliente').focus()">
-                <i class="bi bi-person-plus-fill"></i>
+            @* Botón Cliente solo visible en móvil si se requiere cambiar *@
+            <button class="btn-cmd btn-client d-md-none" onclick="pedirClienteMovil()" title="Cliente">
+                <i class="bi bi-person-circle"></i>
             </button>
 
             <button class="btn-cmd btn-pay" onclick="finalizarVenta()">
-                <span class="me-2">COBRAR</span> <span id="btnTotal">$0.00</span>
+                <span class="me-2 d-none d-md-inline">COBRAR</span>
+                <span class="d-md-none me-1">PAGAR</span>
+                <span id="btnTotal">$0.00</span>
             </button>
         </div>
     </div>
@@ -410,7 +437,7 @@
         $(document).ready(function() {
             cargarTicket();
 
-            // Atajos de teclado
+            // Atajos
             $(document).keydown(function(e) {
                 if(e.key === "F12") { e.preventDefault(); finalizarVenta(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
@@ -418,13 +445,26 @@
             });
         });
 
+        function pedirClienteMovil() {
+            Swal.fire({
+                title: 'Nombre del Cliente',
+                input: 'text',
+                inputValue: $('#nombreCliente').val(),
+                showCancelButton: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#nombreCliente').val(result.value);
+                }
+            });
+        }
+
         // --- BUSCADOR ---
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer);
             const term = $(this).val();
 
             if (term.length < 2) {
-                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50"><i class="bi bi-upc-scan display-1"></i><p class="mt-3 fw-bold">Listo para vender</p></div>');
+                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50"><i class="bi bi-upc-scan display-1"></i><p class="mt-2 fw-bold small">Listo para vender</p></div>');
                 return;
             }
 
@@ -452,7 +492,7 @@
                         <img src="${p.imagenUrl || '/images/no-image.png'}" class="pc-img">
                         <div class="pc-info">
                             <div class="d-flex justify-content-between">
-                                <span class="pc-title">${p.nombre}</span>
+                                <span class="pc-title text-truncate" style="max-width: 150px;">${p.nombre}</span>
                                 <span class="pc-price">$${p.precioVenta.toFixed(2)}</span>
                             </div>
                             <div class="d-flex justify-content-between mt-1">
@@ -470,11 +510,10 @@
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
                 if (res.success) {
                     cargarTicket();
-                    // Feedback sutil
-                    const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1000 });
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 800 });
                     Toast.fire({ icon: 'success', title: 'Agregado' });
                 } else {
-                    Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top', timer: 2000 });
+                    Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top' });
                 }
             });
         }
@@ -484,26 +523,27 @@
                 const lista = $('#listaTicket');
                 lista.empty();
 
-                // Actualizar Textos
                 $('#lblTotal').text('$' + data.total);
                 $('#btnTotal').text('$' + data.total);
-                $('#lblSubtotal').text('$' + data.total); // Simplificado sin IVA por ahora
+                $('#lblSubtotal').text('$' + data.total);
 
                 if (data.items.length === 0) {
-                    lista.html('<div class="text-center py-5 text-muted opacity-50"><p>Ticket vacío</p></div>');
+                    lista.html('<div class="text-center py-5 text-muted opacity-50"><small>Ticket vacío</small></div>');
                     return;
                 }
 
                 data.items.forEach(item => {
                     lista.append(`
-                        <div class="receipt-item" onclick="eliminarDelTicket(${item.productoId})">
+                        <div class="receipt-item">
                             <div class="ri-qty">${item.cantidad}</div>
                             <div class="ri-desc">
-                                <div>${item.nombre}</div>
-                                <small class="text-muted">$${item.precio.toFixed(2)} c/u</small>
+                                <div class="fw-bold text-dark">${item.nombre}</div>
+                                <small class="text-muted">$${item.precio.toFixed(2)}</small>
                             </div>
-                            <div class="ri-total">$${(item.precio * item.cantidad).toFixed(2)}</div>
-                            <div class="ri-del"><i class="bi bi-x-circle-fill"></i></div>
+                            <div class="d-flex align-items-center">
+                                <div class="ri-total me-2">$${(item.precio * item.cantidad).toFixed(2)}</div>
+                                <i class="bi bi-x-circle-fill ri-del" onclick="eliminarDelTicket(${item.productoId})"></i>
+                            </div>
                         </div>
                     `);
                 });
@@ -518,17 +558,16 @@
             $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); });
         }
 
-        // --- FINALIZAR VENTA (EL NUEVO FLUJO) ---
+        // --- FINALIZAR ---
         function finalizarVenta() {
             const cliente = $('#nombreCliente').val();
             const total = $('#lblTotal').text();
 
             if (total === "$0.00") {
-                Swal.fire('Ticket Vacío', 'Agrega productos primero.', 'info');
+                Swal.fire('Ticket Vacío', 'Agrega productos.', 'info');
                 return;
             }
 
-            // 1. Confirmar Cobro
             Swal.fire({
                 title: 'Cobrar ' + total,
                 text: "¿Confirmar la venta?",
@@ -536,27 +575,20 @@
                 showCancelButton: true,
                 confirmButtonColor: '#22c55e',
                 cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, Cobrar',
-                cancelButtonText: 'Cancelar'
+                confirmButtonText: 'Sí, Cobrar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // 2. Procesar en Backend
                     $.post('/Ventas/FinalizarVenta', { nombreCliente: cliente }, function(res) {
                         if (res.success) {
-                            // 3. MOSTRAR OPCIONES DE POST-VENTA (Imprimir, Correo, Nuevo)
                             Swal.fire({
                                 title: '¡Venta Exitosa!',
                                 html: `
                                     <h3 class="text-success mb-3">Folio #${res.pedidoId}</h3>
                                     <div class="d-grid gap-2">
-                                        <button class="btn btn-lg btn-outline-dark" onclick="imprimirTicket(${res.pedidoId})">
-                                            <i class="bi bi-printer-fill me-2"></i> Imprimir Ticket
+                                        <button class="btn btn-outline-dark" onclick="window.location.href='/Pedidos/Details/${res.pedidoId}'">
+                                            <i class="bi bi-printer-fill me-2"></i> Imprimir
                                         </button>
-                                        <button class="btn btn-lg btn-outline-primary" onclick="enviarCorreo(${res.pedidoId})">
-                                            <i class="bi bi-envelope-fill me-2"></i> Enviar por Correo
-                                        </button>
-                                        <hr>
-                                        <button class="btn btn-lg btn-success" onclick="Swal.close()">
+                                        <button class="btn btn-success" onclick="Swal.close()">
                                             <i class="bi bi-cart-plus-fill me-2"></i> Nueva Venta
                                         </button>
                                     </div>
@@ -564,7 +596,6 @@
                                 showConfirmButton: false,
                                 allowOutsideClick: false
                             }).then(() => {
-                                // Al cerrar el modal, limpiamos todo
                                 limpiarTicket();
                                 $('#inputBusqueda').val('').focus();
                                 $('#contenedorResultados').empty();
@@ -576,16 +607,6 @@
                     });
                 }
             });
-        }
-
-        // --- FUNCIONES DUMMY PARA IMPRIMIR (POR AHORA) ---
-        function imprimirTicket(id) {
-            // Aquí luego pondremos la lógica real para abrir una ventana nueva con el ticket
-            window.open('/Pedidos/Details/' + id, '_blank');
-        }
-
-        function enviarCorreo(id) {
-            Swal.fire('Enviado', 'El ticket se envió al correo del cliente (Simulado)', 'success');
         }
     </script>
 }
