@@ -45,13 +45,15 @@
                                     <form asp-action="UpdateStatus" method="post" class="w-100">
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <input type="hidden" name="nuevoStatus" value="@PedidoStatus.EnProceso" />
-                                        <input type="hidden" name="returnUrl" value="@Url.Action("Details", new { id = item.Id, origen = "almacen" })" />
+                                        @* AQUÍ MARCAMOS EL ORIGEN COMO ALMACEN/SURTIR *@
+                                        <input type="hidden" name="returnUrl" value="@Url.Action("Details", new { id = item.Id, origen = "surtir" })" />
                                         <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Comenzar</button>
                                     </form>
                                 }
                                 else
                                 {
-                                    <a asp-action="Details" asp-route-id="@item.Id" asp-route-origen="almacen" class="btn btn-warning w-100 rounded-pill fw-bold text-dark">Finalizar</a>
+                                    @* AQUÍ ESTÁ EL CAMBIO CLAVE: origen="surtir" *@
+                                    <a asp-action="Details" asp-route-id="@item.Id" asp-route-origen="surtir" class="btn btn-warning w-100 rounded-pill fw-bold text-dark">Finalizar</a>
                                 }
                             </div>
                         </div>
