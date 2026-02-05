@@ -1,0 +1,171 @@
+﻿@{
+    ViewData["Title"] = "Punto de Venta - Mostrador";
+}
+
+<div class="container-fluid py-3">
+    <div class="row g-3">
+        @* COLUMNA IZQUIERDA: BÚSQUEDA *@
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-search text-primary me-2"></i>Buscador de Refacciones</h4>
+
+                    @* Input de búsqueda rápida *@
+                    <div class="input-group input-group-lg mb-4 shadow-sm">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-4"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="inputBusqueda" class="form-control border-start-0 rounded-end-pill py-3"
+                               placeholder="Escribe Nombre, Marca o SKU..." autofocus autocomplete="off">
+                    </div>
+
+                    @* Contenedor de Resultados *@
+                    <div id="contenedorResultados" class="row row-cols-1 row-cols-md-2 g-3">
+                        @* Los resultados de AJAX se inyectan aquí *@
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* COLUMNA DERECHA: TICKET DE VENTA *@
+        <div class="col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4 sticky-top" style="top: 90px; z-index: 1000;">
+                <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Ticket de Venta</h5>
+                    <button class="btn btn-sm btn-outline-danger" onclick="limpiarVenta()"><i class="bi bi-trash"></i></button>
+                </div>
+                <div class="card-body p-0">
+                    @* Lista de items en el ticket *@
+                    <div id="listaTicket" style="max-height: 400px; overflow-y: auto;">
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+                            <p>Ticket vacío. Agrega productos.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light p-4 border-0 rounded-bottom-4">
+                    <div class="row g-2 mb-3">
+                        <div class="col-12">
+                            <input type="text" id="nombreCliente" class="form-control" placeholder="Nombre del Cliente (Opcional)">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0">TOTAL:</h4>
+                        <h3 class="fw-bold text-success mb-0" id="totalVenta">$0.00</h3>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-lg rounded-pill fw-bold shadow" onclick="finalizarVenta()">
+                            <i class="bi bi-check2-circle me-2"></i> COBRAR E IMPRIMIR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let debounceTimer;
+
+        // --- BUSCADOR CON DEBOUNCE (Para no saturar el servidor) ---
+        $('#inputBusqueda').on('keyup', function() {
+            clearTimeout(debounceTimer);
+            const term = $(this).val();
+
+            debounceTimer = setTimeout(() => {
+                if (term.length >= 2) {
+                    $.get('/Ventas/BuscarProductos', { term: term }, function(data) {
+                        renderizarResultados(data);
+                    });
+                } else {
+                    $('#contenedorResultados').empty();
+                }
+            }, 300);
+        });
+
+        function renderizarResultados(productos) {
+            const container = $('#contenedorResultados');
+            container.empty();
+
+            if (productos.length === 0) {
+                container.append('<div class="col-12 text-center py-3 text-muted">Sin coincidencias</div>');
+                return;
+            }
+
+            productos.forEach(p => {
+                container.append(`
+                    <div class="col">
+                        <div class="card h-100 border rounded-3 hover-effect shadow-sm">
+                            <div class="card-body p-2 d-flex align-items-center">
+                                <img src="${p.imagenUrl || '/images/no-image.png'}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <h6 class="mb-0 fw-bold text-truncate">${p.nombre}</h6>
+                                    <small class="text-muted d-block">${p.marcaPieza} | SKU: ${p.sku}</small>
+                                    <span class="fw-bold text-primary">$${p.precioVenta.toFixed(2)}</span>
+                                    <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-dark'} ms-2">${p.stock} pzas</span>
+                                </div>
+                                <button class="btn btn-primary btn-sm rounded-circle ms-2" onclick="agregarAlTicket(${p.id}, '${p.nombre}', ${p.precioVenta})">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        // --- LÓGICA DEL TICKET (Frontend) ---
+        function agregarAlTicket(id, nombre, precio) {
+            // Aquí usamos AJAX para llamar a tu CarritoController/Agregar
+            $.post('/Carrito/Agregar', { id: id, cantidad: 1 }, function() {
+                actualizarTicketVisual();
+                $('#inputBusqueda').val('').focus();
+                $('#contenedorResultados').empty();
+            });
+        }
+
+        function actualizarTicketVisual() {
+            // Cargamos la vista parcial del carrito o refrescamos la lista
+            // Por velocidad en mostrador, simularemos la carga o haremos un GET rápido
+            $.get('/Carrito/Index', function(html) {
+                // Aquí podrías optimizar devolviendo solo el JSON del carrito
+                // Pero para empezar, redirigiremos la lógica a una función que pinte el HTML
+                location.reload(); // Ajustaremos esto a puro AJAX en el siguiente paso
+            });
+        }
+
+        function finalizarVenta() {
+            const cliente = $('#nombreCliente').val();
+
+            Swal.fire({
+                title: '¿Confirmar Venta?',
+                text: "Se descontará el stock y se registrará la venta.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cobrar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Ventas/FinalizarVenta', { nombreCliente: cliente }, function(res) {
+                        if (res.success) {
+                            Swal.fire('¡Venta Exitosa!', `Pedido #${res.pedidoId} registrado.`, 'success')
+                            .then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+
+    <style>
+        .hover-effect:hover {
+            border-color: #0d6efd !important;
+            cursor: pointer;
+            transform: scale(1.02);
+            transition: 0.2s;
+        }
+    </style>
+}
