@@ -26,6 +26,13 @@
                 color: #2E86C1 !important;
             }
 
+        /* Estilo para resaltar el Punto de Venta */
+        .nav-pos-active {
+            background: #2E86C1 !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(46, 134, 193, 0.2);
+        }
+
         .dropdown-menu {
             border-radius: 15px;
             border: none;
@@ -173,11 +180,18 @@
                     @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                     {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
+
+                        @* POS EN MÓVIL *@
+                        @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                        {
+                            <a class="ml-menu-item fw-bold" asp-controller="Ventas" asp-action="Mostrador"><i class="bi bi-lightning-charge-fill"></i> Punto de Venta</a>
+                        }
+
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-cart-check"></i> Compras de Mercancía</a>
+                            <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-arrow-in-right"></i> Compras de Mercancía</a>
                         }
 
                         <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
@@ -249,7 +263,6 @@
                         @if (User.IsInRole("Cliente"))
                         {
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-receipt me-2 text-primary"></i> Mis Pedidos</a>
-                            @* ICONO CARRITO PC CON CONTADOR *@
                             <a class="nav-pc-link position-relative" asp-controller="Carrito" asp-action="Index">
                                 <i class="bi bi-cart3 me-2 text-primary"></i> Carrito
                                 @{
@@ -263,6 +276,14 @@
                         }
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
+                            @* EL BOTÓN DEL POS - EXCLUSIVO MOSTRADOR/ADMIN *@
+                            @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
+                            {
+                                <a class="nav-pc-link nav-pos-active" asp-controller="Ventas" asp-action="Mostrador">
+                                    <i class="bi bi-lightning-charge-fill me-2"></i> PUNTO DE VENTA
+                                </a>
+                            }
+
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
 
@@ -272,21 +293,26 @@
                                 <a class="nav-pc-link" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text me-2 text-primary"></i> Bitácora</a>
                             }
 
-                            <div class="dropdown">
-                                <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión</a>
-                                <ul class="dropdown-menu shadow">
-                                    <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a></li>
-                                    @if (User.IsInRole("Admin"))
-                                    {
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="personal"><i class="bi bi-person-badge"></i> Personal</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="clientes"><i class="bi bi-people"></i> Clientes</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-geo-alt"></i> Sucursal</a></li>
-                                    }
-                                </ul>
-                            </div>
+                            @* GESTIÓN - OCULTO PARA ALMACENISTA *@
+                            @if (!User.IsInRole("Almacen"))
+                            {
+                                <div class="dropdown">
+                                    <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión</a>
+                                    <ul class="dropdown-menu shadow">
+                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Inventario</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a></li>
+
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="personal"><i class="bi bi-person-badge"></i> Personal</a></li>
+                                            <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="clientes"><i class="bi bi-people"></i> Clientes</a></li>
+                                            <li><a class="dropdown-item" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-geo-alt"></i> Sucursal</a></li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
                         }
                     }
                     else
@@ -294,11 +320,11 @@
                         <a class="nav-pc-link position-relative" asp-controller="Carrito" asp-action="Index">
                             <i class="bi bi-cart3 me-2 text-primary"></i> Carrito
                             @{
-                                var countPCGuest = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
+                                var countGuest = Context.Session.GetObject<List<RefaccionariaWeb.Models.DTOs.ItemCarrito>>("Carrito")?.Sum(x => x.Cantidad) ?? 0;
                             }
-                            @if (countPCGuest > 0)
+                            @if (countGuest > 0)
                             {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">@countPCGuest</span>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">@countGuest</span>
                             }
                         </a>
                     }
@@ -351,7 +377,6 @@
             var prodCant = '@TempData["CantidadAgregada"]';
             var errorMsg = '@TempData["Error"]';
 
-            // ALERTA DE CARRITO PERSONALIZADA
             if(showCartAlert) {
                 Swal.fire({
                     title: '¡Producto Añadido!',
@@ -364,34 +389,17 @@
                     cancelButtonText: 'Seguir Comprando',
                     reverseButtons: true
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '@Url.Action("Index", "Carrito")';
-                    }
+                    if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; }
                 });
             }
 
             if(errorMsg) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Atención',
-                    text: errorMsg,
-                    confirmButtonColor: '#2E86C1'
-                });
+                Swal.fire({ icon: 'error', title: 'Atención', text: errorMsg, confirmButtonColor: '#2E86C1' });
             }
 
-            // Alerta simple para otros mensajes de éxito
             var successGeneral = '@TempData["Success"]';
             if(successGeneral && !showCartAlert) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Listo!',
-                    text: successGeneral,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
+                Swal.fire({ icon: 'success', title: '¡Listo!', text: successGeneral, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
             }
         });
     </script>
