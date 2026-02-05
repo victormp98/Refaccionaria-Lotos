@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Catálogo";
     var filtro = ViewData["CurrentFilter"] as string;
+
+    // Validar si es empleado para ocultar el botón de "Agregar al Carrito" web
+    bool esEmpleado = User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen");
 }
 
 <div class="container py-4">
@@ -96,14 +99,14 @@
                             <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
                                 <span class="fs-5 fw-bold text-primary">$@item.PrecioVenta</span>
 
-                                @if (!User.IsInRole("Admin") && !User.IsInRole("Almacen"))
+                                @* SÓLO CLIENTES Y NO-LOGUEADOS PUEDEN COMPRAR POR AQUÍ *@
+                                @if (!esEmpleado)
                                 {
                                     if (item.Stock > 0)
                                     {
                                         <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline position-relative z-2">
                                             <input type="hidden" name="id" value="@item.Id" />
                                             <input type="hidden" name="cantidad" value="1" />
-                                            @* PASAMOS LA URL ACTUAL PARA QUE SWEETALERT SE DISPARE AL VOLVER *@
                                             <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
 
                                             <button type="submit" class="btn btn-primary rounded-circle shadow-sm btn-sm d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="Agregar 1 al carrito">

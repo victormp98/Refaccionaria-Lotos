@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = User.IsInRole("Cliente") ? "Mis Pedidos" : "Panel de Ventas";
+    bool esAlmacen = User.IsInRole("Almacen");
 }
 
 <div class="container-fluid py-4">
@@ -34,7 +35,17 @@
                             <th>Cliente</th>
                         }
                         <th>Estado</th>
-                        <th>Total</th>
+
+                        @* ALMACÉN VE CANTIDAD DE PIEZAS, LOS DEMÁS VEN DINERO *@
+                        @if (esAlmacen)
+                        {
+                            <th>Volumen</th>
+                        }
+                        else
+                        {
+                            <th>Total</th>
+                        }
+
                         <th class="text-end pe-4">Acciones</th>
                     </tr>
                 </thead>
@@ -57,7 +68,22 @@
                                 }
                                 <span class="badge @c rounded-pill px-3">@item.Status</span>
                             </td>
-                            <td class="fw-bold text-success">$@item.TotalPedido.ToString("N2")</td>
+
+                            @* LÓGICA DE PRIVACIDAD *@
+                            @if (esAlmacen)
+                            {
+                                <td>
+                                    <span class="badge bg-secondary rounded-pill">
+                                        <i class="bi bi-box-seam me-1"></i>
+                                        @item.Detalles.Sum(d => d.Cantidad) pzas
+                                    </span>
+                                </td>
+                            }
+                            else
+                            {
+                                <td class="fw-bold text-success">$@item.TotalPedido.ToString("N2")</td>
+                            }
+
                             <td class="text-end pe-4">
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
                                     <i class="bi bi-eye"></i> Detalles
@@ -86,7 +112,17 @@
                             <span class="badge @cMob rounded-pill">@item.Status</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                            <span class="fw-bold text-success fs-5">$@item.TotalPedido.ToString("N2")</span>
+                            @if (esAlmacen)
+                            {
+                                <span class="text-muted small fw-bold">
+                                    <i class="bi bi-box-seam"></i> @item.Detalles.Sum(d => d.Cantidad) piezas a surtir
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="fw-bold text-success fs-5">$@item.TotalPedido.ToString("N2")</span>
+                            }
+
                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Detalles</a>
                         </div>
                     </div>

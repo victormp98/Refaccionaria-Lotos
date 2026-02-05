@@ -2,21 +2,70 @@
     ViewData["Title"] = "Punto de Venta";
 }
 
+<style>
+    .hover-card {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-3px);
+            border: 1px solid #0d6efd !important;
+            background-color: #f8f9fa;
+        }
+
+    /* Ajustes para Móvil */
+    @@media (max-width: 991.98px) {
+        .pos-col-search, .pos-col-ticket {
+            display: none;
+        }
+
+        .pos-col-active {
+            display: block;
+        }
+
+        .pos-tabs {
+            display: flex !important;
+        }
+    }
+
+    /* Ajustes PC */
+    @@media (min-width: 992px) {
+        .pos-col-search, .pos-col-ticket {
+            display: block !important;
+        }
+
+        .pos-tabs {
+            display: none !important;
+        }
+    }
+</style>
+
 <div class="container-fluid py-3">
+
+    @* PESTAÑAS SOLO VISIBLES EN MÓVIL *@
+    <div class="pos-tabs nav nav-pills nav-fill mb-3 bg-white p-2 rounded-pill shadow-sm">
+        <a class="nav-link active rounded-pill fw-bold" id="tab-search" href="javascript:void(0)" onclick="switchTab('search')"><i class="bi bi-search me-1"></i> Catálogo</a>
+        <a class="nav-link rounded-pill fw-bold" id="tab-ticket" href="javascript:void(0)" onclick="switchTab('ticket')">
+            <i class="bi bi-receipt me-1"></i> Ticket
+            <span class="badge bg-danger ms-1" id="badgeTicketCount" style="display:none">0</span>
+        </a>
+    </div>
+
     <div class="row g-3">
         @* IZQUIERDA: BUSCADOR *@
-        <div class="col-lg-7">
-            <div class="card shadow-sm border-0 rounded-4" style="min-height: 85vh;">
+        <div class="col-lg-7 pos-col-search" id="view-search">
+            <div class="card shadow-sm border-0 rounded-4" style="height: 85vh;">
                 <div class="card-body p-4 d-flex flex-column">
-                    <h4 class="fw-bold mb-3"><i class="bi bi-search text-primary me-2"></i>Catálogo Rápido</h4>
+                    <h4 class="fw-bold mb-3 d-none d-lg-block"><i class="bi bi-search text-primary me-2"></i>Catálogo Rápido</h4>
 
                     <div class="input-group input-group-lg mb-4 shadow-sm">
                         <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-4"><i class="bi bi-search text-muted"></i></span>
                         <input type="text" id="inputBusqueda" class="form-control border-start-0 rounded-end-pill py-3"
-                               placeholder="Buscar por Nombre, Marca o SKU..." autofocus autocomplete="off">
+                               placeholder="Buscar (Nombre, Marca, SKU)..." autofocus autocomplete="off">
                     </div>
 
-                    <div id="contenedorResultados" class="row row-cols-1 row-cols-md-2 g-3 flex-grow-1 align-content-start overflow-auto" style="max-height: 65vh;">
+                    <div id="contenedorResultados" class="row row-cols-1 row-cols-md-2 g-3 flex-grow-1 align-content-start overflow-auto" style="padding-bottom: 20px;">
                         <div class="col-12 text-center text-muted mt-5">
                             <i class="bi bi-upc-scan fs-1 d-block mb-2"></i>
                             <p>Escanea un código o escribe para buscar.</p>
@@ -27,11 +76,11 @@
         </div>
 
         @* DERECHA: TICKET *@
-        <div class="col-lg-5">
-            <div class="card shadow-lg border-0 rounded-4 sticky-top" style="top: 20px; height: 85vh;">
+        <div class="col-lg-5 pos-col-ticket" id="view-ticket">
+            <div class="card shadow-lg border-0 rounded-4 sticky-top" style="height: 85vh;">
                 <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Ticket Actual</h5>
-                    <button class="btn btn-sm btn-outline-danger text-white border-light" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i> Limpiar</button>
+                    <button class="btn btn-sm btn-outline-danger text-white border-light" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i></button>
                 </div>
 
                 <div class="card-body p-0 d-flex flex-column overflow-hidden">
@@ -69,8 +118,23 @@
         let debounceTimer;
 
         $(document).ready(function() {
-            cargarTicket(); // Cargar ticket al iniciar por si recargan la página
+            cargarTicket();
         });
+
+        // --- FUNCIONES VISUALES MÓVIL ---
+        function switchTab(tab) {
+            $('.nav-link').removeClass('active');
+            $('#tab-' + tab).addClass('active');
+
+            if(tab === 'search') {
+                $('#view-search').show();
+                $('#view-ticket').hide();
+                $('#inputBusqueda').focus();
+            } else {
+                $('#view-search').hide();
+                $('#view-ticket').show();
+            }
+        }
 
         // --- BUSCADOR ---
         $('#inputBusqueda').on('keyup', function() {
@@ -139,6 +203,13 @@
                 lista.empty();
                 $('#totalVenta').text('$' + data.total);
 
+                // Actualizar Badge Móvil
+                if(data.count > 0) {
+                    $('#badgeTicketCount').text(data.count).show();
+                } else {
+                    $('#badgeTicketCount').hide();
+                }
+
                 if (data.items.length === 0) {
                     lista.html('<div class="text-center py-5 text-muted"><i class="bi bi-cart4 fs-1 d-block mb-2"></i><p>Ticket vacío</p></div>');
                     return;
@@ -174,7 +245,7 @@
 
         function finalizarVenta() {
             const cliente = $('#nombreCliente').val();
-            // Validar que haya items
+            // Validar si hay items
             if ($('#listaTicket').find('.text-muted').length > 0) {
                 Swal.fire('Ticket Vacío', 'Agrega productos antes de cobrar.', 'warning');
                 return;
@@ -211,17 +282,4 @@
             });
         }
     </script>
-
-    <style>
-        .hover-card {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-            .hover-card:hover {
-                transform: translateY(-3px);
-                border: 1px solid #0d6efd !important;
-                background-color: #f8f9fa;
-            }
-    </style>
 }
