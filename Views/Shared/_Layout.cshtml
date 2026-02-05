@@ -175,7 +175,7 @@
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Ventas</a>
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
 
-                        @* REDIRECCIÓN: El botón Compras manda al Inventario para que el Admin busque la pieza *@
+                        @* REDIRECCIÓN MÓVIL *@
                         @if (User.IsInRole("Admin"))
                         {
                             <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-cart-check"></i> Compras de Mercancía</a>
@@ -257,9 +257,10 @@
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
                             <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
 
+                            @* CORRECCIÓN PC: Redirigimos a Productos/Index para iniciar flujo de Compra *@
                             @if (User.IsInRole("Admin"))
                             {
-                                <a class="nav-pc-link" asp-controller="Entradas" asp-action="Index"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i> Compras</a>
+                                <a class="nav-pc-link" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i> Compras</a>
                                 <a class="nav-pc-link" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text me-2 text-primary"></i> Bitácora</a>
                             }
 
