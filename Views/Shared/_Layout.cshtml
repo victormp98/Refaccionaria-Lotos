@@ -158,7 +158,7 @@
 </head>
 <body class="bg-light">
 
-    @* MENÚ LATERAL MÓVIL *@
+    @* MENÚ LATERAL MÓVIL (HAMBURGUESA) *@
     <div id="ml-menu-overlay">
         <div class="ml-menu-header shadow">
             <span class="ml-menu-close" onclick="toggleMLMenu()">&times;</span>
@@ -176,35 +176,38 @@
             {
                 <div class="ml-menu-section-title">Operaciones</div>
                 <div class="ml-card-menu">
-                    @* POS: Admin y Mostrador *@
+                    @* 1. POS (Admin y Mostrador) *@
                     @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                     {
                         <a class="ml-menu-item fw-bold text-primary" asp-controller="Ventas" asp-action="Mostrador"><i class="bi bi-lightning-charge-fill"></i> Punto de Venta</a>
                     }
 
-                    @* VENTAS: Admin y ALMACÉN (Nuevo Requerimiento) *@
+                    @* 2. VENTAS Y SURTIDO (Admin y Almacen) *@
                     @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
                     {
-                        <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Historial Ventas</a>
-                    }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack"></i> Historial Ventas</a>
+                        }
+                        else
+                        {
+                            <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-list-check"></i> Pedidos por Surtir</a>
+                        }
 
-                    @* SURTIR: Admin y Almacen *@
-                    @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
-                    {
                         <a class="ml-menu-item" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed"></i> Surtir Productos</a>
                     }
 
-                    @* COMPRAS Y SCRAP: Admin *@
+                    @* 3. COMPRAS Y SCRAP (Admin) *@
                     @if (User.IsInRole("Admin"))
                     {
                         <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-arrow-in-right"></i> Compras</a>
                         <a class="ml-menu-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3"></i> Reportar Scrap</a>
                     }
 
-                    @* HISTORIAL ENTRADAS: Admin y Mostrador (Nuevo Requerimiento) *@
+                    @* 4. HISTORIAL DE ENTRADAS (Admin y Mostrador) *@
                     @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                     {
-                        <a class="ml-menu-item" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-clock-history"></i> Historial Entradas</a>
+                        <a class="ml-menu-item" asp-controller="Movimientos" asp-action="Index" asp-route-tipo="Entrada"><i class="bi bi-clock-history"></i> Historial Entradas</a>
                     }
 
                     @if (User.IsInRole("Cliente"))
@@ -213,14 +216,16 @@
                     }
                 </div>
 
-                @* INVENTARIO PARA TODOS *@
+                @* INVENTARIO / BITACORA *@
                 @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                 {
                     <div class="ml-menu-section-title">Inventario</div>
                     <div class="ml-card-menu">
                         <a class="ml-menu-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam"></i> Catálogo / Inventario</a>
+
                         @if (User.IsInRole("Admin"))
                         {
+                            <a class="ml-menu-item" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text"></i> Bitácora Global</a>
                             <a class="ml-menu-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front"></i> Vehículos</a>
                             <a class="ml-menu-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3"></i> Compatibilidades</a>
                         }
@@ -244,6 +249,7 @@
         <div class="mt-auto p-4 bg-white border-top"><partial name="_LoginPartial" /></div>
     </div>
 
+    @* BARRA SUPERIOR PC *@
     <header class="sticky-top shadow-sm bg-white">
         <nav class="navbar navbar-light py-2">
             <div class="container-fluid px-3">
@@ -252,6 +258,7 @@
                     <div class="d-none d-lg-block"><partial name="_LoginPartial" /></div>
                 </div>
 
+                @* Buscador Home *@
                 @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index")
                 {
                     <div class="row justify-content-center w-100 mt-2 mx-0">
@@ -264,6 +271,7 @@
                     </div>
                 }
 
+                @* MENU PC *@
                 <div class="d-none d-lg-flex justify-content-center w-100 mt-2 border-top pt-2 gap-2">
                     <a class="nav-pc-link" asp-controller="Home" asp-action="Index"><i class="bi bi-grid me-2 text-primary"></i> Catálogo</a>
 
@@ -286,6 +294,7 @@
 
                         @if (User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen"))
                         {
+                            @* 1. POS (Admin y Mostrador) *@
                             @if (User.IsInRole("Admin") || User.IsInRole("Mostrador"))
                             {
                                 <a class="nav-pc-link nav-pos-active" asp-controller="Ventas" asp-action="Mostrador">
@@ -293,48 +302,55 @@
                                 </a>
                             }
 
+                            @* 2. OPERACIONES ALMACEN Y VENTAS *@
                             @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
                             {
-                                <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-cash-stack me-2 text-primary"></i> Ventas</a>
+                                }
+                                else
+                                {
+                                    <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-list-check me-2 text-primary"></i> Pedidos</a>
+                                }
                                 <a class="nav-pc-link" asp-controller="Pedidos" asp-action="Almacen"><i class="bi bi-truck-flatbed me-2 text-primary"></i> Surtir</a>
                             }
 
+                            @* 3. COMPRAS Y BITACORA (ADMIN) *@
                             @if (User.IsInRole("Admin"))
                             {
                                 <a class="nav-pc-link" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i> Compras</a>
+                                <a class="nav-pc-link" asp-controller="Movimientos" asp-action="Index" asp-route-tipo="Entrada"><i class="bi bi-clock-history me-2 text-primary"></i> Historial Entradas</a>
+                                <a class="nav-pc-link" asp-controller="Movimientos" asp-action="Index"><i class="bi bi-journal-text me-2 text-primary"></i> Bitácora Global</a>
+                            }
+                            else if (User.IsInRole("Mostrador"))
+                            {
+                                <a class="nav-pc-link" asp-controller="Movimientos" asp-action="Index" asp-route-tipo="Entrada"><i class="bi bi-clock-history me-2 text-primary"></i> Historial Entradas</a>
                             }
 
+                            @* 4. GESTIÓN (DROPDOWN SOLO ADMIN) *@
                             @if (User.IsInRole("Admin"))
                             {
                                 <div class="dropdown">
                                     <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-ui-checks-grid me-2 text-primary"></i> Gestión</a>
                                     <ul class="dropdown-menu shadow">
-                                        <li><a class="dropdown-item" asp-controller="Movimientos" asp-action="Index">Bitácora Global / Entradas</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Scraps" asp-action="Index">Reportes de Scrap</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Scraps" asp-action="Index"><i class="bi bi-trash3 me-2"></i>Reportes de Scrap</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index">Inventario</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index">Vehículos</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index">Compatibilidades</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam me-2"></i>Inventario</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Vehiculos" asp-action="Index"><i class="bi bi-car-front me-2"></i>Vehículos</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Compatibilidades" asp-action="Index"><i class="bi bi-diagram-3 me-2"></i>Compatibilidades</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="personal">Personal</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="clientes">Clientes</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Configuracion" asp-action="Edit">Sucursal</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="personal"><i class="bi bi-person-badge me-2"></i>Personal</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index" asp-route-tipo="clientes"><i class="bi bi-people me-2"></i>Clientes</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Configuracion" asp-action="Edit"><i class="bi bi-geo-alt me-2"></i>Sucursal</a></li>
                                     </ul>
                                 </div>
                             }
-                            else
+
+                            @* 5. INVENTARIO DIRECTO (ALMACEN Y MOSTRADOR) *@
+                            @if (User.IsInRole("Almacen") || User.IsInRole("Mostrador"))
                             {
-                                @* Menú simplificado para Mostrador/Almacen *@
-                                <div class="dropdown">
-                                    <a class="nav-pc-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-box-seam me-2 text-primary"></i> Inventario</a>
-                                    <ul class="dropdown-menu shadow">
-                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index">Consultar Inventario</a></li>
-                                        @if (User.IsInRole("Mostrador"))
-                                        {
-                                            <li><a class="dropdown-item" asp-controller="Movimientos" asp-action="Index">Historial Entradas</a></li>
-                                        }
-                                    </ul>
-                                </div>
+                                <a class="nav-pc-link" asp-controller="Productos" asp-action="Index"><i class="bi bi-box-seam me-2 text-primary"></i> Inventario</a>
                             }
                         }
                     }
@@ -358,6 +374,7 @@
 
     <div class="container-fluid mb-5 mt-3"><main role="main">@RenderBody()</main></div>
 
+    @* BARRA INFERIOR MÓVIL *@
     @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
     {
         <div class="nav-mobile-bottom d-lg-none">
@@ -395,6 +412,7 @@
         function toggleMLMenu() { var menu = document.getElementById('ml-menu-overlay'); if(menu) menu.classList.toggle('active'); }
 
         $(document).ready(function() {
+            // Lógica de alertas del carrito (Sin cambios)
             var showCartAlert = '@TempData["AlertaCarrito"]' === 'true';
             var prodName = '@TempData["ProductoAgregado"]';
             var prodCant = '@TempData["CantidadAgregada"]';
@@ -411,19 +429,12 @@
                     confirmButtonText: '<i class="bi bi-cart-check"></i> Ver Carrito',
                     cancelButtonText: 'Seguir Comprando',
                     reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; }
-                });
+                }).then((result) => { if (result.isConfirmed) { window.location.href = '@Url.Action("Index", "Carrito")'; } });
             }
 
-            if(errorMsg) {
-                Swal.fire({ icon: 'error', title: 'Atención', text: errorMsg, confirmButtonColor: '#2E86C1' });
-            }
-
+            if(errorMsg) { Swal.fire({ icon: 'error', title: 'Atención', text: errorMsg, confirmButtonColor: '#2E86C1' }); }
             var successGeneral = '@TempData["Success"]';
-            if(successGeneral && !showCartAlert) {
-                Swal.fire({ icon: 'success', title: '¡Listo!', text: successGeneral, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
-            }
+            if(successGeneral && !showCartAlert) { Swal.fire({ icon: 'success', title: '¡Listo!', text: successGeneral, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true }); }
         });
     </script>
 </body>

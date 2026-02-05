@@ -2,10 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
 using Microsoft.AspNetCore.Authorization;
+using RefaccionariaWeb.Models.Enums; // Aseguramos que use los Enums
 
 namespace RefaccionariaWeb.Controllers
 {
-    [Authorize(Roles = "Admin")] // Solo el mero jefe ve la bitácora global
+    [Authorize(Roles = "Admin,Mostrador")] // Abrimos la puerta al Mostrador
     public class MovimientosController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,11 +16,38 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string tipo)
         {
-            // Traemos los movimientos con los datos del producto
-            var movimientos = await _context.MovimientosInventario
+            var query = _context.MovimientosInventario
                 .Include(m => m.Producto)
+                .AsQueryable();
+
+            // LÓGICA DE SEGURIDAD Y FILTRADO
+            if (User.IsInRole("Mostrador"))
+            {
+                // El Mostrador SOLO puede ver Entradas, sin importar qué pida
+                query = query.Where(m => m.TipoMovimiento == TipoMovimiento.Entrada);
+                ViewData["Title"] = "Historial de Entradas";
+                ViewData["EsBitacoraGlobal"] = false;
+            }
+            else // Es Admin
+            {
+                if (!string.IsNullOrEmpty(tipo) && tipo == "Entrada")
+                {
+                    // Admin pidiendo solo entradas
+                    query = query.Where(m => m.TipoMovimiento == TipoMovimiento.Entrada);
+                    ViewData["Title"] = "Historial de Entradas";
+                    ViewData["EsBitacoraGlobal"] = false;
+                }
+                else
+                {
+                    // Admin viendo todo (Bitácora Global)
+                    ViewData["Title"] = "Bitácora Global";
+                    ViewData["EsBitacoraGlobal"] = true;
+                }
+            }
+
+            var movimientos = await query
                 .OrderByDescending(m => m.FechaRegistro)
                 .ToListAsync();
 
