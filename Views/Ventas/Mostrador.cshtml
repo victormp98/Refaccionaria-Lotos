@@ -2,138 +2,379 @@
     ViewData["Title"] = "Punto de Venta";
 }
 
+@* --- ESTILOS CSS PERSONALIZADOS --- *@
 <style>
-    .hover-card {
-        cursor: pointer;
-        transition: all 0.2s;
+    :root {
+        --pos-dark-bg: #1e293b; /* Azul noche profundo */
+        --pos-dark-accent: #334155; /* Azul grisáceo para items */
+        --pos-highlight: #4ade80; /* Verde neón para precios */
+        --pos-delete: #ef4444; /* Rojo alerta */
     }
 
-        .hover-card:hover {
-            transform: translateY(-3px);
-            border: 1px solid #0d6efd !important;
-            background-color: #f8f9fa;
+    body {
+        background-color: #f1f5f9;
+    }
+
+    /* LAYOUT PC: Ocultamos scroll del body para tener "App Feel" */
+    /* CORRECCIÓN AQUÍ: Usamos @@media para escapar el arroba */
+    @@media (min-width: 992px) {
+        body {
+            overflow: hidden;
         }
 
-    /* Ajustes para Móvil */
+        .pos-container {
+            height: calc(100vh - 70px);
+            display: flex;
+            gap: 0;
+            padding: 0;
+        }
+
+        .catalog-section {
+            flex: 65%;
+            height: 100%;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .ticket-section {
+            flex: 35%;
+            height: 100%;
+            background-color: var(--pos-dark-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+        }
+    }
+
+    /* CATALOGO (IZQUIERDA) */
+    .search-bar-container {
+        margin-bottom: 20px;
+    }
+
+    .catalog-list {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-right: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .product-row {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.1s, border-color 0.1s;
+    }
+
+        .product-row:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+    .prod-thumb {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 6px;
+        background: #f8fafc;
+        margin-right: 15px;
+    }
+
+    .prod-details {
+        flex-grow: 1;
+    }
+
+    .prod-sku {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .prod-title {
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1.2;
+        font-size: 1rem;
+    }
+
+    .prod-price-tag {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .prod-stock-badge {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    .stock-ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .stock-low {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* TICKET (DERECHA - DARK MODE) */
+    .ticket-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .ticket-body {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    .ticket-footer {
+        padding: 20px;
+        background: rgba(0,0,0,0.2);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .ticket-item {
+        background: var(--pos-dark-accent);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid transparent;
+    }
+
+        .ticket-item:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+
+    .t-qty {
+        background: #0f172a;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .t-info {
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .t-name {
+        font-size: 0.9rem;
+        color: #e2e8f0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .t-price {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .t-subtotal {
+        font-weight: bold;
+        font-size: 1rem;
+        color: var(--pos-highlight);
+        margin-left: 10px;
+    }
+
+    .btn-del {
+        color: #ef4444;
+        background: transparent;
+        border: none;
+        padding: 5px;
+        opacity: 0.7;
+        transition: 0.2s;
+    }
+
+        .btn-del:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+    /* MÓVIL STICKY FOOTER */
+    .mobile-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--pos-dark-bg);
+        color: white;
+        padding: 15px;
+        z-index: 1050;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+        border-radius: 15px 15px 0 0;
+    }
+
+    /* AJUSTES RESPONSIVOS */
+    /* CORRECCIÓN AQUÍ TAMBIÉN: @@media */
     @@media (max-width: 991.98px) {
-        .pos-col-search, .pos-col-ticket {
+        .pos-container {
+            display: block;
+            height: auto;
+            padding-bottom: 90px;
+        }
+
+        .ticket-section {
             display: none;
         }
 
-        .pos-col-active {
-            display: block;
+        .offcanvas-bottom {
+            height: 80vh !important;
+            background: var(--pos-dark-bg);
+            color: white;
         }
 
-        .pos-tabs {
-            display: flex !important;
-        }
-    }
-
-    /* Ajustes PC */
-    @@media (min-width: 992px) {
-        .pos-col-search, .pos-col-ticket {
-            display: block !important;
-        }
-
-        .pos-tabs {
-            display: none !important;
+        .offcanvas-header .btn-close {
+            filter: invert(1);
         }
     }
 </style>
 
-<div class="container-fluid py-3">
-
-    @* PESTAÑAS SOLO VISIBLES EN MÓVIL *@
-    <div class="pos-tabs nav nav-pills nav-fill mb-3 bg-white p-2 rounded-pill shadow-sm">
-        <a class="nav-link active rounded-pill fw-bold" id="tab-search" href="javascript:void(0)" onclick="switchTab('search')"><i class="bi bi-search me-1"></i> Catálogo</a>
-        <a class="nav-link rounded-pill fw-bold" id="tab-ticket" href="javascript:void(0)" onclick="switchTab('ticket')">
-            <i class="bi bi-receipt me-1"></i> Ticket
-            <span class="badge bg-danger ms-1" id="badgeTicketCount" style="display:none">0</span>
-        </a>
-    </div>
-
-    <div class="row g-3">
-        @* IZQUIERDA: BUSCADOR *@
-        <div class="col-lg-7 pos-col-search" id="view-search">
-            <div class="card shadow-sm border-0 rounded-4" style="height: 85vh;">
-                <div class="card-body p-4 d-flex flex-column">
-                    <h4 class="fw-bold mb-3 d-none d-lg-block"><i class="bi bi-search text-primary me-2"></i>Catálogo Rápido</h4>
-
-                    <div class="input-group input-group-lg mb-4 shadow-sm">
-                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-4"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" id="inputBusqueda" class="form-control border-start-0 rounded-end-pill py-3"
-                               placeholder="Buscar (Nombre, Marca, SKU)..." autofocus autocomplete="off">
-                    </div>
-
-                    <div id="contenedorResultados" class="row row-cols-1 row-cols-md-2 g-3 flex-grow-1 align-content-start overflow-auto" style="padding-bottom: 20px;">
-                        <div class="col-12 text-center text-muted mt-5">
-                            <i class="bi bi-upc-scan fs-1 d-block mb-2"></i>
-                            <p>Escanea un código o escribe para buscar.</p>
-                        </div>
-                    </div>
-                </div>
+<div class="pos-container">
+    @* --- SECCIÓN CATÁLOGO (IZQUIERDA / MAIN) --- *@
+    <div class="catalog-section">
+        <div class="search-bar-container">
+            <div class="input-group input-group-lg shadow-sm">
+                <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-primary"></i></span>
+                <input type="text" id="inputBusqueda" class="form-control border-0 py-3" placeholder="Buscar producto o escanear (F2)..." autocomplete="off" autofocus>
+                <button class="btn btn-white border-0 pe-3" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-circle-fill text-muted"></i></button>
             </div>
         </div>
 
-        @* DERECHA: TICKET *@
-        <div class="col-lg-5 pos-col-ticket" id="view-ticket">
-            <div class="card shadow-lg border-0 rounded-4 sticky-top" style="height: 85vh;">
-                <div class="card-header bg-dark text-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Ticket Actual</h5>
-                    <button class="btn btn-sm btn-outline-danger text-white border-light" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i></button>
-                </div>
-
-                <div class="card-body p-0 d-flex flex-column overflow-hidden">
-                    <div id="listaTicket" class="flex-grow-1 overflow-auto p-3 bg-light">
-                        @* ITEMS SE PINTAN AQUÍ *@
-                    </div>
-                </div>
-
-                <div class="card-footer bg-white p-4 border-top">
-                    <div class="row g-2 mb-3">
-                        <div class="col-12">
-                            <label class="small fw-bold text-muted">Cliente</label>
-                            <input type="text" id="nombreCliente" class="form-control bg-light" placeholder="Público General">
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded-3">
-                        <span class="h4 text-muted mb-0">Total:</span>
-                        <span class="h2 fw-bold text-primary mb-0" id="totalVenta">$0.00</span>
-                    </div>
-
-                    <div class="d-grid">
-                        <button class="btn btn-primary btn-lg rounded-pill fw-bold shadow py-3" onclick="finalizarVenta()">
-                            <i class="bi bi-check2-circle me-2"></i> COBRAR
-                        </button>
-                    </div>
-                </div>
+        <div id="contenedorResultados" class="catalog-list">
+            @* ESTADO INICIAL *@
+            <div class="d-flex flex-column align-items-center justify-content-center h-75 text-muted opacity-50">
+                <i class="bi bi-upc-scan display-1 mb-3"></i>
+                <h4>Listo para vender</h4>
+                <p>Usa el buscador o la pistola de código</p>
             </div>
+        </div>
+    </div>
+
+    @* --- SECCIÓN TICKET PC (DERECHA / DARK MODE) --- *@
+    <div class="ticket-section d-none d-lg-flex">
+        <div class="d-flex flex-column h-100" id="pcTicketContainer">
+            @* El contenido se inyecta vía JS usando el template *@
         </div>
     </div>
 </div>
+
+@* --- COMPONENTE MÓVIL: OFFCANVAS TICKET --- *@
+<div class="offcanvas offcanvas-bottom rounded-top-4" tabindex="-1" id="offcanvasTicket">
+    <div class="offcanvas-header border-bottom border-secondary">
+        <h5 class="offcanvas-title fw-bold"><i class="bi bi-receipt me-2"></i>Ticket de Venta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column bg-dark p-0">
+        <div id="mobileTicketContainer" class="flex-grow-1 d-flex flex-column h-100"></div>
+    </div>
+</div>
+
+@* --- MÓVIL: STICKY FOOTER --- *@
+<div class="mobile-footer d-lg-none" id="mobileFooterBar" style="display:none !important;">
+    <div>
+        <small class="d-block text-secondary" style="font-size: 0.75rem;">Total a Pagar</small>
+        <span class="fw-bold fs-3 text-white" id="mobileTotalDisplay">$0.00</span>
+        <span class="badge bg-primary ms-2 rounded-pill" id="mobileCountBadge">0 items</span>
+    </div>
+    <button class="btn btn-success fw-bold rounded-pill px-4 shadow" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTicket">
+        Ver Ticket <i class="bi bi-chevron-up ms-1"></i>
+    </button>
+</div>
+
+@* --- TEMPLATE DEL TICKET (PARA REUTILIZAR EN JS) --- *@
+<script id="ticketTemplate" type="text/template">
+    <div class="d-flex flex-column h-100">
+        <div class="ticket-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-white"><i class="bi bi-cart3 me-2"></i>Venta Actual</h5>
+            <button class="btn btn-sm btn-outline-danger border-0 text-danger-emphasis" onclick="limpiarTicket()" title="Vaciar">
+                <i class="bi bi-trash3-fill"></i> Limpiar
+            </button>
+        </div>
+
+        <div class="px-3 py-2 border-bottom border-secondary">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-transparent border-secondary text-secondary"><i class="bi bi-person-fill"></i></span>
+                <input type="text" id="nombreCliente" class="form-control bg-transparent border-secondary text-white" placeholder="Cliente (Opcional - Público General)">
+            </div>
+        </div>
+
+        <div id="listaTicketItems" class="ticket-body">
+            </div>
+
+        <div class="ticket-footer mt-auto">
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <span class="text-secondary fw-bold small">TOTAL:</span>
+                <span class="h1 fw-bold mb-0" style="color: var(--pos-highlight);" id="displayTotalVenta">$0.00</span>
+            </div>
+            <div class="d-grid">
+                <button class="btn btn-success btn-lg fw-bold rounded-3 shadow py-3" onclick="finalizarVenta()">
+                    <i class="bi bi-cash-coin me-2"></i> COBRAR (F12)
+                </button>
+            </div>
+        </div>
+    </div>
+</script>
 
 @section Scripts {
     <script>
         let debounceTimer;
 
         $(document).ready(function() {
+            // Inicializar estructuras
+            renderTicketStructure();
             cargarTicket();
+
+            // Atajos
+            $(document).keydown(function(e) {
+                if(e.key === "F12") { e.preventDefault(); finalizarVenta(); }
+                if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
+            });
         });
 
-        // --- FUNCIONES VISUALES MÓVIL ---
-        function switchTab(tab) {
-            $('.nav-link').removeClass('active');
-            $('#tab-' + tab).addClass('active');
+        // --- RENDERIZADO DE ESTRUCTURA DEL TICKET (PC Y MOVIL) ---
+        function renderTicketStructure() {
+            const template = document.getElementById('ticketTemplate').innerHTML;
+            // Poner en PC
+            $('#pcTicketContainer').html(template);
+            // Poner en Móvil
+            $('#mobileTicketContainer').html(template);
 
-            if(tab === 'search') {
-                $('#view-search').show();
-                $('#view-ticket').hide();
-                $('#inputBusqueda').focus();
-            } else {
-                $('#view-search').hide();
-                $('#view-ticket').show();
-            }
+            // Sincronizar inputs de cliente (si escribes en uno, se copia al otro)
+            $(document).on('input', '#nombreCliente', function() {
+                const val = $(this).val();
+                $('[id="nombreCliente"]').val(val);
+            });
         }
 
         // --- BUSCADOR ---
@@ -142,7 +383,7 @@
             const term = $(this).val();
 
             if (term.length < 2) {
-                $('#contenedorResultados').html('<div class="col-12 text-center text-muted mt-5"><i class="bi bi-upc-scan fs-1 d-block mb-2"></i><p>Escanea un código o escribe para buscar.</p></div>');
+                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center h-75 text-muted opacity-50"><i class="bi bi-upc-scan display-1 mb-3"></i><h4>Listo para vender</h4><p>Usa el buscador o la pistola de código</p></div>');
                 return;
             }
 
@@ -158,79 +399,88 @@
             container.empty();
 
             if (productos.length === 0) {
-                container.append('<div class="col-12 text-center py-5 text-muted">Sin coincidencias</div>');
+                container.append('<div class="text-center py-5 text-muted"><h5><i class="bi bi-emoji-frown me-2"></i>No encontrado</h5></div>');
                 return;
             }
 
             productos.forEach(p => {
+                const stockClass = p.stock < 5 ? 'stock-low' : 'stock-ok';
+                const stockText = p.stock < 5 ? '¡Poco Stock!' : 'Disponible';
+
                 container.append(`
-                    <div class="col">
-                        <div class="card h-100 border-0 shadow-sm hover-card" onclick="agregarAlTicket(${p.id})">
-                            <div class="card-body p-2 d-flex align-items-center">
-                                <img src="${p.imagenUrl || '/images/no-image.png'}" class="rounded me-3 border" style="width: 60px; height: 60px; object-fit: cover;">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <h6 class="mb-0 fw-bold text-truncate text-dark">${p.nombre}</h6>
-                                    <small class="text-muted d-block">${p.sku} | ${p.marcaPieza}</small>
-                                    <div class="d-flex justify-content-between align-items-center mt-1">
-                                        <span class="fw-bold text-primary">$${p.precioVenta.toFixed(2)}</span>
-                                        <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-secondary'} rounded-pill">${p.stock} disp.</span>
-                                    </div>
-                                </div>
-                                <div class="ms-2"><i class="bi bi-plus-circle-fill text-primary fs-3"></i></div>
+                    <div class="product-row" onclick="agregarAlTicket(${p.id})">
+                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-thumb">
+                        <div class="prod-details">
+                            <div class="d-flex justify-content-between">
+                                <span class="prod-sku">${p.sku}</span>
+                                <span class="prod-brand">${p.marcaPieza}</span>
+                            </div>
+                            <h6 class="prod-title text-truncate">${p.nombre}</h6>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span class="prod-stock-badge ${stockClass}">${p.stock} ${stockText}</span>
+                                <span class="prod-price-tag">$${p.precioVenta.toFixed(2)}</span>
                             </div>
                         </div>
+                        <div class="ms-3 text-primary"><i class="bi bi-plus-circle-fill fs-3"></i></div>
                     </div>
                 `);
             });
         }
 
-        // --- TICKET ---
+        // --- LÓGICA DEL TICKET ---
         function agregarAlTicket(id) {
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
                 if (res.success) {
                     cargarTicket();
-                    const toast = Swal.mixin({ toast: true, position: 'bottom-start', showConfirmButton: false, timer: 1500 });
-                    toast.fire({ icon: 'success', title: 'Agregado' });
+                    // Feedback sonoro o visual rápido
+                    const Toast = Swal.mixin({ toast: true, position: 'bottom-start', showConfirmButton: false, timer: 1000, background: '#1e293b', color: '#fff' });
+                    Toast.fire({ icon: 'success', title: 'Producto agregado' });
                 } else {
-                    Swal.fire('Error', res.message, 'error');
+                    Swal.fire({ icon: 'error', title: 'Atención', text: res.message });
                 }
             });
         }
 
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
-                const lista = $('#listaTicket');
-                lista.empty();
-                $('#totalVenta').text('$' + data.total);
+                // Actualizar TODOS los contenedores de items (PC y Móvil)
+                const listas = $('[id="listaTicketItems"]');
+                listas.empty();
 
-                // Actualizar Badge Móvil
+                // Actualizar Totales
+                $('[id="displayTotalVenta"]').text('$' + data.total);
+                $('#mobileTotalDisplay').text('$' + data.total);
+                $('#mobileCountBadge').text(data.count + ' items');
+
+                // Mostrar/Ocultar Footer Móvil
                 if(data.count > 0) {
-                    $('#badgeTicketCount').text(data.count).show();
+                    $('#mobileFooterBar').attr('style', 'display: flex !important');
                 } else {
-                    $('#badgeTicketCount').hide();
+                    $('#mobileFooterBar').hide();
                 }
 
                 if (data.items.length === 0) {
-                    lista.html('<div class="text-center py-5 text-muted"><i class="bi bi-cart4 fs-1 d-block mb-2"></i><p>Ticket vacío</p></div>');
+                    listas.html('<div class="text-center py-5 text-secondary opacity-50"><i class="bi bi-cart-x display-4"></i><p class="mt-2">Vacío</p></div>');
                     return;
                 }
 
                 data.items.forEach(item => {
-                    lista.append(`
-                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                            <div class="d-flex align-items-center overflow-hidden">
-                                <span class="badge bg-primary rounded-pill me-2">${item.cantidad}</span>
-                                <div class="text-truncate" style="max-width: 180px;">
-                                    <div class="fw-bold text-dark small">${item.nombre}</div>
-                                    <div class="text-muted small">$${item.precio.toFixed(2)} c/u</div>
+                    const htmlItem = `
+                        <div class="ticket-item">
+                            <div class="d-flex align-items-center overflow-hidden flex-grow-1">
+                                <div class="t-qty">${item.cantidad}</div>
+                                <div class="t-info">
+                                    <div class="t-name">${item.nombre}</div>
+                                    <div class="t-price">$${item.precio.toFixed(2)} c/u</div>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center">
-                                <span class="fw-bold me-3">$${(item.precio * item.cantidad).toFixed(2)}</span>
-                                <button class="btn btn-sm text-danger p-0" onclick="eliminarDelTicket(${item.productoId})"><i class="bi bi-x-circle-fill"></i></button>
+                                <div class="t-subtotal">$${(item.precio * item.cantidad).toFixed(2)}</div>
+                                <button class="btn-del ms-3" onclick="eliminarDelTicket(${item.productoId})"><i class="bi bi-trash"></i></button>
                             </div>
                         </div>
-                    `);
+                    `;
+                    listas.append(htmlItem);
                 });
             });
         }
@@ -244,28 +494,35 @@
         }
 
         function finalizarVenta() {
-            const cliente = $('#nombreCliente').val();
-            // Validar si hay items
-            if ($('#listaTicket').find('.text-muted').length > 0) {
-                Swal.fire('Ticket Vacío', 'Agrega productos antes de cobrar.', 'warning');
+            // Obtenemos el nombre del cliente desde CUALQUIERA de los inputs visibles
+            const cliente = $('input[id="nombreCliente"]').filter(':visible').val() || $('input[id="nombreCliente"]').val();
+
+            if ($('[id="listaTicketItems"]').first().find('.ticket-item').length === 0) {
+                Swal.fire('Ticket Vacío', 'Agrega productos primero.', 'warning');
                 return;
             }
 
             Swal.fire({
-                title: '¿Procesar Cobro?',
-                text: "Se registrará la salida del inventario.",
+                title: '¿Cobrar?',
+                text: "Total: " + $('[id="displayTotalVenta"]').first().text(),
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#2E86C1',
+                confirmButtonColor: '#10b981', // Verde
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, Cobrar',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                background: '#fff'
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.post('/Ventas/FinalizarVenta', { nombreCliente: cliente }, function(res) {
                         if (res.success) {
+                            // Cerrar Offcanvas si está abierto
+                            const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasTicket'));
+                            if(offcanvas) offcanvas.hide();
+
                             Swal.fire({
                                 title: '¡Venta Exitosa!',
-                                text: `Folio #${res.pedidoId} generado.`,
+                                html: `<h3 class="text-success">Folio #${res.pedidoId}</h3><p>Salida de inventario registrada.</p>`,
                                 icon: 'success',
                                 timer: 2000,
                                 showConfirmButton: false
@@ -273,6 +530,7 @@
                                 limpiarTicket();
                                 $('#inputBusqueda').val('').focus();
                                 $('#contenedorResultados').empty();
+                                $('[id="nombreCliente"]').val('');
                             });
                         } else {
                             Swal.fire('Error', res.message, 'error');
