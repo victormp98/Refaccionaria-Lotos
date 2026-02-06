@@ -80,7 +80,7 @@
             padding-right: 5px;
         }
 
-        /* CARD PRODUCTO PC (La targetota original) */
+        /* Card PC */
         .prod-card {
             background: white;
             border: 1px solid #ccc;
@@ -168,7 +168,6 @@
             border: 1px solid #ddd;
         }
 
-        /* TICKET PC */
         .ticket-header {
             background: var(--color-dark);
             color: white;
@@ -207,10 +206,6 @@
                 vertical-align: middle;
             }
 
-            .t-table tr:hover {
-                background: #eff6ff;
-            }
-
         .qty-control {
             display: flex;
             align-items: center;
@@ -229,10 +224,6 @@
             padding: 2px 8px;
             cursor: pointer;
         }
-
-            .btn-qty:hover {
-                background: #eff6ff;
-            }
 
         .qty-val {
             font-weight: bold;
@@ -265,7 +256,6 @@
             align-items: center;
         }
 
-        /* BOTONERA PC */
         .action-panel {
             padding: 15px;
             background: white;
@@ -341,33 +331,24 @@
                 font-size: 2.5rem;
             }
 
-        /* ELEMENTOS EXCLUSIVOS MÓVIL */
-        .mobile-search-bar {
+        .mobile-search-bar, .mobile-ticket-inline, .mobile-sidebar {
             display: none;
         }
 
-        .mobile-ticket-inline {
-            display: none;
-        }
-
-        .mobile-sidebar {
-            display: none;
-        }
-
-        /* ================= ESTILOS MÓVIL (FUERZA BRUTA) ================= */
+        /* ================= ESTILOS MÓVIL (MANDO VERTICAL AJUSTADO) ================= */
         @@media (max-width: 991.98px) {
             body {
                 background: #f3f4f6;
                 padding: 0;
             }
-            /* GRID PRINCIPAL */
+
             .pos-wrapper {
                 display: grid;
-                grid-template-columns: 1fr 110px;
+                grid-template-columns: 1fr 110px; /* Panel 1fr | Barra 110px */
                 height: 100vh;
                 overflow: hidden;
             }
-            /* --- COLUMNA IZQUIERDA --- */
+            /* --- COLUMNA IZQUIERDA (FLEX VERTICAL PARA IMÁN) --- */
             .left-panel {
                 display: flex;
                 flex-direction: column;
@@ -376,6 +357,7 @@
                 border-right: 2px solid #ccc;
                 overflow: hidden;
                 background: white;
+                height: 100%;
             }
 
                 .left-panel .search-area {
@@ -401,30 +383,27 @@
                 font-weight: bold;
                 background: #f9fafb;
             }
-            /* 2. LISTA RESULTADOS (REFINADA) */
+            /* 2. LISTA RESULTADOS (FLEX 0: Solo ocupa lo que necesita) */
             .products-grid {
                 padding: 0 !important;
                 display: none;
                 background: white;
                 overflow-y: auto;
-                flex-shrink: 0;
+                /* CLAVE DEL IMÁN: No crecer, solo encogerse si es necesario, base auto */
+                flex: 0 1 auto;
                 max-height: 55vh;
                 border-bottom: 1px solid #374151;
-                transition: all 0.2s;
-                /* Importante: Quitar el Grid de PC */
                 grid-template-columns: 1fr !important;
             }
-            /* --- AQUÍ APLASTAMOS LA TARJETA CON !important --- */
+            /* Tarjeta Aplastada (Renglón) */
             .prod-card {
-                display: flex !important; /* Forzamos Flex */
-                flex-direction: row !important; /* Forzamos Horizontal */
+                display: flex !important;
+                flex-direction: row !important;
                 align-items: center !important;
                 justify-content: flex-start !important;
-                /* Quitamos altura y márgenes de PC */
                 height: auto !important;
                 min-height: 50px !important;
                 margin: 0 !important;
-                /* Estilo Renglón */
                 padding: 8px 10px !important;
                 border: none !important;
                 border-bottom: 1px solid #eee !important;
@@ -438,7 +417,6 @@
                 }
 
             .prod-img {
-                /* Imagen chiquita a la fuerza */
                 width: 50px !important;
                 height: 50px !important;
                 border-radius: 4px !important;
@@ -457,12 +435,8 @@
                 color: #333;
                 line-height: 1.2 !important;
             }
-            /* Ocultar basura de la tarjeta */
-            .prod-sku {
-                display: none !important;
-            }
 
-            .prod-stock {
+            .prod-sku, .prod-stock {
                 display: none !important;
             }
 
@@ -474,12 +448,14 @@
                 color: var(--color-success) !important;
                 font-weight: 700 !important;
             }
-            /* 3. TICKET */
+            /* 3. TICKET (FLEX 1: Ocupa todo el resto del espacio) */
             .mobile-ticket-inline {
                 display: flex;
                 flex-direction: column;
                 background: #f9fafb;
-                flex-grow: 1;
+                /* CLAVE DEL IMÁN: Crecer para llenar todo el hueco */
+                flex: 1 1 auto;
+                min-height: 0;
                 overflow: hidden;
             }
 
@@ -491,10 +467,11 @@
                 font-weight: bold;
                 display: flex;
                 justify-content: space-between;
+                flex-shrink: 0;
             }
 
             .m-ticket-body {
-                flex-grow: 1;
+                flex: 1;
                 overflow-y: auto;
                 padding: 0;
             }
@@ -541,7 +518,7 @@
                 text-align: right;
                 font-size: 0.95rem;
             }
-            /* --- BARRA LATERAL --- */
+            /* --- BARRA LATERAL DERECHA --- */
             .right-panel {
                 display: none !important;
             }
@@ -556,6 +533,8 @@
                 box-shadow: -2px 0 10px rgba(0,0,0,0.3);
                 z-index: 100;
                 overflow-y: auto;
+                /* Justify Start: Todo pegado arriba */
+                justify-content: flex-start;
             }
 
             .btn-mob {
@@ -583,7 +562,7 @@
                     background: rgba(255,255,255,0.3);
                     transform: scale(0.95);
                 }
-            /* Botones específicos */
+
             .mob-del {
                 background: var(--color-danger);
             }
@@ -600,30 +579,30 @@
             .mob-print {
                 background: #6b7280;
             }
-            /* Espaciador flexible */
-            .spacer {
-                flex-grow: 1;
-            }
 
+            .mob-back {
+                background: #4b5563;
+                text-decoration: none;
+            }
+            /* COBRAR (Sin margin-top auto, pegado al anterior) */
             .mob-pay {
                 background: var(--color-success);
                 color: white;
-                height: 70px;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-                /* Sin márgenes extra, el flex gap lo maneja */
+                height: 80px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             }
         }
     </style>
 </head>
 <body>
 
-    @* --- ESTRUCTURA PRINCIPAL --- *@
+    @* --- ESTRUCTURA --- *@
     <div class="pos-wrapper">
 
         @* --- ZONA IZQUIERDA --- *@
         <div class="left-panel">
 
-            @* PC *@
+            @* PC: Buscador *@
             <div class="search-area d-none d-lg-block">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-primary border-end-0"><i class="bi bi-search fs-4 text-primary"></i></span>
@@ -632,7 +611,7 @@
                 </div>
             </div>
 
-            @* MÓVIL *@
+            @* MÓVIL: Buscador *@
             <div class="mobile-search-bar">
                 <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off">
             </div>
@@ -645,7 +624,7 @@
                 </div>
             </div>
 
-            @* 3. TICKET INCRUSTADO *@
+            @* 3. TICKET INCRUSTADO (Imán) *@
             <div class="mobile-ticket-inline">
                 <div class="m-ticket-header">
                     <span>TICKET ACTUAL</span>
@@ -684,32 +663,39 @@
             </div>
         </div>
 
-        @* MÓVIL: Barra Lateral Compacta *@
+        @* MÓVIL: Barra Lateral (Fila India) *@
         <div class="mobile-sidebar">
+            @* 0. SALIR (NUEVO) *@
+            <a href="/Home/Index" class="btn-mob mob-back">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>SALIR</span>
+            </a>
+
+            @* 1. Cliente *@
             <button class="btn-mob mob-client" onclick="asignarCliente()">
                 <i class="bi bi-person-fill"></i>
                 <span>CTE</span>
             </button>
 
+            @* 2. IVA *@
             <button id="btnMobIva" class="btn-mob mob-iva-on" onclick="toggleIVA()">
                 <i class="bi bi-percent"></i>
                 <span id="txtMobIva">CON IVA</span>
             </button>
 
+            @* 3. Borrar *@
             <button class="btn-mob mob-del" onclick="limpiarTicket()">
                 <i class="bi bi-trash3"></i>
                 <span>BORRAR</span>
             </button>
 
-            @* Espaciador para empujar los botones de acción al fondo *@
-            <div class="spacer"></div>
-
+            @* 4. IMPRIMIR *@
             <button class="btn-mob mob-print" onclick="Swal.fire('Info', 'Imprimir último ticket', 'info')">
                 <i class="bi bi-printer"></i>
                 <span>IMPR.</span>
             </button>
 
-            @* COBRAR (PEGADO A IMPRIMIR) *@
+            @* 5. COBRAR (PEGADITO, SIN ESPACIOS) *@
             <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
                 <i class="bi bi-cash-stack"></i>
                 <span>COBRAR</span>
@@ -784,7 +770,7 @@
             const term = $(this).val();
             const listContainer = $('#contenedorResultados');
 
-            // Lógica de "Acordeón"
+            // LOGICA: Si está vacío, OCULTAR lista para que ticket suba
             if (term.length < 2) {
                 if (window.innerWidth < 992) listContainer.hide();
                 if(term.length === 0) listContainer.html('<div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
@@ -837,33 +823,10 @@
 
                 data.items.forEach(item => {
                     const totalItem = (item.precio * item.cantidad).toFixed(2);
-
                     // PC
-                    tbody.append(`
-                        <tr>
-                            <td><div class="fw-bold text-dark small">${item.nombre}</div><div class="text-muted" style="font-size:0.7rem">${item.productoId}</div></td>
-                            <td class="text-end">$${item.precio.toFixed(2)}</td>
-                            <td><div class="qty-control"><button class="btn-qty" onclick="restarUnidad(${item.productoId})"><i class="bi bi-dash"></i></button><div class="qty-val">${item.cantidad}</div><button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button></div></td>
-                            <td class="text-end fw-bold">$${totalItem}</td>
-                            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5" style="cursor:pointer" onclick="eliminarDelTicket(${item.productoId})"></i></td>
-                        </tr>
-                    `);
-
+                    tbody.append(`<tr><td><div class="fw-bold text-dark small">${item.nombre}</div><div class="text-muted" style="font-size:0.7rem">${item.productoId}</div></td><td class="text-end">$${item.precio.toFixed(2)}</td><td><div class="qty-control"><button class="btn-qty" onclick="restarUnidad(${item.productoId})"><i class="bi bi-dash"></i></button><div class="qty-val">${item.cantidad}</div><button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button></div></td><td class="text-end fw-bold">$${totalItem}</td><td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5" style="cursor:pointer" onclick="eliminarDelTicket(${item.productoId})"></i></td></tr>`);
                     // MÓVIL
-                    mobList.append(`
-                        <div class="mt-item">
-                            <div class="mt-desc">
-                                <div class="fw-bold text-dark">${item.nombre}</div>
-                                <div class="text-muted" style="font-size:0.7rem">$${item.precio.toFixed(2)} c/u</div>
-                            </div>
-                            <div class="mt-qty-box">
-                                <div class="mt-btn" onclick="restarUnidad(${item.productoId})">-</div>
-                                <div>${item.cantidad}</div>
-                                <div class="mt-btn" onclick="agregarAlTicket(${item.productoId})">+</div>
-                            </div>
-                            <div class="mt-total">$${totalItem}</div>
-                        </div>
-                    `);
+                    mobList.append(`<div class="mt-item"><div class="mt-desc"><div class="fw-bold text-dark">${item.nombre}</div><div class="text-muted" style="font-size:0.7rem">$${item.precio.toFixed(2)} c/u</div></div><div class="mt-qty-box"><div class="mt-btn" onclick="restarUnidad(${item.productoId})">-</div><div>${item.cantidad}</div><div class="mt-btn" onclick="agregarAlTicket(${item.productoId})">+</div></div><div class="mt-total">$${totalItem}</div></div>`);
                 });
                 recalcularTotalesVisuales();
             });
@@ -877,7 +840,6 @@
             if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
             const textoCliente = clienteActual ? clienteActual : "Público General";
             const montoPagar = $('#lblTotal').text();
-
             Swal.fire({
                 title: 'Cobrar: ' + montoPagar,
                 html: `<p class="mb-3">Cliente: <strong>${textoCliente}</strong></p><div class="d-grid gap-3"><button id="btnEfectivo" class="btn btn-lg btn-success py-3 fw-bold shadow"><i class="bi bi-cash-coin me-2"></i> EFECTIVO</button><button id="btnTarjeta" class="btn btn-lg btn-primary py-3 fw-bold shadow"><i class="bi bi-credit-card-2-front me-2"></i> TARJETA</button></div>`,
@@ -892,7 +854,6 @@
         function procesarVenta(metodo) {
             Swal.close();
             Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-
             $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo, aplicaIVA: aplicaIVA }, function(res) {
                 if (res.success) {
                     Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
