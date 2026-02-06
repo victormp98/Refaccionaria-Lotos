@@ -80,7 +80,7 @@
             padding-right: 5px;
         }
 
-        /* CARD PRODUCTO */
+        /* CARD PRODUCTO PC */
         .prod-card {
             background: white;
             border: 1px solid #ccc;
@@ -354,92 +354,134 @@
             display: none;
         }
 
-        /* ================= ESTILOS MÓVIL (REDISTRIBUCIÓN TOTAL) ================= */
+        /* ================= ESTILOS MÓVIL (MODO LISTA COMPACTA) ================= */
         @@media (max-width: 991.98px) {
             body {
                 background: #f3f4f6;
                 padding: 0;
             }
-            /* GRID PRINCIPAL: 2 COLUMNAS (CONTENIDO | BOTONES) */
+            /* GRID PRINCIPAL */
             .pos-wrapper {
                 display: grid;
-                grid-template-columns: 1fr 110px; /* Columna Izq (Flexible) | Columna Der (110px fija) */
+                grid-template-columns: 1fr 110px; /* Panel 1fr | Barra 110px */
                 height: 100vh;
                 overflow: hidden;
             }
             /* --- COLUMNA IZQUIERDA (CONTENIDO) --- */
             .left-panel {
-                display: grid;
-                grid-template-rows: 60px 1.5fr 1fr; /* 1. Buscador | 2. Productos (Más grande) | 3. Ticket (Más chico) */
+                display: flex;
+                flex-direction: column;
                 padding: 0;
                 border: none;
                 border-right: 2px solid #ccc;
                 overflow: hidden;
+                background: white;
             }
 
                 .left-panel .search-area {
                     display: none;
                 }
-            /* Ocultar buscador viejo */
-            /* 1. Buscador Móvil */
+            /* Ocultar buscador PC */
+            /* 1. BUSCADOR (Top) */
             .mobile-search-bar {
                 display: flex;
                 align-items: center;
-                padding: 5px 10px;
+                padding: 10px;
                 background: white;
                 border-bottom: 1px solid #ddd;
+                height: 60px;
+                flex-shrink: 0;
             }
 
             .mobile-input {
                 width: 100%;
-                height: 45px;
+                height: 40px;
                 border-radius: 8px;
                 border: 1px solid #ccc;
                 padding-left: 10px;
                 font-weight: bold;
                 background: #f9fafb;
             }
-            /* 2. Grid de Productos */
+            /* 2. LISTA RESULTADOS (Estilo Renglón) */
             .products-grid {
-                padding: 10px;
-                grid-template-columns: repeat(2, 1fr); /* 2 Columnas */
-                gap: 8px;
-                background: #f3f4f6;
+                padding: 0;
+                display: block; /* Ya no es Grid, es Block para lista vertical */
+                background: white;
                 overflow-y: auto;
-                border-bottom: 2px solid #ccc;
+                flex-shrink: 0; /* No encoger más de lo necesario */
+                max-height: 45vh; /* Ocupa máximo el 45% de la pantalla para dejar ver el ticket */
+                border-bottom: 1px solid #eee;
+                transition: all 0.3s;
             }
-            /* Cards más compactas */
+                /* Si está vacío, ocultamos el contenedor de resultados para que el ticket suba */
+                .products-grid:empty {
+                    display: none;
+                }
+            /* Card transformada en Renglón */
             .prod-card {
-                padding: 5px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                display: flex; /* Flex horizontal */
+                flex-direction: row;
+                align-items: center;
+                padding: 8px 10px;
+                margin: 0;
+                border: none;
+                border-bottom: 1px solid #f0f0f0;
+                border-radius: 0;
+                box-shadow: none;
+                min-height: 60px;
             }
 
+                .prod-card:active {
+                    background: #f0fdf4;
+                }
+            /* Verde clarito al tocar */
+            /* Reacomodo de elementos dentro del renglón */
             .prod-img {
-                height: 70px;
-                margin-bottom: 5px;
+                width: 40px;
+                height: 40px;
+                border-radius: 4px;
+                margin-bottom: 0;
+                margin-right: 10px;
             }
 
             .prod-name {
-                font-size: 0.75rem;
-                margin-bottom: 2px;
+                flex-grow: 1; /* Ocupa el espacio central */
+                font-size: 0.8rem;
+                margin-bottom: 0;
+                text-align: left;
+                height: auto;
+                -webkit-line-clamp: 2;
             }
 
-            .prod-price {
-                font-size: 0.95rem;
+            .prod-sku {
+                display: none;
             }
-            /* 3. Ticket INCRUSTADO (Abajo a la izquierda) */
+            /* Ocultamos SKU para ahorrar espacio */
+            .prod-stock {
+                display: none;
+            }
+            /* Ocultamos Badge stock, o lo hacemos muy mini */
+            .prod-price {
+                font-size: 1rem;
+                margin-top: 0;
+                min-width: 70px;
+                text-align: right;
+            }
+            /* 3. TICKET (Ocupa el resto) */
             .mobile-ticket-inline {
                 display: flex;
                 flex-direction: column;
-                background: white;
+                background: #f9fafb;
+                flex-grow: 1; /* Crece para llenar el espacio sobrante */
                 overflow: hidden;
+                border-top: 2px solid #374151; /* Separador visual fuerte */
             }
 
             .m-ticket-header {
                 background: #374151;
                 color: white;
-                padding: 5px 10px;
-                font-size: 0.8rem;
+                padding: 8px 10px;
+                font-size: 0.85rem;
                 font-weight: bold;
                 display: flex;
                 justify-content: space-between;
@@ -448,40 +490,38 @@
             .m-ticket-body {
                 flex-grow: 1;
                 overflow-y: auto;
-                padding: 5px;
+                padding: 0;
             }
             /* Items del ticket móvil */
             .mt-item {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                border-bottom: 1px dashed #eee;
-                padding: 5px 0;
-                font-size: 0.8rem;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 10px;
+                font-size: 0.85rem;
+                background: white;
             }
 
             .mt-desc {
                 flex-grow: 1;
                 line-height: 1.1;
-                padding-right: 5px;
+                padding-right: 10px;
             }
 
             .mt-qty-box {
                 display: flex;
                 align-items: center;
-                gap: 5px;
-                background: #f3f4f6;
-                border-radius: 4px;
-                padding: 2px;
-                margin-right: 5px;
+                gap: 8px;
+                margin-right: 10px;
             }
 
             .mt-btn {
-                width: 25px;
-                height: 25px;
-                background: white;
+                width: 28px;
+                height: 28px;
+                background: #f3f4f6;
                 border: 1px solid #ccc;
-                border-radius: 4px;
+                border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -491,29 +531,30 @@
 
             .mt-total {
                 font-weight: bold;
-                min-width: 50px;
+                min-width: 60px;
                 text-align: right;
+                font-size: 0.95rem;
             }
-            /* --- COLUMNA DERECHA (BARRA DE MANDO) --- */
+            /* --- BARRA LATERAL (BOTONES COMPACTOS) --- */
             .right-panel {
                 display: none !important;
             }
-            /* Ocultar panel PC */
 
             .mobile-sidebar {
                 display: flex;
                 flex-direction: column;
                 background: var(--color-dark);
                 padding: 8px;
-                gap: 10px;
+                gap: 8px;
                 align-items: center;
                 box-shadow: -2px 0 10px rgba(0,0,0,0.3);
                 z-index: 100;
+                overflow-y: auto;
             }
 
             .btn-mob {
                 width: 100%;
-                height: 60px; /* Botones cuadrados grandes */
+                height: 55px;
                 border-radius: 10px;
                 border: none;
                 background: rgba(255,255,255,0.1);
@@ -524,11 +565,11 @@
                 justify-content: center;
                 font-size: 0.65rem;
                 font-weight: bold;
-                transition: transform 0.1s;
+                flex-shrink: 0;
             }
 
                 .btn-mob i {
-                    font-size: 1.5rem;
+                    font-size: 1.4rem;
                     margin-bottom: 2px;
                 }
 
@@ -536,13 +577,11 @@
                     background: rgba(255,255,255,0.3);
                     transform: scale(0.95);
                 }
-            /* Colores Móvil */
+
             .mob-pay {
                 background: var(--color-success);
                 color: white;
-                margin-top: auto; /* Empuja al fondo */
-                height: 80px; /* Más alto */
-                font-size: 0.8rem;
+                height: 70px; /* Un poco más grande */
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
             }
 
@@ -552,7 +591,7 @@
 
             .mob-iva-on {
                 background: var(--color-iva-on);
-                border: 2px solid white;
+                border: 1px solid white;
             }
 
             .mob-client {
@@ -567,15 +606,14 @@
 </head>
 <body>
 
-    @* --- ESTRUCTURA PRINCIPAL (GRID) --- *@
+    @* --- ESTRUCTURA PRINCIPAL --- *@
     <div class="pos-wrapper">
 
-        @* --- ZONA IZQUIERDA (PC: Catálogo / MÓVIL: Buscador + Catálogo + Ticket) --- *@
+        @* --- ZONA IZQUIERDA (CONTENEDOR DE LISTAS) --- *@
         <div class="left-panel">
 
-            @* 1. BUSCADOR (Visible en ambos, estilos distintos) *@
+            @* PC: Buscador *@
             <div class="search-area d-none d-lg-block">
-                @* PC *@
                 <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-primary border-end-0"><i class="bi bi-search fs-4 text-primary"></i></span>
                     <input type="text" id="inputBusqueda" class="form-control search-input border-start-0 ps-0" placeholder="BUSCAR / ESCANEAR (F2)..." autocomplete="off" autofocus>
@@ -583,35 +621,35 @@
                 </div>
             </div>
 
-            @* Buscador Móvil *@
+            @* MÓVIL: Buscador *@
             <div class="mobile-search-bar">
                 <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off">
             </div>
 
-            @* 2. CATÁLOGO DE PRODUCTOS *@
+            @* 2. LISTA RESULTADOS (Se oculta si está vacía en móvil) *@
             <div id="contenedorResultados" class="products-grid">
-                <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
+                @* El mensaje de bienvenida solo se ve en PC o si hay espacio *@
+                <div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
                     <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
                     <h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3>
                 </div>
             </div>
 
-            @* 3. TICKET INCRUSTADO (SOLO MÓVIL - NUEVO) *@
+            @* 3. TICKET INCRUSTADO (MÓVIL) *@
             <div class="mobile-ticket-inline">
                 <div class="m-ticket-header">
                     <span>TICKET ACTUAL</span>
                     <span id="mobTotalInline" class="text-warning">$0.00</span>
                 </div>
                 <div id="mobileTicketList" class="m-ticket-body">
-                    @* Items se inyectan aquí *@
-                    <div class="text-center text-muted small py-4">Ticket Vacío</div>
+                    <div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div>
                 </div>
             </div>
         </div>
 
-        @* --- ZONA DERECHA (PC: Ticket Completo / MÓVIL: Barra Lateral) --- *@
+        @* --- ZONA DERECHA (PC: Panel / MÓVIL: Barra) --- *@
 
-        @* PC: Panel Completo *@
+        @* PC *@
         <div class="right-panel d-none d-lg-flex">
             <div class="ticket-header">
                 <div class="fw-bold"><i class="bi bi-cart3 me-2"></i>TICKET</div>
@@ -638,41 +676,47 @@
             </div>
         </div>
 
-        @* MÓVIL: Barra Lateral Derecha *@
+        @* MÓVIL: Barra Lateral Compacta *@
         <div class="mobile-sidebar">
-
-            @* 1. Cliente *@
             <button class="btn-mob mob-client" onclick="asignarCliente()">
                 <i class="bi bi-person-fill"></i>
                 <span>CTE</span>
             </button>
 
-            @* 2. IVA *@
             <button id="btnMobIva" class="btn-mob mob-iva-on" onclick="toggleIVA()">
                 <i class="bi bi-percent"></i>
                 <span id="txtMobIva">CON IVA</span>
             </button>
 
-            @* 3. Borrar *@
             <button class="btn-mob mob-del" onclick="limpiarTicket()">
                 <i class="bi bi-trash3"></i>
                 <span>BORRAR</span>
             </button>
 
-            @* 4. Imprimir (Reemplaza al Ticket viejo) *@
+            @* Espaciador para empujar *@
+            <div style="flex-grow: 1;"></div>
+
             <button class="btn-mob mob-print" onclick="Swal.fire('Info', 'Imprimir último ticket', 'info')">
                 <i class="bi bi-printer"></i>
                 <span>IMPR.</span>
             </button>
 
-            @* Espaciador *@
-            <div style="flex-grow: 1;"></div>
-
-            @* 5. COBRAR *@
+            @* COBRAR PEGADO *@
             <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
                 <i class="bi bi-cash-stack"></i>
                 <span>COBRAR</span>
             </button>
+        </div>
+    </div>
+
+    @* OFFCANVAS MÓVIL (Ya no lo usamos para el ticket, pero lo dejamos por si acaso o para historial) *@
+    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasTicket" style="height: 80vh;">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title">Ticket Detalle</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div id="mobileTicketContent" class="p-3"></div>
         </div>
     </div>
 
@@ -736,8 +780,16 @@
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer);
             const term = $(this).val();
+
+            // Lógica de visualización en móvil (Ocultar/Mostrar lista)
+            const listContainer = $('#contenedorResultados');
+            if (window.innerWidth < 992) {
+                if (term.length < 2) { listContainer.hide(); }
+                else { listContainer.show(); }
+            }
+
             if (term.length < 2) {
-                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
+                if(term.length === 0) listContainer.html('<div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
                 return;
             }
             debounceTimer = setTimeout(() => { $.get('/Ventas/BuscarProductos', { term: term }, function(data) { renderizarResultados(data); }); }, 300);
@@ -745,9 +797,12 @@
 
         function renderizarResultados(productos) {
             const container = $('#contenedorResultados'); container.empty();
+            // Aseguramos que se vea en móvil al traer datos
+            if (window.innerWidth < 992) container.show();
+
             if (productos.length === 0) { container.append('<div class="col-12 text-center py-5 text-muted"><h3>No encontrado</h3></div>'); return; }
             productos.forEach(p => {
-                const stockBadge = p.stock < 5 ? `<span class="prod-stock text-danger border-danger">POCO: ${p.stock}</span>` : `<span class="prod-stock">${p.stock} pzas</span>`;
+                const stockBadge = p.stock < 5 ? `<span class="prod-stock text-danger border-danger">POCO: ${p.stock}</span>` : `<span class="prod-stock">${p.stock}</span>`;
                 container.append(`<div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})">${stockBadge}<img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img"><div class="prod-sku">${p.sku}</div><div class="prod-name">${p.nombre}</div><div class="prod-price">$${p.precioVenta.toFixed(2)}</div></div>`);
             });
         }
@@ -776,7 +831,7 @@
                 if(data.count > 0) { $('#emptyTicketMsg').hide(); }
                 else {
                     $('#emptyTicketMsg').show();
-                    mobList.html('<div class="text-center text-muted small py-4">Ticket Vacío</div>');
+                    mobList.html('<div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div>');
                 }
 
                 data.items.forEach(item => {
@@ -816,6 +871,7 @@
         function eliminarDelTicket(id) { $.post('/Ventas/EliminarDelTicket', { id: id }, function() { cargarTicket(); }); }
         function limpiarTicket() { $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); }); }
         function asignarCliente() { Swal.fire({ title: 'Cliente', input: 'text', inputValue: clienteActual, showCancelButton: true }).then((r) => { if(r.isConfirmed) { clienteActual = r.value; Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1000}); } }); }
+        function verTicketMovil() { new bootstrap.Offcanvas(document.getElementById('offcanvasTicket')).show(); }
 
         function abrirModalCobro() {
             if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
@@ -841,6 +897,7 @@
                 if (res.success) {
                     Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
                         limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty(); $('#inputBusquedaMovil').val('');
+                        if(window.innerWidth < 992) $('#contenedorResultados').hide(); // Ocultar lista en móvil
                     });
                 } else { Swal.fire('Error', res.message, 'error'); }
             }).fail(function() { Swal.fire('Error', 'No se pudo conectar', 'error'); });
