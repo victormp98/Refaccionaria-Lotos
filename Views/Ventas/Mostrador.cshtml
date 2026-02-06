@@ -19,7 +19,7 @@
             --color-success: #16a34a;
             --color-danger: #dc2626;
             --color-dark: #1f2937;
-            --color-iva-on: #7c3aed; /* Color distintivo para IVA */
+            --color-iva-on: #7c3aed;
         }
 
         body {
@@ -37,24 +37,13 @@
             width: 100%;
         }
 
+        /* IZQUIERDA */
         .left-panel {
             flex: 60%;
             display: flex;
             flex-direction: column;
             padding: 15px;
             border-right: 1px solid #ccc;
-        }
-
-        .right-panel {
-            flex: 40%;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
-        }
-
-        .search-area {
-            margin-bottom: 15px;
         }
 
         .search-input {
@@ -74,8 +63,10 @@
             gap: 10px;
             align-content: start;
             padding-right: 5px;
+            padding-bottom: 20px;
         }
 
+        /* CARD */
         .prod-card {
             background: white;
             border: 1px solid #ccc;
@@ -95,25 +86,6 @@
                 border-color: var(--color-success);
             }
 
-            .prod-card:hover {
-                border-color: var(--color-primary);
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-
-        .flash-anim {
-            animation: flash-green 0.3s ease-out;
-        }
-
-        @@keyframes flash-green {
-            0% {
-                background-color: rgba(34, 197, 94, 0.5);
-            }
-
-            100% {
-                background-color: white;
-            }
-        }
-
         .prod-img {
             width: 100%;
             height: 100px;
@@ -121,13 +93,6 @@
             background: #f3f4f6;
             margin-bottom: 8px;
             border-radius: 2px;
-        }
-
-        .prod-sku {
-            font-size: 0.7rem;
-            color: #6b7280;
-            font-weight: 700;
-            text-transform: uppercase;
         }
 
         .prod-name {
@@ -163,6 +128,29 @@
             border: 1px solid #ddd;
         }
 
+        .flash-anim {
+            animation: flash-green 0.3s ease-out;
+        }
+
+        @@keyframes flash-green {
+            0% {
+                background-color: rgba(34, 197, 94, 0.5);
+            }
+
+            100% {
+                background-color: white;
+            }
+        }
+
+        /* DERECHA */
+        .right-panel {
+            flex: 40%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
+        }
+
         .ticket-header {
             background: var(--color-dark);
             color: white;
@@ -190,7 +178,6 @@
                 padding: 8px;
                 font-size: 0.75rem;
                 text-transform: uppercase;
-                text-align: left;
                 color: #374151;
                 border-bottom: 1px solid #d1d5db;
             }
@@ -199,10 +186,6 @@
                 padding: 10px 8px;
                 border-bottom: 1px solid #e5e7eb;
                 vertical-align: middle;
-            }
-
-            .t-table tr:hover {
-                background: #eff6ff;
             }
 
         .qty-control {
@@ -231,7 +214,7 @@
         .qty-val {
             font-weight: bold;
             font-size: 0.9rem;
-            width: 20px;
+            width: 25px;
             text-align: center;
         }
 
@@ -285,11 +268,6 @@
             font-size: 0.8rem;
         }
 
-            .btn-big i {
-                font-size: 1.5rem;
-                margin-bottom: 5px;
-            }
-
             .btn-big:active {
                 filter: brightness(0.9);
                 transform: translateY(2px);
@@ -307,7 +285,6 @@
             background-color: #3b82f6;
         }
 
-        /* Estilos del Botón IVA */
         .btn-iva-active {
             background-color: var(--color-iva-on);
             color: white;
@@ -327,14 +304,11 @@
             font-size: 1.5rem;
         }
 
-            .btn-pay i {
-                font-size: 2.5rem;
-            }
-
         .mobile-header {
             display: none;
         }
 
+        /* MÓVIL FIX */
         @@media (max-width: 991.98px) {
             body {
                 overflow: auto;
@@ -360,34 +334,35 @@
                 grid-template-columns: 1fr 1fr;
                 gap: 15px;
             }
-
+            /* Header Fijo con Z-Index alto para que no lo tape nada */
             .mobile-header {
                 display: flex;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 70px;
+                height: 75px;
                 background: var(--color-dark);
                 color: white;
-                z-index: 2000;
+                z-index: 9999;
                 align-items: center;
                 justify-content: space-between;
                 padding: 0 15px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             }
 
             .mh-total {
-                font-size: 1.2rem;
+                font-size: 1.3rem;
                 font-weight: bold;
+                color: #4ade80;
             }
 
             .mh-btn-pay {
                 background: var(--color-success);
                 color: white;
                 border: none;
-                padding: 8px 20px;
-                border-radius: 4px;
+                padding: 10px 20px;
+                border-radius: 6px;
                 font-weight: bold;
                 font-size: 1rem;
                 display: flex;
@@ -404,7 +379,8 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border-radius: 4px;
+                border-radius: 6px;
+                position: relative;
             }
         }
     </style>
@@ -414,8 +390,8 @@
     @* HEADER MÓVIL *@
     <div class="mobile-header">
         <button class="mh-btn-list" onclick="verTicketMovil()">
-            <i class="bi bi-receipt"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="mobBadge" style="font-size:0.6rem; display:none;">0</span>
+            <i class="bi bi-receipt fs-4"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="mobBadge" style="display:none;">0</span>
         </button>
         <div class="text-end">
             <small class="d-block text-white-50" style="font-size:0.7rem; line-height:1;">Total a Pagar</small>
@@ -427,7 +403,6 @@
     </div>
 
     <div class="pos-wrapper">
-        @* IZQUIERDA: CATÁLOGO *@
         <div class="left-panel">
             <div class="search-area">
                 <div class="input-group">
@@ -436,7 +411,6 @@
                     <button class="btn btn-light border-2 border-start-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg"></i></button>
                 </div>
             </div>
-
             <div id="contenedorResultados" class="products-grid">
                 <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
                     <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
@@ -445,65 +419,29 @@
             </div>
         </div>
 
-        @* DERECHA: TICKET *@
         <div class="right-panel d-none d-lg-flex">
             <div class="ticket-header">
                 <div class="fw-bold"><i class="bi bi-cart3 me-2"></i>TICKET</div>
                 <div class="small opacity-75">@User.Identity.Name</div>
             </div>
-
             <div class="ticket-list-container">
                 <table class="t-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 45%;">Descripción</th>
-                            <th style="width: 20%;">Precio</th>
-                            <th style="width: 20%;">Cant.</th>
-                            <th style="width: 15%;">Total</th>
-                            <th style="width: 5%;"></th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th style="width:45%;">Descripción</th><th style="width:20%;">Precio</th><th style="width:20%;">Cant.</th><th style="width:15%;">Total</th><th style="width:5%;"></th></tr></thead>
                     <tbody id="tablaTicketBody"></tbody>
                 </table>
                 <div id="emptyTicketMsg" class="text-center py-5 text-muted"><p>Ticket Vacío</p></div>
             </div>
-
             <div class="financial-summary">
-                <div class="fin-row">
-                    <span>Subtotal</span>
-                    <span id="lblSubtotal">$0.00</span>
-                </div>
-                <div class="fin-row">
-                    <span>IVA (16%)</span>
-                    <span id="lblIVA">$0.00</span>
-                </div>
-                <div class="fin-total">
-                    <span>TOTAL:</span>
-                    <span id="lblTotal">$0.00</span>
-                </div>
+                <div class="fin-row"><span>Subtotal</span><span id="lblSubtotal">$0.00</span></div>
+                <div class="fin-row"><span>IVA (16%)</span><span id="lblIVA">$0.00</span></div>
+                <div class="fin-total"><span>TOTAL:</span><span id="lblTotal">$0.00</span></div>
             </div>
-
             <div class="action-panel">
-                <button class="btn-big btn-cancel" onclick="limpiarTicket()">
-                    <i class="bi bi-trash3-fill"></i> Borrar
-                </button>
-
-                <button class="btn-big btn-client" onclick="asignarCliente()">
-                    <i class="bi bi-person-fill"></i> Cliente
-                </button>
-
-                <button class="btn-big btn-discount" onclick="Swal.fire('Proximamente', 'Descuentos', 'info')">
-                    <i class="bi bi-percent"></i> Desc.
-                </button>
-
-                @* BOTÓN IVA NUEVO *@
-                <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()">
-                    <i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span>
-                </button>
-
-                <button class="btn-big btn-pay" onclick="abrirModalCobro()">
-                    <i class="bi bi-cash-stack"></i> COBRAR
-                </button>
+                <button class="btn-big btn-cancel" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i> Borrar</button>
+                <button class="btn-big btn-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i> Cliente</button>
+                <button class="btn-big btn-discount" onclick="Swal.fire('Tip', 'Próximamente', 'info')"><i class="bi bi-percent"></i> Desc.</button>
+                <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()"><i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span></button>
+                <button class="btn-big btn-pay" onclick="abrirModalCobro()"><i class="bi bi-cash-stack"></i> COBRAR</button>
             </div>
         </div>
     </div>
@@ -511,7 +449,7 @@
     @* OFFCANVAS MÓVIL *@
     <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasTicket" style="height: 80vh;">
         <div class="offcanvas-header bg-dark text-white">
-            <h5 class="offcanvas-title">Ticket de Venta</h5>
+            <h5 class="offcanvas-title">Ticket Actual</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body p-0">
@@ -527,22 +465,9 @@
         let debounceTimer;
         let clienteActual = "";
         let aplicaIVA = true;
-        let totalBase = 0; // Total traído del backend (Suma de precios base)
+        let totalNumerico = 0;
 
-        function playBeep() {
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    const ctx = new AudioContext();
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.frequency.value = 1500; gain.gain.value = 0.05;
-                    osc.start(); setTimeout(() => osc.stop(), 80);
-                }
-            } catch(e) {}
-        }
+        function playBeep() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const g = ctx.createGain(); osc.connect(g); g.connect(ctx.destination); osc.frequency.value=1500; g.gain.value=0.05; osc.start(); setTimeout(()=>osc.stop(),80); } catch(e){} }
 
         $(document).ready(function() {
             cargarTicket();
@@ -552,36 +477,24 @@
             });
         });
 
-        // --- LÓGICA DE IVA MEJORADA ---
+        // Toggle IVA
         function toggleIVA() {
             aplicaIVA = !aplicaIVA;
             const btn = $('#btnIVAToggle');
             const txt = $('#txtBtnIva');
-
-            if (aplicaIVA) {
-                btn.removeClass('btn-iva-inactive').addClass('btn-iva-active');
-                txt.text('CON IVA');
-            } else {
-                btn.removeClass('btn-iva-active').addClass('btn-iva-inactive');
-                txt.text('SIN IVA');
-            }
+            if (aplicaIVA) { btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA'); }
+            else { btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA'); }
             recalcularTotalesVisuales();
         }
 
         function recalcularTotalesVisuales() {
-            // totalBase viene del backend (suma de los productos)
-            let subtotal = totalBase;
+            let subtotal = totalNumerico;
             let iva = 0;
-            let totalFinal = totalBase;
+            let totalFinal = totalNumerico;
 
             if (aplicaIVA) {
-                // Si está activo, AGREGAMOS el 16% al total
                 iva = subtotal * 0.16;
                 totalFinal = subtotal + iva;
-            } else {
-                // Si está inactivo, cobramos solo el precio base
-                iva = 0;
-                totalFinal = subtotal;
             }
 
             $('#lblSubtotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
@@ -590,7 +503,6 @@
             $('#mobTotalDisplay').text('$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
         }
 
-        // --- BUSCADOR ---
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer);
             const term = $(this).val();
@@ -598,34 +510,20 @@
                 if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
                 return;
             }
-            debounceTimer = setTimeout(() => {
-                $.get('/Ventas/BuscarProductos', { term: term }, function(data) { renderizarResultados(data); });
-            }, 300);
+            debounceTimer = setTimeout(() => { $.get('/Ventas/BuscarProductos', { term: term }, function(data) { renderizarResultados(data); }); }, 300);
         });
 
         function renderizarResultados(productos) {
-            const container = $('#contenedorResultados');
-            container.empty();
+            const container = $('#contenedorResultados'); container.empty();
             if (productos.length === 0) { container.append('<div class="col-12 text-center py-5 text-muted"><h3>No encontrado</h3></div>'); return; }
-
             productos.forEach(p => {
                 const stockBadge = p.stock < 5 ? `<span class="prod-stock text-danger border-danger">POCO: ${p.stock}</span>` : `<span class="prod-stock">${p.stock} pzas</span>`;
-                container.append(`
-                    <div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})">
-                        ${stockBadge}
-                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img">
-                        <div class="prod-sku">${p.sku}</div>
-                        <div class="prod-name">${p.nombre}</div>
-                        <div class="prod-price">$${p.precioVenta.toFixed(2)}</div>
-                    </div>
-                `);
+                container.append(`<div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})">${stockBadge}<img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img"><div class="prod-sku">${p.sku}</div><div class="prod-name">${p.nombre}</div><div class="prod-price">$${p.precioVenta.toFixed(2)}</div></div>`);
             });
         }
 
         function agregarAlTicket(id) {
-            const card = $(`#prod-${id}`);
-            card.addClass('flash-anim');
-            setTimeout(() => card.removeClass('flash-anim'), 300);
+            const card = $(`#prod-${id}`); card.addClass('flash-anim'); setTimeout(() => card.removeClass('flash-anim'), 300);
             playBeep();
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
                 if (res.success) cargarTicket();
@@ -633,14 +531,17 @@
             });
         }
 
+        // --- NUEVA FUNCIÓN RESTAR ---
+        function restarUnidad(id) {
+            $.post('/Ventas/RestarDelTicket', { id: id }, function(res) {
+                if (res.success) cargarTicket();
+            });
+        }
+
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
-                const tbody = $('#tablaTicketBody');
-                tbody.empty();
-
-                // Guardamos el total base para cálculos
-                totalBase = parseFloat(data.total.replace(/,/g, ''));
-
+                const tbody = $('#tablaTicketBody'); tbody.empty();
+                totalNumerico = parseFloat(data.total.replace(/,/g, ''));
                 if(data.count > 0) { $('#mobBadge').text(data.count).show(); $('#emptyTicketMsg').hide(); }
                 else { $('#mobBadge').hide(); $('#emptyTicketMsg').show(); }
 
@@ -651,7 +552,7 @@
                             <td class="text-end">$${item.precio.toFixed(2)}</td>
                             <td>
                                 <div class="qty-control">
-                                    <button class="btn-qty" onclick="Swal.fire('Tip','Usa botón borrar','info')"><i class="bi bi-dash"></i></button>
+                                    <button class="btn-qty" onclick="restarUnidad(${item.productoId})"><i class="bi bi-dash"></i></button>
                                     <div class="qty-val">${item.cantidad}</div>
                                     <button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button>
                                 </div>
@@ -661,46 +562,26 @@
                         </tr>
                     `);
                 });
-
                 $('#mobileTicketContent').html($('.ticket-list-container').html());
-                recalcularTotalesVisuales(); // Se ejecuta siempre al cargar
+                recalcularTotalesVisuales();
             });
         }
 
         function eliminarDelTicket(id) { $.post('/Ventas/EliminarDelTicket', { id: id }, function() { cargarTicket(); }); }
         function limpiarTicket() { $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); }); }
-
-        function asignarCliente() {
-            Swal.fire({
-                title: 'Cliente',
-                input: 'text',
-                inputValue: clienteActual,
-                inputPlaceholder: 'Nombre...',
-                showCancelButton: true
-            }).then((r) => { if(r.isConfirmed) { clienteActual = r.value; Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1500}); } });
-        }
-
+        function asignarCliente() { Swal.fire({ title: 'Cliente', input: 'text', inputValue: clienteActual, showCancelButton: true }).then((r) => { if(r.isConfirmed) { clienteActual = r.value; Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1000}); } }); }
         function verTicketMovil() { new bootstrap.Offcanvas(document.getElementById('offcanvasTicket')).show(); }
 
-        // --- MENÚ DE COBRO (MODAL DE SELECCIÓN) ---
         function abrirModalCobro() {
-            if (totalBase <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
-
+            if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
             const textoCliente = clienteActual ? clienteActual : "Público General";
-            // Usamos el texto visual del Total (que ya incluye o no el IVA)
             const montoPagar = $('#lblTotal').text();
 
             Swal.fire({
                 title: 'Cobrar: ' + montoPagar,
-                html: `<p class="mb-3">Cliente: <strong>${textoCliente}</strong></p>
-                       <div class="d-grid gap-3">
-                           <button id="btnEfectivo" class="btn btn-lg btn-success py-3 fw-bold shadow"><i class="bi bi-cash-coin me-2"></i> EFECTIVO</button>
-                           <button id="btnTarjeta" class="btn btn-lg btn-primary py-3 fw-bold shadow"><i class="bi bi-credit-card-2-front me-2"></i> TARJETA</button>
-                       </div>`,
-                showConfirmButton: false,
-                showCloseButton: true
+                html: `<p class="mb-3">Cliente: <strong>${textoCliente}</strong></p><div class="d-grid gap-3"><button id="btnEfectivo" class="btn btn-lg btn-success py-3 fw-bold shadow"><i class="bi bi-cash-coin me-2"></i> EFECTIVO</button><button id="btnTarjeta" class="btn btn-lg btn-primary py-3 fw-bold shadow"><i class="bi bi-credit-card-2-front me-2"></i> TARJETA</button></div>`,
+                showConfirmButton: false, showCloseButton: true
             });
-
             setTimeout(() => {
                 document.getElementById('btnEfectivo').onclick = function() { procesarVenta('Efectivo'); };
                 document.getElementById('btnTarjeta').onclick = function() { procesarVenta('Tarjeta'); };
@@ -711,28 +592,14 @@
             Swal.close();
             Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
-            $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo }, function(res) {
+            // --- ENVIAMOS EL IVA AL BACKEND ---
+            $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo, aplicaIVA: aplicaIVA }, function(res) {
                 if (res.success) {
-                    Swal.fire({
-                        title: '¡Venta Exitosa!',
-                        html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1>
-                               <h3>Folio #${res.pedidoId}</h3>
-                               <p class="lead">Pago: <strong>${metodo}</strong></p>`,
-                        confirmButtonText: 'Nueva Venta',
-                        confirmButtonColor: '#1f2937',
-                        allowOutsideClick: false
-                    }).then(() => {
-                        limpiarTicket();
-                        clienteActual = "";
-                        $('#inputBusqueda').val('').focus();
-                        $('#contenedorResultados').empty();
+                    Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
+                        limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty();
                     });
-                } else {
-                    Swal.fire('Error', res.message, 'error');
-                }
-            }).fail(function() {
-                Swal.fire('Error de Conexión', 'No se pudo conectar. Verifica que el [ValidateAntiForgeryToken] esté desactivado en el controlador.', 'error');
-            });
+                } else { Swal.fire('Error', res.message, 'error'); }
+            }).fail(function() { Swal.fire('Error', 'No se pudo conectar', 'error'); });
         }
     </script>
 </body>
