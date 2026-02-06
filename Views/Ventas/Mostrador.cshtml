@@ -34,7 +34,7 @@
             padding: 0;
         }
 
-        /* ================= ESTILOS PC (Escritorio - SIN CAMBIOS) ================= */
+        /* ================= ESTILOS PC (Escritorio - INTOCABLES) ================= */
         .pos-wrapper {
             display: flex;
             height: 100%;
@@ -80,7 +80,7 @@
             padding-right: 5px;
         }
 
-        /* CARD PRODUCTO PC */
+        /* CARD PRODUCTO PC (La targetota original) */
         .prod-card {
             background: white;
             border: 1px solid #ccc;
@@ -354,7 +354,7 @@
             display: none;
         }
 
-        /* ================= ESTILOS MÓVIL (ACORDEÓN FLEXIBLE) ================= */
+        /* ================= ESTILOS MÓVIL (FUERZA BRUTA) ================= */
         @@media (max-width: 991.98px) {
             body {
                 background: #f3f4f6;
@@ -363,13 +363,13 @@
             /* GRID PRINCIPAL */
             .pos-wrapper {
                 display: grid;
-                grid-template-columns: 1fr 110px; /* Panel 1fr | Barra 110px */
+                grid-template-columns: 1fr 110px;
                 height: 100vh;
                 overflow: hidden;
             }
-            /* --- COLUMNA IZQUIERDA (FLEX VERTICAL PARA EL EFECTO ACORDEÓN) --- */
+            /* --- COLUMNA IZQUIERDA --- */
             .left-panel {
-                display: flex; /* Flex para control elástico */
+                display: flex;
                 flex-direction: column;
                 padding: 0;
                 border: none;
@@ -381,7 +381,7 @@
                 .left-panel .search-area {
                     display: none;
                 }
-            /* 1. BUSCADOR (Top) */
+            /* 1. BUSCADOR */
             .mobile-search-bar {
                 display: flex;
                 align-items: center;
@@ -401,72 +401,85 @@
                 font-weight: bold;
                 background: #f9fafb;
             }
-            /* 2. LISTA RESULTADOS (DINÁMICA) */
+            /* 2. LISTA RESULTADOS (REFINADA) */
             .products-grid {
-                padding: 0;
-                display: none; /* OCULTO POR DEFECTO para que no ocupe espacio */
+                padding: 0 !important;
+                display: none;
                 background: white;
                 overflow-y: auto;
                 flex-shrink: 0;
-                max-height: 55vh; /* Puede crecer hasta un poco más de la mitad */
+                max-height: 55vh;
                 border-bottom: 1px solid #374151;
                 transition: all 0.2s;
+                /* Importante: Quitar el Grid de PC */
+                grid-template-columns: 1fr !important;
             }
-            /* Renglón de Producto Compacto */
+            /* --- AQUÍ APLASTAMOS LA TARJETA CON !important --- */
             .prod-card {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                padding: 8px 10px;
-                margin: 0;
-                border: none;
-                border-bottom: 1px solid #f0f0f0;
-                border-radius: 0;
-                box-shadow: none;
-                min-height: 60px;
+                display: flex !important; /* Forzamos Flex */
+                flex-direction: row !important; /* Forzamos Horizontal */
+                align-items: center !important;
+                justify-content: flex-start !important;
+                /* Quitamos altura y márgenes de PC */
+                height: auto !important;
+                min-height: 50px !important;
+                margin: 0 !important;
+                /* Estilo Renglón */
+                padding: 8px 10px !important;
+                border: none !important;
+                border-bottom: 1px solid #eee !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: white !important;
             }
 
                 .prod-card:active {
-                    background: #f0fdf4;
+                    background: #e0f2fe !important;
                 }
 
             .prod-img {
-                width: 40px;
-                height: 40px;
-                border-radius: 4px;
-                margin-bottom: 0;
-                margin-right: 10px;
+                /* Imagen chiquita a la fuerza */
+                width: 50px !important;
+                height: 50px !important;
+                border-radius: 4px !important;
+                margin: 0 10px 0 0 !important;
+                object-fit: cover !important;
             }
 
             .prod-name {
                 flex-grow: 1;
-                font-size: 0.8rem;
-                margin-bottom: 0;
-                text-align: left;
-                height: auto;
+                font-size: 0.85rem !important;
+                font-weight: 500 !important;
+                margin: 0 !important;
+                text-align: left !important;
+                height: auto !important;
                 -webkit-line-clamp: 2;
+                color: #333;
+                line-height: 1.2 !important;
             }
-
+            /* Ocultar basura de la tarjeta */
             .prod-sku {
-                display: none;
+                display: none !important;
             }
 
             .prod-stock {
-                display: none;
+                display: none !important;
             }
 
             .prod-price {
-                font-size: 1rem;
-                margin-top: 0;
-                min-width: 70px;
-                text-align: right;
+                font-size: 1rem !important;
+                margin: 0 !important;
+                min-width: 75px !important;
+                text-align: right !important;
+                color: var(--color-success) !important;
+                font-weight: 700 !important;
             }
-            /* 3. TICKET (ELÁSTICO: OCUPA TODO EL RESTO) */
+            /* 3. TICKET */
             .mobile-ticket-inline {
                 display: flex;
                 flex-direction: column;
                 background: #f9fafb;
-                flex-grow: 1; /* Esto hace que ocupe todo el espacio disponible */
+                flex-grow: 1;
                 overflow: hidden;
             }
 
@@ -485,7 +498,7 @@
                 overflow-y: auto;
                 padding: 0;
             }
-            /* Items del ticket */
+
             .mt-item {
                 display: flex;
                 justify-content: space-between;
@@ -528,7 +541,7 @@
                 text-align: right;
                 font-size: 0.95rem;
             }
-            /* --- BARRA LATERAL (SIN ESPACIOS VACÍOS) --- */
+            /* --- BARRA LATERAL --- */
             .right-panel {
                 display: none !important;
             }
@@ -543,13 +556,11 @@
                 box-shadow: -2px 0 10px rgba(0,0,0,0.3);
                 z-index: 100;
                 overflow-y: auto;
-                /* Eliminamos justificación para que se peguen arriba, pero... */
-                /* Usaremos margenes en el botón de cobrar si quisiéramos empujar, pero pediste pegados */
             }
 
             .btn-mob {
                 width: 100%;
-                height: 60px;
+                height: 55px;
                 border-radius: 10px;
                 border: none;
                 background: rgba(255,255,255,0.1);
@@ -572,14 +583,7 @@
                     background: rgba(255,255,255,0.3);
                     transform: scale(0.95);
                 }
-
-            .mob-pay {
-                background: var(--color-success);
-                color: white;
-                height: 80px; /* Más grande para resaltar */
-                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            }
-
+            /* Botones específicos */
             .mob-del {
                 background: var(--color-danger);
             }
@@ -596,6 +600,18 @@
             .mob-print {
                 background: #6b7280;
             }
+            /* Espaciador flexible */
+            .spacer {
+                flex-grow: 1;
+            }
+
+            .mob-pay {
+                background: var(--color-success);
+                color: white;
+                height: 70px;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+                /* Sin márgenes extra, el flex gap lo maneja */
+            }
         }
     </style>
 </head>
@@ -607,7 +623,7 @@
         @* --- ZONA IZQUIERDA --- *@
         <div class="left-panel">
 
-            @* PC: Buscador *@
+            @* PC *@
             <div class="search-area d-none d-lg-block">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-primary border-end-0"><i class="bi bi-search fs-4 text-primary"></i></span>
@@ -616,12 +632,12 @@
                 </div>
             </div>
 
-            @* MÓVIL: Buscador *@
+            @* MÓVIL *@
             <div class="mobile-search-bar">
                 <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off">
             </div>
 
-            @* 2. LISTA RESULTADOS (Oculta por defecto en móvil) *@
+            @* 2. LISTA RESULTADOS *@
             <div id="contenedorResultados" class="products-grid">
                 <div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
                     <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
@@ -685,12 +701,15 @@
                 <span>BORRAR</span>
             </button>
 
+            @* Espaciador para empujar los botones de acción al fondo *@
+            <div class="spacer"></div>
+
             <button class="btn-mob mob-print" onclick="Swal.fire('Info', 'Imprimir último ticket', 'info')">
                 <i class="bi bi-printer"></i>
                 <span>IMPR.</span>
             </button>
 
-            @* COBRAR (Sin espaciador, pegado a Imprimir) *@
+            @* COBRAR (PEGADO A IMPRIMIR) *@
             <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
                 <i class="bi bi-cash-stack"></i>
                 <span>COBRAR</span>
@@ -765,14 +784,13 @@
             const term = $(this).val();
             const listContainer = $('#contenedorResultados');
 
-            // Si está vacío, OCULTAMOS la lista para que el ticket suba
+            // Lógica de "Acordeón"
             if (term.length < 2) {
                 if (window.innerWidth < 992) listContainer.hide();
                 if(term.length === 0) listContainer.html('<div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
                 return;
             }
 
-            // Si hay texto, MOSTRAMOS la lista (empuja el ticket)
             if (window.innerWidth < 992) listContainer.show();
 
             debounceTimer = setTimeout(() => { $.get('/Ventas/BuscarProductos', { term: term }, function(data) { renderizarResultados(data); }); }, 300);
@@ -783,7 +801,6 @@
             if (productos.length === 0) { container.append('<div class="col-12 text-center py-3 text-muted small">No encontrado</div>'); return; }
 
             productos.forEach(p => {
-                // Diseño Renglón Compacto para Móvil
                 container.append(`
                     <div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})">
                         <img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img">
@@ -796,7 +813,6 @@
 
         function agregarAlTicket(id) {
             playBeep();
-            // Feedback táctil rápido
             const card = $(`#prod-${id}`); card.css('background', '#dcfce7'); setTimeout(() => card.css('background', ''), 200);
 
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
@@ -881,7 +897,7 @@
                 if (res.success) {
                     Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
                         limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty(); $('#inputBusquedaMovil').val('');
-                        if (window.innerWidth < 992) $('#contenedorResultados').hide(); // Ocultar lista al terminar
+                        if (window.innerWidth < 992) $('#contenedorResultados').hide();
                     });
                 } else { Swal.fire('Error', res.message, 'error'); }
             }).fail(function() { Swal.fire('Error', 'No se pudo conectar', 'error'); });
