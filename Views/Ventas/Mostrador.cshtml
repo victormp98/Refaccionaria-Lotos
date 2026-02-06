@@ -1,424 +1,541 @@
 ﻿@{
-    ViewData["Title"] = "Terminal Punto de Venta";
+    ViewData["Title"] = "Punto de Venta";
+    Layout = null; // Mantenemos Layout null para control total de la pantalla
 }
 
-<style>
-    /* --- VARIABLES & BASE --- */
-    :root {
-        --pos-bg: #f8fafc;
-        --pos-dark: #0f172a;
-        --pos-accent: #3b82f6;
-        --pos-success: #22c55e;
-    }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>POS - Refaccionaria</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    body {
-        background-color: var(--pos-bg);
-    }
-
-    /* ANIMACIÓN DE "AGREGADO" (PULSO VERDE) */
-    @@keyframes pulse-green {
-        0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-            border-color: var(--pos-success);
+    <style>
+        /* --- VARIABLES DE COMBATE --- */
+        :root {
+            --bg-app: #e5e7eb;
+            --bg-panel: #ffffff;
+            --color-text: #111827;
+            --color-primary: #2563eb;
+            --color-success: #16a34a;
+            --color-danger: #dc2626;
+            --color-dark: #1f2937;
+            --border-color: #d1d5db;
         }
 
-        50% {
-            transform: scale(0.98);
-            box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-            border-color: var(--pos-success);
-            background-color: #dcfce7;
-        }
-
-        100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-        }
-    }
-
-    .item-added-anim {
-        animation: pulse-green 0.4s ease-out;
-    }
-
-    /* --- LAYOUT PC --- */
-     @@media (min-width: 992px) {
         body {
-            overflow: hidden;
-        }
-
-        .pos-container {
-            height: calc(100vh - 90px - 70px); /* Ajuste altura */
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            padding-bottom: 0;
-        }
-
-        .catalog-section {
-            flex: 65%;
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
+            background-color: var(--bg-app);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden; /* Sin scroll general en PC */
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        /* En PC usamos lista horizontal limpia */
-        .prod-card {
+
+        /* --- LAYOUT GENERAL PC --- */
+        .pos-wrapper {
             display: flex;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #f1f5f9;
-            cursor: pointer;
-            transition: 0.2s;
+            height: 100%;
+            width: 100%;
         }
 
-            .prod-card:hover {
-                background-color: #f8fafc;
-                padding-left: 18px;
-            }
-
-        .pc-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-right: 15px;
-        }
-
-        .pc-info {
-            flex-grow: 1;
-        }
-
-        .pc-price {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--pos-dark);
-        }
-    }
-
-    /* --- LAYOUT MÓVIL (EL CAMBIO FUERTE) --- */
-    @@media (max-width: 991.98px) {
-        .pos-container {
-            display: block;
+        /* --- IZQUIERDA: CATÁLOGO (60%) --- */
+        .left-panel {
+            flex: 60%;
+            display: flex;
+            flex-direction: column;
             padding: 15px;
-            padding-bottom: 120px;
+            border-right: 1px solid #ccc;
         }
 
-        .ticket-section {
-            display: none;
-        }
-
-        .catalog-section {
-            background: transparent;
-        }
-
-        .catalog-header {
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
+        .search-area {
             margin-bottom: 15px;
         }
-        /* EN MÓVIL: GRILLA DE 2 COLUMNAS */
-        .catalog-body {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 Columnas */
-            gap: 15px;
-            overflow: visible !important;
+
+        .search-input {
+            height: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid var(--color-primary);
+            border-radius: 4px;
+            box-shadow: none !important;
         }
-        /* TARJETA MÓVIL (Card Vertical) */
+
+        .products-grid {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            align-content: start;
+            padding-right: 5px;
+        }
+
+        /* Tarjeta de Producto */
         .prod-card {
             background: white;
-            border-radius: 15px;
-            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.1s;
             display: flex;
-            flex-direction: column; /* Vertical */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 1px solid white;
-            transition: transform 0.1s;
+            flex-direction: column;
             height: 100%;
+            position: relative;
+            overflow: hidden;
         }
 
             .prod-card:active {
                 transform: scale(0.95);
+                border-color: var(--color-success);
             }
 
-        .pc-img {
+            .prod-card:hover {
+                border-color: var(--color-primary);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+
+        /* Animación flash al agregar */
+        @@keyframes flash-green {
+            0% {
+                background-color: rgba(34, 197, 94, 0.5);
+            }
+
+            100% {
+                background-color: white;
+            }
+        }
+
+        .flash-anim {
+            animation: flash-green 0.3s ease-out;
+        }
+
+        .prod-img {
             width: 100%;
-            height: 100px; /* Imagen grande arriba */
-            border-radius: 10px;
+            height: 100px;
             object-fit: cover;
-            margin-bottom: 10px;
-            background: #f1f5f9;
+            background: #f3f4f6;
+            margin-bottom: 8px;
+            border-radius: 2px;
         }
 
-        .pc-info {
-            text-align: center;
+        .prod-sku {
+            font-size: 0.7rem;
+            color: #6b7280;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
-        .pc-title {
-            font-size: 0.85rem !important;
+        .prod-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.2;
             margin-bottom: 5px;
-            height: 2.4em;
-            overflow: hidden;
+            color: var(--color-dark);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 2.4em;
         }
 
-        .pc-sku {
-            display: none;
-        }
-        /* Ocultamos SKU en móvil para ahorrar espacio */
-        .pc-price {
-            color: var(--pos-accent) !important;
-            font-size: 1rem !important;
+        .prod-price {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--color-success);
+            text-align: right;
+            margin-top: auto;
         }
 
-        .pc-stock {
-            display: block;
+        .prod-stock {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,255,255,0.9);
+            padding: 2px 5px;
             font-size: 0.7rem;
-            color: #64748b;
-            margin-top: 5px;
-        }
-    }
-
-    /* --- ESTILOS COMUNES --- */
-    .catalog-header {
-        padding: 15px;
-        background: white;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .catalog-body {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 10px;
-    }
-
-    .pc-title {
-        font-weight: 700;
-        font-size: 0.95rem;
-        color: #334155;
-        margin: 0;
-    }
-
-    .pc-sku {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    /* TICKET (DERECHA PC) */
-    .ticket-section {
-        flex: 35%;
-        background: white;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-
-    .ticket-header {
-        background: var(--pos-dark);
-        color: white;
-        padding: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .ticket-body {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 0;
-        background: #f8fafc;
-    }
-
-    .ticket-item {
-        padding: 12px 15px;
-        border-bottom: 1px dashed #cbd5e1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: white;
-    }
-
-    .ticket-footer-info {
-        padding: 20px;
-        background: white;
-        border-top: 2px dashed #e2e8f0;
-    }
-
-    /* --- BARRA DE COMANDOS (FLOATING PILL) --- */
-    .command-bar {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        height: 80px;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    /* Contenedor Flotante Negro */
-    .cmd-container {
-        background: var(--pos-dark);
-        color: white;
-        width: 100%;
-        height: 100%;
-        border-radius: 20px; /* Bordes muy redondos */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 15px;
-        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-    }
-
-    .btn-pos {
-        height: 100%;
-        border-radius: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        border: none;
-        padding: 0 25px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: transform 0.1s;
-    }
-
-        .btn-pos:active {
-            transform: scale(0.95);
+            font-weight: bold;
+            border-radius: 2px;
+            border: 1px solid #ddd;
         }
 
-    .btn-pay {
-        background: var(--pos-success);
-        color: white;
-        font-size: 1.1rem;
-        flex-grow: 1;
-        justify-content: center;
-        max-width: 400px;
-        box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
-    }
-
-    .btn-cancel {
-        background: rgba(255,255,255,0.1);
-        color: #ef4444;
-        width: 50px;
-        padding: 0;
-        justify-content: center;
-    }
-
-    .btn-client {
-        background: rgba(255,255,255,0.1);
-        color: #3b82f6;
-        width: 50px;
-        padding: 0;
-        justify-content: center;
-    }
-
-    /* Ajuste de barra flotante en móvil */
-     @@media (max-width: 991.98px) {
-        .command-bar {
-            bottom: 15px;
-            left: 10px;
-            right: 10px;
-            height: 70px;
+        /* --- DERECHA: TICKET Y COMANDOS (40%) --- */
+        .right-panel {
+            flex: 40%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
         }
 
-        .cmd-container {
-            border-radius: 15px;
-            padding: 8px;
+        .ticket-header {
+            background: var(--color-dark);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        .t-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .t-table th {
+                background: #e5e7eb;
+                position: sticky;
+                top: 0;
+                padding: 8px;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                text-align: left;
+                color: #374151;
+                border-bottom: 1px solid #d1d5db;
+            }
+
+            .t-table td {
+                padding: 10px 8px;
+                border-bottom: 1px solid #e5e7eb;
+                vertical-align: middle;
+            }
+
+            .t-table tr:hover {
+                background: #eff6ff;
+            }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            width: fit-content;
+        }
+
+        .btn-qty {
+            border: none;
+            background: transparent;
+            color: var(--color-primary);
+            font-weight: bold;
+            padding: 2px 8px;
+            cursor: pointer;
+        }
+
+            .btn-qty:hover {
+                background: #eff6ff;
+            }
+
+        .qty-val {
+            font-weight: bold;
+            font-size: 0.9rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .financial-summary {
+            background: #f3f4f6;
+            padding: 15px 20px;
+            border-top: 2px solid #d1d5db;
+        }
+
+        .fin-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .fin-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--color-dark);
+            align-items: center;
+        }
+
+        /* --- PANEL DE COMANDOS --- */
+        .action-panel {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            height: 150px;
+        }
+
+        .btn-big {
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.1s;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+            .btn-big i {
+                font-size: 1.5rem;
+                margin-bottom: 5px;
+            }
+
+            .btn-big:active {
+                filter: brightness(0.9);
+                transform: translateY(2px);
+            }
+
+        .btn-cancel {
+            background-color: var(--color-danger);
+        }
+
+        .btn-discount {
+            background-color: #f59e0b;
+        }
+
+        .btn-client {
+            background-color: #3b82f6;
+        }
+
+        .btn-reprint {
+            background-color: #6b7280;
         }
 
         .btn-pay {
-            font-size: 1rem;
+            background-color: var(--color-success);
+            grid-column: 3;
+            grid-row: 1 / span 2;
+            font-size: 1.5rem;
         }
-    }
-</style>
 
-<div class="pos-container">
-    @* IZQUIERDA: CATÁLOGO *@
-    <div class="catalog-section">
-        <div class="catalog-header">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 ps-3"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" id="inputBusqueda" class="form-control border-start-0 ps-0 py-2 shadow-none" placeholder="Buscar producto..." autocomplete="off" autofocus>
-                <button class="btn btn-light border" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x"></i></button>
-            </div>
-        </div>
-        <div id="contenedorResultados" class="catalog-body">
-            @* AQUI ENTRAN LOS PRODUCTOS *@
-            <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
-                <i class="bi bi-upc-scan fs-1"></i>
-                <p class="mt-2 fw-bold">Listo para vender</p>
-            </div>
-        </div>
-    </div>
+            .btn-pay i {
+                font-size: 2.5rem;
+            }
 
-    @* DERECHA: TICKET VISUAL (SOLO PC) *@
-    <div class="ticket-section d-none d-lg-flex">
-        <div class="ticket-header">
-            <h6 class="mb-0 fw-bold"><i class="bi bi-receipt me-2"></i>TICKET</h6>
-            <button class="btn btn-sm btn-outline-light border-0 py-0" onclick="limpiarTicket()"><i class="bi bi-trash3"></i></button>
-        </div>
-        <div id="listaTicket" class="ticket-body">
-            @* Items *@
-        </div>
-        <div class="ticket-footer-info">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted">Total:</span>
-                <span class="fs-1 fw-bold text-dark" id="lblTotalDisplay">$0.00</span>
-            </div>
-        </div>
-    </div>
-</div>
+        /* --- MÓVIL (HEADER FIXED) --- */
+        .mobile-header {
+            display: none;
+        }
 
-@* --- BARRA FLOTANTE (ESTILO DINÁMICO) --- *@
-<div class="command-bar">
-    <div class="cmd-container">
-        @* Botones Izquierda *@
-        <div class="d-flex gap-2 h-100">
-            <button class="btn-pos btn-cancel" onclick="limpiarTicket()" title="Borrar">
-                <i class="bi bi-trash3-fill fs-5"></i>
-            </button>
+        @@media (max-width: 991.98px) {
+            body {
+                overflow: auto;
+                height: auto;
+                padding-top: 80px;
+                background: white;
+            }
 
-            <button class="btn-pos btn-client d-md-none" onclick="pedirClienteMovil()">
-                <i class="bi bi-person-circle fs-5"></i>
-            </button>
+            .pos-wrapper {
+                display: block;
+            }
 
-            <div class="input-group h-100 d-none d-md-flex" style="width: 250px;">
-                <span class="input-group-text bg-dark border-0 text-secondary"><i class="bi bi-person-fill"></i></span>
-                <input type="text" id="nombreCliente" class="form-control bg-dark border-0 text-white shadow-none" placeholder="Cliente General">
-            </div>
+            .left-panel {
+                border: none;
+                padding: 10px;
+            }
+
+            .right-panel {
+                display: none;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+
+            .prod-card {
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+            .mobile-header {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 70px;
+                background: var(--color-dark);
+                color: white;
+                z-index: 2000;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 15px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            }
+
+            .mh-total {
+                font-size: 1.2rem;
+                font-weight: bold;
+            }
+
+            .mh-btn-pay {
+                background: var(--color-success);
+                color: white;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .mh-btn-list {
+                background: rgba(255,255,255,0.1);
+                border: 1px solid rgba(255,255,255,0.2);
+                color: white;
+                width: 45px;
+                height: 45px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    @* --- HEADER MÓVIL FIJO (TOP) --- *@
+    <div class="mobile-header">
+        <button class="mh-btn-list" onclick="verTicketMovil()">
+            <i class="bi bi-receipt"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="mobBadge" style="font-size:0.6rem; display:none;">0</span>
+        </button>
+        <div class="text-end">
+            <small class="d-block text-white-50" style="font-size:0.7rem; line-height:1;">Total a Pagar</small>
+            <div class="mh-total" id="mobTotalDisplay">$0.00</div>
         </div>
-
-        @* Botón Cobrar *@
-        <button class="btn-pos btn-pay" onclick="finalizarVenta()">
-            <span>COBRAR</span>
-            <span class="bg-white text-success badge rounded-pill ms-2" id="btnTotal">$0.00</span>
+        <button class="mh-btn-pay" onclick="finalizarVenta()">
+            COBRAR <i class="bi bi-chevron-right"></i>
         </button>
     </div>
-</div>
 
-@section Scripts {
+    <div class="pos-wrapper">
+        @* --- PANEL IZQUIERDO: CATÁLOGO --- *@
+        <div class="left-panel">
+            <div class="search-area">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-2 border-primary border-end-0"><i class="bi bi-search fs-4 text-primary"></i></span>
+                    <input type="text" id="inputBusqueda" class="form-control search-input border-start-0 ps-0" placeholder="BUSCAR / ESCANEAR (F2)..." autocomplete="off" autofocus>
+                    <button class="btn btn-light border-2 border-start-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </div>
+
+            <div id="contenedorResultados" class="products-grid">
+                @* Estado Inicial *@
+                <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
+                    <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
+                    <h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3>
+                </div>
+            </div>
+        </div>
+
+        @* --- PANEL DERECHO: TICKET Y COMANDOS (Solo PC) --- *@
+        <div class="right-panel d-none d-lg-flex">
+            <div class="ticket-header">
+                <div class="fw-bold"><i class="bi bi-cart3 me-2"></i>TICKET DE VENTA</div>
+                <div class="small opacity-75">@User.Identity.Name</div>
+            </div>
+
+            @* TABLA DE PRODUCTOS *@
+            <div class="ticket-list-container">
+                <table class="t-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Descripción</th>
+                            <th style="width: 20%;">Precio</th>
+                            <th style="width: 20%;">Cant.</th>
+                            <th style="width: 15%;">Total</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaTicketBody">
+                        @* Filas inyectadas por JS *@
+                    </tbody>
+                </table>
+
+                <div id="emptyTicketMsg" class="text-center py-5 text-muted">
+                    <p>Ticket Vacío</p>
+                </div>
+            </div>
+
+            @* RESUMEN *@
+            <div class="financial-summary">
+                <div class="fin-row"><span>Subtotal</span><span id="lblSubtotal">$0.00</span></div>
+                <div class="fin-row"><span>IVA</span><span>$0.00</span></div>
+                <div class="fin-total">
+                    <span>TOTAL:</span>
+                    <span id="lblTotal">$0.00</span>
+                </div>
+            </div>
+
+            @* BOTONES DE PODER *@
+            <div class="action-panel">
+                <button class="btn-big btn-cancel" onclick="limpiarTicket()">
+                    <i class="bi bi-trash3-fill"></i> Borrar
+                </button>
+                <button class="btn-big btn-client" onclick="asignarCliente()">
+                    <i class="bi bi-person-fill"></i> Cliente
+                </button>
+                <button class="btn-big btn-discount" onclick="Swal.fire('Proximamente', 'Módulo de descuentos', 'info')">
+                    <i class="bi bi-percent"></i> Desc.
+                </button>
+                <button class="btn-big btn-reprint" onclick="alert('Función Pendiente')">
+                    <i class="bi bi-printer"></i> Reprint
+                </button>
+
+                <button class="btn-big btn-pay" onclick="finalizarVenta()">
+                    <i class="bi bi-check-circle-fill"></i>
+                    COBRAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @* --- OFFCANVAS PARA TICKET EN MÓVIL --- *@
+    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasTicket" style="height: 80vh;">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title">Ticket de Venta</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            @* Aquí clonamos la tabla del ticket *@
+            <div id="mobileTicketContent" class="p-3"></div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         let debounceTimer;
-        // SONIDO BEEP (Base64 para no depender de archivos)
-        const beepAudio = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Placeholder simple, abajo pongo uno real corto
-        // Beep real corto en base64
-        const realBeep = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU");
-        // Mejor usamos un tono sintético del navegador si es posible, si no, visual.
+        let clienteActual = "";
 
+        // Generador de Beep (Oscilador)
         function playBeep() {
-            // Un beep corto y agudo usando AudioContext es más rápido y compatible
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (AudioContext) {
@@ -427,12 +544,12 @@
                     const gain = ctx.createGain();
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.frequency.value = 1200; // Tono agudo
-                    gain.gain.value = 0.1; // Volumen bajo
+                    osc.frequency.value = 1500; // Tono agudo
+                    gain.gain.value = 0.05; // Vol bajo
                     osc.start();
-                    setTimeout(() => osc.stop(), 100); // Duración 100ms
+                    setTimeout(() => osc.stop(), 80);
                 }
-            } catch(e) { console.log("Audio no soportado"); }
+            } catch(e) {}
         }
 
         $(document).ready(function() {
@@ -441,25 +558,15 @@
             $(document).keydown(function(e) {
                 if(e.key === "F12") { e.preventDefault(); finalizarVenta(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
-                if(e.key === "Escape") { limpiarTicket(); }
             });
         });
-
-        function pedirClienteMovil() {
-            Swal.fire({
-                title: 'Cliente',
-                input: 'text',
-                inputValue: $('#nombreCliente').val(),
-                showCancelButton: true
-            }).then((r) => { if(r.isConfirmed) $('#nombreCliente').val(r.value); });
-        }
 
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer);
             const term = $(this).val();
 
             if (term.length < 2) {
-                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50"><i class="bi bi-upc-scan fs-1"></i><p class="mt-2 fw-bold">Listo para vender</p></div>');
+                if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
                 return;
             }
 
@@ -475,84 +582,79 @@
             container.empty();
 
             if (productos.length === 0) {
-                container.append('<div class="text-center py-5 text-muted">No encontrado</div>');
+                container.append('<div class="col-12 text-center py-5 text-muted"><h3>No encontrado</h3></div>');
                 return;
             }
 
             productos.forEach(p => {
-                const stockStyle = p.stock < 5 ? 'text-danger' : 'text-success';
-
-                // ID único para la animación
-                const cardId = `prod-card-${p.id}`;
+                const stockBadge = p.stock < 5 ? `<span class="prod-stock text-danger border-danger">POCO: ${p.stock}</span>` : `<span class="prod-stock">${p.stock}</span>`;
+                const cardId = `prod-${p.id}`;
 
                 container.append(`
                     <div id="${cardId}" class="prod-card" onclick="agregarAlTicket(${p.id})">
-                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="pc-img">
-                        <div class="pc-info">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h6 class="pc-title">${p.nombre}</h6>
-                                <span class="pc-price">$${p.precioVenta.toFixed(2)}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <span class="pc-sku">${p.sku}</span>
-                                <span class="pc-stock ${stockStyle}">${p.stock} disp.</span>
-                            </div>
-                        </div>
+                        ${stockBadge}
+                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img">
+                        <div class="prod-sku">${p.sku}</div>
+                        <div class="prod-name">${p.nombre}</div>
+                        <div class="prod-price">$${p.precioVenta.toFixed(2)}</div>
                     </div>
                 `);
             });
         }
 
-        // --- TICKET ---
         function agregarAlTicket(id) {
-            // 1. Feedback Inmediato Visual (Antes de la respuesta del server)
-            const card = $(`#prod-card-${id}`);
-            card.addClass('item-added-anim');
-            setTimeout(() => card.removeClass('item-added-anim'), 400); // Quitar clase al terminar
-
-            // 2. Feedback Sonoro
+            // Animación flash
+            const card = $(`#prod-${id}`);
+            card.addClass('flash-anim');
+            setTimeout(() => card.removeClass('flash-anim'), 300);
             playBeep();
 
-            // 3. Petición
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
                 if (res.success) {
                     cargarTicket();
                 } else {
-                    Swal.fire({ icon: 'warning', text: res.message, toast: true, position: 'top' });
+                    Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top' });
                 }
             });
         }
 
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
-                const lista = $('#listaTicket');
-                lista.empty();
+                const tbody = $('#tablaTicketBody');
+                tbody.empty();
 
-                $('#lblTotalDisplay').text('$' + data.total);
-                $('#btnTotal').text('$' + data.total);
+                $('#lblTotal').text('$' + data.total);
+                $('#mobTotalDisplay').text('$' + data.total);
+                $('#lblSubtotal').text('$' + data.total); // Asumiendo IVA incluido
 
-                if (data.items.length === 0) {
-                    lista.html('<div class="text-center py-5 text-muted opacity-50"><p>Ticket vacío</p></div>');
-                    return;
-                }
+                if(data.count > 0) { $('#mobBadge').text(data.count).show(); $('#emptyTicketMsg').hide(); }
+                else { $('#mobBadge').hide(); $('#emptyTicketMsg').show(); }
 
                 data.items.forEach(item => {
-                    lista.append(`
-                        <div class="ticket-item">
-                            <div class="d-flex align-items-center overflow-hidden flex-grow-1">
-                                <span class="badge bg-dark rounded-pill me-2">${item.cantidad}</span>
-                                <div class="text-truncate">
-                                    <div class="fw-bold small text-dark">${item.nombre}</div>
-                                    <div class="text-muted" style="font-size:0.75rem">$${item.precio.toFixed(2)}</div>
+                    tbody.append(`
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark small">${item.nombre}</div>
+                                <div class="text-muted" style="font-size:0.7rem">${item.productoId}</div>
+                            </td>
+                            <td class="text-end">$${item.precio.toFixed(2)}</td>
+                            <td>
+                                <div class="qty-control">
+                                    <button class="btn-qty" onclick="alert('Pendiente: Restar 1')"><i class="bi bi-dash"></i></button>
+                                    <div class="qty-val">${item.cantidad}</div>
+                                    <button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button>
                                 </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <span class="fw-bold me-2">$${(item.precio * item.cantidad).toFixed(2)}</span>
-                                <i class="bi bi-x-circle text-danger" style="cursor:pointer" onclick="eliminarDelTicket(${item.productoId})"></i>
-                            </div>
-                        </div>
+                            </td>
+                            <td class="text-end fw-bold">$${(item.precio * item.cantidad).toFixed(2)}</td>
+                            <td class="text-center">
+                                <i class="bi bi-x-circle-fill text-danger fs-5" style="cursor:pointer" onclick="eliminarDelTicket(${item.productoId})"></i>
+                            </td>
+                        </tr>
                     `);
                 });
+
+                // Copiar al móvil
+                $('#mobileTicketContent').html($('.ticket-list-container').html());
             });
         }
 
@@ -564,41 +666,57 @@
             $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); });
         }
 
-        function finalizarVenta() {
-            const cliente = $('#nombreCliente').val();
-            const total = $('#btnTotal').text();
+        function asignarCliente() {
+            Swal.fire({
+                title: 'Cliente',
+                input: 'text',
+                inputValue: clienteActual,
+                inputPlaceholder: 'Nombre...',
+                showCancelButton: true
+            }).then((r) => {
+                if(r.isConfirmed) {
+                    clienteActual = r.value;
+                    Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1500});
+                }
+            });
+        }
 
-            if (total === "$0.00") {
-                Swal.fire('Ticket Vacío', 'Agrega productos.', 'info');
-                return;
-            }
+        function verTicketMovil() {
+            new bootstrap.Offcanvas(document.getElementById('offcanvasTicket')).show();
+        }
+
+        function finalizarVenta() {
+            const total = $('#lblTotal').text();
+            if (total === "$0.00") { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
 
             Swal.fire({
-                title: 'Cobrar ' + total,
-                text: "¿Confirmar la venta?",
+                title: total,
+                text: clienteActual ? `Cliente: ${clienteActual}` : "Público General",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#22c55e',
-                confirmButtonText: 'Sí, Cobrar'
+                confirmButtonText: 'COBRAR',
+                confirmButtonColor: '#16a34a',
+                cancelButtonText: 'Volver',
+                reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post('/Ventas/FinalizarVenta', { nombreCliente: cliente }, function(res) {
+                    $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual }, function(res) {
                         if (res.success) {
                             Swal.fire({
                                 title: '¡Venta Exitosa!',
-                                html: `<h3>Folio #${res.pedidoId}</h3>`,
+                                html: `<h1>Folio #${res.pedidoId}</h1>`,
                                 icon: 'success',
                                 showCancelButton: true,
                                 confirmButtonText: 'Nueva Venta',
                                 cancelButtonText: 'Imprimir Ticket'
                             }).then((r) => {
-                                if (!r.isConfirmed) {
-                                    window.open('/Pedidos/Details/' + res.pedidoId, '_blank');
+                                if (r.dismiss === Swal.DismissReason.cancel) {
+                                     window.open('/Pedidos/Details/' + res.pedidoId, '_blank');
                                 }
                                 limpiarTicket();
+                                clienteActual = "";
                                 $('#inputBusqueda').val('').focus();
                                 $('#contenedorResultados').empty();
-                                $('#nombreCliente').val('');
                             });
                         } else {
                             Swal.fire('Error', res.message, 'error');
@@ -608,4 +726,5 @@
             });
         }
     </script>
-}
+</body>
+</html>
