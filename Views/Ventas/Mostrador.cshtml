@@ -15,17 +15,17 @@
     <style>
         /* --- VARIABLES --- */
         :root {
-            --bg-app: #f3f4f6;
+            --bg-app: #e5e7eb;
             --color-primary: #2563eb;
             --color-success: #16a34a;
             --color-danger: #dc2626;
-            --color-dark: #111827;
+            --color-dark: #1f2937;
             --color-iva-on: #7c3aed;
         }
 
         body {
             background-color: var(--bg-app);
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             overflow: hidden;
             height: 100vh;
             display: flex;
@@ -34,20 +34,19 @@
             padding: 0;
         }
 
-        /* --- LAYOUT GENERAL --- */
+        /* ================= ESTILOS PC (Escritorio) ================= */
         .pos-wrapper {
             display: flex;
             height: 100%;
             width: 100%;
         }
 
-        /* IZQUIERDA (Catálogo) */
         .left-panel {
             flex: 60%;
             display: flex;
             flex-direction: column;
             padding: 15px;
-            border-right: 1px solid #e5e7eb;
+            border-right: 1px solid #ccc;
         }
 
         .right-panel {
@@ -55,90 +54,103 @@
             background: #fff;
             display: flex;
             flex-direction: column;
-            box-shadow: -4px 0 15px rgba(0,0,0,0.05);
-            z-index: 10;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
         }
 
-        /* BUSCADOR */
         .search-area {
             margin-bottom: 15px;
         }
 
         .search-input {
-            height: 55px;
-            font-size: 1.3rem;
-            font-weight: 700;
+            height: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
             border: 2px solid var(--color-primary);
-            border-radius: 8px;
+            border-radius: 4px;
             box-shadow: none !important;
         }
 
-        /* GRID DE PRODUCTOS */
         .products-grid {
             flex-grow: 1;
             overflow-y: auto;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
             align-content: start;
             padding-right: 5px;
-            padding-bottom: 20px;
         }
 
-        /* CARD */
+        /* CARD PRODUCTO */
         .prod-card {
             background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             padding: 8px;
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: all 0.1s;
             display: flex;
             flex-direction: column;
             height: 100%;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
             .prod-card:active {
-                transform: scale(0.96);
+                transform: scale(0.95);
                 border-color: var(--color-success);
             }
 
+            .prod-card:hover {
+                border-color: var(--color-primary);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+
+        .flash-anim {
+            animation: flash-green 0.3s ease-out;
+        }
+
+        @@keyframes flash-green {
+            0% {
+                background-color: rgba(34, 197, 94, 0.5);
+            }
+
+            100% {
+                background-color: white;
+            }
+        }
+
         .prod-img {
             width: 100%;
-            height: 90px;
+            height: 100px;
             object-fit: cover;
-            background: #f9fafb;
+            background: #f3f4f6;
             margin-bottom: 8px;
-            border-radius: 4px;
+            border-radius: 2px;
         }
 
         .prod-sku {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: #6b7280;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .prod-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-            line-height: 1.3;
-            margin-bottom: 4px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 5px;
             color: var(--color-dark);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 2.6em;
+            height: 2.4em;
         }
 
         .prod-price {
             font-size: 1.1rem;
-            font-weight: 800;
+            font-weight: 900;
             color: var(--color-success);
             text-align: right;
             margin-top: auto;
@@ -146,18 +158,17 @@
 
         .prod-stock {
             position: absolute;
-            top: 6px;
-            right: 6px;
-            background: rgba(255,255,255,0.95);
-            padding: 2px 6px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            border-radius: 4px;
-            border: 1px solid #e5e7eb;
-            color: #4b5563;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,255,255,0.9);
+            padding: 2px 5px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 2px;
+            border: 1px solid #ddd;
         }
 
-        /* TICKET (PC) */
+        /* TICKET PC */
         .ticket-header {
             background: var(--color-dark);
             color: white;
@@ -171,7 +182,6 @@
             flex-grow: 1;
             overflow-y: auto;
             background: #f9fafb;
-            padding: 0;
         }
 
         .t-table {
@@ -183,56 +193,58 @@
                 background: #e5e7eb;
                 position: sticky;
                 top: 0;
-                padding: 10px;
-                font-size: 0.7rem;
+                padding: 8px;
+                font-size: 0.75rem;
                 text-transform: uppercase;
-                color: #4b5563;
-                border-bottom: 1px solid #d1d5db;
                 text-align: left;
+                color: #374151;
+                border-bottom: 1px solid #d1d5db;
             }
 
             .t-table td {
-                padding: 10px;
+                padding: 10px 8px;
                 border-bottom: 1px solid #e5e7eb;
                 vertical-align: middle;
-                font-size: 0.9rem;
+            }
+
+            .t-table tr:hover {
+                background: #eff6ff;
             }
 
         .qty-control {
             display: flex;
             align-items: center;
+            gap: 5px;
             border: 1px solid #d1d5db;
-            border-radius: 6px;
+            border-radius: 4px;
             background: white;
-            overflow: hidden;
+            width: fit-content;
         }
 
         .btn-qty {
             border: none;
-            background: #f9fafb;
+            background: transparent;
             color: var(--color-primary);
             font-weight: bold;
-            padding: 5px 10px;
+            padding: 2px 8px;
             cursor: pointer;
         }
 
-            .btn-qty:active {
-                background: #e5e7eb;
+            .btn-qty:hover {
+                background: #eff6ff;
             }
 
         .qty-val {
             font-weight: bold;
             font-size: 0.9rem;
-            width: 30px;
+            width: 20px;
             text-align: center;
-            border-left: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
         }
 
         .financial-summary {
             background: #f3f4f6;
-            padding: 15px;
-            border-top: 1px solid #d1d5db;
+            padding: 15px 20px;
+            border-top: 2px solid #d1d5db;
         }
 
         .fin-row {
@@ -247,8 +259,8 @@
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
-            font-size: 1.6rem;
-            font-weight: 800;
+            font-size: 1.8rem;
+            font-weight: 900;
             color: var(--color-dark);
             align-items: center;
         }
@@ -259,15 +271,15 @@
             background: white;
             border-top: 1px solid #e5e7eb;
             display: grid;
-            grid-template-columns: 1fr 1fr 1.5fr;
+            grid-template-columns: 1fr 1fr 2fr;
             grid-template-rows: 1fr 1fr;
-            gap: 8px;
-            height: 140px;
+            gap: 10px;
+            height: 160px;
         }
 
         .btn-big {
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             font-weight: 700;
             text-transform: uppercase;
             display: flex;
@@ -277,17 +289,17 @@
             cursor: pointer;
             transition: 0.1s;
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
         }
+
+            .btn-big i {
+                font-size: 1.5rem;
+                margin-bottom: 5px;
+            }
 
             .btn-big:active {
                 filter: brightness(0.9);
-                transform: translateY(1px);
-            }
-
-            .btn-big i {
-                font-size: 1.4rem;
-                margin-bottom: 4px;
+                transform: translateY(2px);
             }
 
         .btn-cancel {
@@ -304,6 +316,7 @@
 
         .btn-iva-active {
             background-color: var(--color-iva-on);
+            color: white;
             border: 2px solid var(--color-iva-on);
         }
 
@@ -317,150 +330,179 @@
             background-color: var(--color-success);
             grid-column: 3;
             grid-row: 1 / span 2;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
         }
 
             .btn-pay i {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
 
-        /* ANIMACIONES */
-        .flash-anim {
-            animation: flash 0.3s;
-        }
-
-        @@keyframes flash {
-            0% {
-                background: #86efac;
-            }
-
-            100% {
-                background: white;
-            }
-        }
-
-        /* --- MÓVIL (AJUSTES CRÍTICOS) --- */
-        .mobile-header {
+        /* OCULTAR ELEMENTOS MÓVILES EN PC */
+        .mobile-search-bar {
             display: none;
         }
 
+        .mobile-sidebar {
+            display: none;
+        }
+
+        /* ================= ESTILOS MÓVIL (PANTALLA PARTIDA) ================= */
         @@media (max-width: 991.98px) {
             body {
-                overflow: auto;
-                height: auto;
-                /* Padding superior IGUAL a la altura del header fijo para que no se encimen */
-                padding-top: 70px;
-                background: white;
-            }
-
-            .pos-wrapper {
-                display: block;
-                padding: 10px;
-            }
-
-            .left-panel {
-                border: none;
+                background: #f3f4f6;
                 padding: 0;
             }
+            /* Contenedor Principal Móvil */
+            .pos-wrapper {
+                display: grid;
+                grid-template-rows: 60px 1fr; /* Fila 1: Buscador, Fila 2: Contenido */
+                height: 100vh;
+                overflow: hidden;
+            }
+            /* 1. TECHO (Buscador Fijo) */
+            .left-panel .search-area {
+                display: none;
+            }
+            /* Ocultar buscador de PC */
 
+            .mobile-search-bar {
+                display: flex;
+                align-items: center;
+                background: white;
+                padding: 0 10px;
+                border-bottom: 1px solid #ddd;
+                z-index: 50;
+            }
+
+            .mobile-input {
+                width: 100%;
+                height: 40px;
+                border-radius: 20px;
+                border: 1px solid #ccc;
+                padding-left: 15px;
+                background: #f9fafb;
+                font-weight: bold;
+            }
+            /* 2. CUERPO DIVIDIDO */
+            .left-panel {
+                display: grid;
+                grid-template-columns: 1fr 70px; /* Izq: Productos, Der: Botones */
+                padding: 0;
+                border: none;
+                overflow: hidden;
+            }
+            /* Columna Izquierda: Productos */
+            .products-grid {
+                padding: 10px;
+                grid-template-columns: repeat(2, 1fr); /* 2 Columnas siempre */
+                gap: 10px;
+                overflow-y: auto;
+                padding-bottom: 80px; /* Espacio para que no se corte el final */
+            }
+            /* Ajuste de cards en móvil */
+            .prod-card {
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+
+            .prod-img {
+                height: 80px;
+            }
+
+            .prod-name {
+                font-size: 0.75rem;
+            }
+
+            .prod-price {
+                font-size: 0.9rem;
+            }
+            /* Columna Derecha: TORRE DE BOTONES */
             .right-panel {
                 display: none !important;
             }
-            /* Ocultar panel derecho forzosamente */
-            /* Grid Móvil: 2 columnas forzadas */
-            .products-grid {
-                grid-template-columns: repeat(2, 1fr); /* Siempre 2 columnas */
-                gap: 10px;
-                padding-bottom: 50px;
-            }
-            /* HEADER FIJO VISIBLE */
-            .mobile-header {
-                display: flex !important;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 70px; /* Altura fija */
-                background: var(--color-dark);
-                color: white;
-                z-index: 9999; /* Encima de todo */
-                align-items: center;
-                justify-content: space-between;
-                padding: 0 10px;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            }
-            /* Botones del Header Móvil */
-            .mh-btn-list {
-                width: 45px;
-                height: 45px;
-                background: rgba(255,255,255,0.15);
-                border: 1px solid rgba(255,255,255,0.2);
-                border-radius: 8px;
+            /* Adiós panel PC */
+
+            .mobile-sidebar {
                 display: flex;
+                flex-direction: column;
+                background: var(--color-dark);
+                padding: 5px;
+                gap: 8px;
+                align-items: center;
+                overflow-y: auto;
+                box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            }
+
+            .btn-mob {
+                width: 55px;
+                height: 55px;
+                border-radius: 12px;
+                border: none;
+                background: rgba(255,255,255,0.1);
+                color: white;
+                display: flex;
+                flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                color: white;
-                font-size: 1.2rem;
-                flex-shrink: 0; /* No encogerse */
+                font-size: 0.6rem;
+                font-weight: bold;
+                flex-shrink: 0;
             }
 
-            .mh-info {
-                text-align: right;
-                flex-grow: 1;
-                margin-right: 10px;
-                line-height: 1.1;
-            }
+                .btn-mob i {
+                    font-size: 1.4rem;
+                    margin-bottom: 2px;
+                }
 
-            .mh-label {
-                font-size: 0.7rem;
-                opacity: 0.8;
-                display: block;
-            }
-
-            .mh-total {
-                font-size: 1.2rem;
-                font-weight: 800;
-                color: #4ade80;
-                display: block;
-            }
-
-            .mh-btn-pay {
+                .btn-mob:active {
+                    background: rgba(255,255,255,0.3);
+                    transform: scale(0.95);
+                }
+            /* Colores específicos móvil */
+            .mob-pay {
                 background: var(--color-success);
                 color: white;
-                border: none;
-                height: 45px;
-                padding: 0 20px;
-                border-radius: 8px;
-                font-weight: 700;
-                font-size: 1rem;
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                flex-shrink: 0; /* No encogerse */
-                box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+                margin-top: auto;
+                height: 70px;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            }
+
+            .mob-del {
+                background: var(--color-danger);
+            }
+
+            .mob-iva-on {
+                background: var(--color-iva-on);
+                border: 1px solid white;
+            }
+
+            .mob-client {
+                background: var(--color-primary);
+            }
+
+            .mob-badge {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                font-size: 0.6rem;
+                padding: 2px 5px;
             }
         }
     </style>
 </head>
 <body>
 
-    @* HEADER MÓVIL *@
-    <div class="mobile-header">
-        <button class="mh-btn-list" onclick="verTicketMovil()">
-            <i class="bi bi-receipt fs-4"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="mobBadge" style="display:none;">0</span>
-        </button>
-        <div class="text-end">
-            <small class="d-block text-white-50" style="font-size:0.7rem; line-height:1;">Total a Pagar</small>
-            <div class="mh-total" id="mobTotalDisplay">$0.00</div>
-        </div>
-        <button class="mh-btn-pay" onclick="abrirModalCobro()">
-            COBRAR <i class="bi bi-chevron-right"></i>
-        </button>
-    </div>
-
+    @* --- ESTRUCTURA PRINCIPAL --- *@
     <div class="pos-wrapper">
+
+        @* --- ZONA SUPERIOR MÓVIL (BUSCADOR) --- *@
+        <div class="mobile-search-bar">
+            <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar producto..." autocomplete="off">
+        </div>
+
+        @* --- PANEL IZQUIERDO (PC: Catálogo / MÓVIL: Catálogo + Barra Lateral) --- *@
         <div class="left-panel">
+            @* Buscador PC *@
             <div class="search-area">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-primary border-end-0"><i class="bi bi-search fs-4 text-primary"></i></span>
@@ -468,48 +510,124 @@
                     <button class="btn btn-light border-2 border-start-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg"></i></button>
                 </div>
             </div>
+
+            @* GRID DE PRODUCTOS *@
             <div id="contenedorResultados" class="products-grid">
                 <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
                     <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
                     <h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3>
                 </div>
             </div>
+
+            @* --- BARRA LATERAL DERECHA (SOLO MÓVIL) --- *@
+            <div class="mobile-sidebar">
+                @* 1. Ticket *@
+                <button class="btn-mob position-relative" onclick="verTicketMovil()">
+                    <i class="bi bi-receipt"></i>
+                    <span>TICKET</span>
+                    <span class="badge rounded-pill bg-danger mob-badge" id="mobBadge" style="display:none;">0</span>
+                </button>
+
+                @* 2. Cliente *@
+                <button class="btn-mob mob-client" onclick="asignarCliente()">
+                    <i class="bi bi-person-fill"></i>
+                    <span>CTE</span>
+                </button>
+
+                @* 3. IVA *@
+                <button id="btnMobIva" class="btn-mob" onclick="toggleIVA()">
+                    <i class="bi bi-percent"></i>
+                    <span id="txtMobIva">NO IVA</span>
+                </button>
+
+                @* 4. Borrar *@
+                <button class="btn-mob mob-del" onclick="limpiarTicket()">
+                    <i class="bi bi-trash3"></i>
+                    <span>BORRAR</span>
+                </button>
+
+                @* 5. Espaciador flexible *@
+                <div style="flex-grow: 1;"></div>
+
+                @* 6. COBRAR (Al final) *@
+                <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>COBRAR</span>
+                </button>
+            </div>
         </div>
 
+        @* --- PANEL DERECHO (SOLO PC) --- *@
         <div class="right-panel d-none d-lg-flex">
             <div class="ticket-header">
                 <div class="fw-bold"><i class="bi bi-cart3 me-2"></i>TICKET</div>
                 <div class="small opacity-75">@User.Identity.Name</div>
             </div>
+
             <div class="ticket-list-container">
                 <table class="t-table">
-                    <thead><tr><th style="width:45%;">Descripción</th><th style="width:20%;">Precio</th><th style="width:20%;">Cant.</th><th style="width:15%;">Total</th><th style="width:5%;"></th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Descripción</th>
+                            <th style="width: 20%;">Precio</th>
+                            <th style="width: 20%;">Cant.</th>
+                            <th style="width: 15%;">Total</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
                     <tbody id="tablaTicketBody"></tbody>
                 </table>
                 <div id="emptyTicketMsg" class="text-center py-5 text-muted"><p>Ticket Vacío</p></div>
             </div>
+
             <div class="financial-summary">
-                <div class="fin-row"><span>Subtotal</span><span id="lblSubtotal">$0.00</span></div>
-                <div class="fin-row"><span>IVA (16%)</span><span id="lblIVA">$0.00</span></div>
-                <div class="fin-total"><span>TOTAL:</span><span id="lblTotal">$0.00</span></div>
+                <div class="fin-row">
+                    <span>Subtotal</span>
+                    <span id="lblSubtotal">$0.00</span>
+                </div>
+                <div class="fin-row">
+                    <span>IVA (16%)</span>
+                    <span id="lblIVA">$0.00</span>
+                </div>
+                <div class="fin-total">
+                    <span>TOTAL:</span>
+                    <span id="lblTotal">$0.00</span>
+                </div>
             </div>
+
             <div class="action-panel">
-                <button class="btn-big btn-cancel" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i> Borrar</button>
-                <button class="btn-big btn-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i> Cliente</button>
-                <button class="btn-big btn-discount" onclick="Swal.fire('Tip', 'Próximamente', 'info')"><i class="bi bi-percent"></i> Desc.</button>
-                <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()"><i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span></button>
-                <button class="btn-big btn-pay" onclick="abrirModalCobro()"><i class="bi bi-cash-stack"></i> COBRAR</button>
+                <button class="btn-big btn-cancel" onclick="limpiarTicket()">
+                    <i class="bi bi-trash3-fill"></i> Borrar
+                </button>
+                <button class="btn-big btn-client" onclick="asignarCliente()">
+                    <i class="bi bi-person-fill"></i> Cliente
+                </button>
+                <button class="btn-big btn-discount" onclick="Swal.fire('Tip', 'Próximamente', 'info')">
+                    <i class="bi bi-percent"></i> Desc.
+                </button>
+                @* Botón IVA PC *@
+                <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()">
+                    <i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span>
+                </button>
+                <button class="btn-big btn-pay" onclick="abrirModalCobro()">
+                    <i class="bi bi-cash-stack"></i> COBRAR
+                </button>
             </div>
         </div>
     </div>
 
-    @* OFFCANVAS MÓVIL *@
+    @* OFFCANVAS MÓVIL (TICKET) *@
     <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasTicket" style="height: 80vh;">
         <div class="offcanvas-header bg-dark text-white">
-            <h5 class="offcanvas-title">Ticket Actual</h5>
+            <h5 class="offcanvas-title">Ticket de Venta</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body p-0">
+            @* TOTAL FLOTANTE EN OFFCANVAS MÓVIL *@
+            <div class="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Total a Pagar:</span>
+                <span class="h4 mb-0 text-success fw-bold" id="mobOffcanvasTotal">$0.00</span>
+            </div>
             <div id="mobileTicketContent" class="p-3"></div>
         </div>
     </div>
@@ -532,15 +650,29 @@
                 if(e.key === "F12") { e.preventDefault(); abrirModalCobro(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
             });
+
+            // Sincronizar Buscador Móvil con PC
+            $('#inputBusquedaMovil').on('keyup', function() {
+                $('#inputBusqueda').val($(this).val()).trigger('keyup');
+            });
         });
 
-        // Toggle IVA
+        // Toggle IVA (Actualiza PC y Móvil)
         function toggleIVA() {
             aplicaIVA = !aplicaIVA;
+
+            // PC UI
             const btn = $('#btnIVAToggle');
             const txt = $('#txtBtnIva');
             if (aplicaIVA) { btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA'); }
             else { btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA'); }
+
+            // Móvil UI
+            const btnMob = $('#btnMobIva');
+            const txtMob = $('#txtMobIva');
+            if (aplicaIVA) { btnMob.addClass('mob-iva-on'); txtMob.text('CON IVA'); }
+            else { btnMob.removeClass('mob-iva-on'); txtMob.text('NO IVA'); }
+
             recalcularTotalesVisuales();
         }
 
@@ -554,10 +686,15 @@
                 totalFinal = subtotal + iva;
             }
 
+            const fmtTotal = '$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Textos PC
             $('#lblSubtotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             $('#lblIVA').text('$' + iva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-            $('#lblTotal').text('$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-            $('#mobTotalDisplay').text('$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#lblTotal').text(fmtTotal);
+
+            // Textos Móvil
+            $('#mobOffcanvasTotal').text(fmtTotal);
         }
 
         $('#inputBusqueda').on('keyup', function() {
@@ -588,7 +725,6 @@
             });
         }
 
-        // --- NUEVA FUNCIÓN RESTAR ---
         function restarUnidad(id) {
             $.post('/Ventas/RestarDelTicket', { id: id }, function(res) {
                 if (res.success) cargarTicket();
@@ -649,11 +785,12 @@
             Swal.close();
             Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
-            // --- ENVIAMOS EL IVA AL BACKEND ---
             $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo, aplicaIVA: aplicaIVA }, function(res) {
                 if (res.success) {
                     Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
                         limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty();
+                        // Limpiar móvil también
+                        $('#inputBusquedaMovil').val('');
                     });
                 } else { Swal.fire('Error', res.message, 'error'); }
             }).fail(function() { Swal.fire('Error', 'No se pudo conectar', 'error'); });
