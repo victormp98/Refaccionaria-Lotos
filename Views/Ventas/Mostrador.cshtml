@@ -34,7 +34,7 @@
             padding: 0;
         }
 
-        /* ================= ESTILOS PC (Escritorio) ================= */
+        /* ================= ESTILOS PC (Escritorio - SIN CAMBIOS) ================= */
         .pos-wrapper {
             display: flex;
             height: 100%;
@@ -314,6 +314,10 @@
             background-color: #3b82f6;
         }
 
+        .btn-reprint {
+            background-color: #6b7280;
+        }
+
         .btn-iva-active {
             background-color: var(--color-iva-on);
             color: white;
@@ -337,8 +341,12 @@
                 font-size: 2.5rem;
             }
 
-        /* OCULTAR ELEMENTOS MÓVILES EN PC */
+        /* ELEMENTOS EXCLUSIVOS MÓVIL */
         .mobile-search-bar {
+            display: none;
+        }
+
+        .mobile-ticket-inline {
             display: none;
         }
 
@@ -346,97 +354,167 @@
             display: none;
         }
 
-        /* ================= ESTILOS MÓVIL (PANTALLA PARTIDA) ================= */
+        /* ================= ESTILOS MÓVIL (REDISTRIBUCIÓN TOTAL) ================= */
         @@media (max-width: 991.98px) {
             body {
                 background: #f3f4f6;
                 padding: 0;
             }
-            /* Contenedor Principal Móvil */
+            /* GRID PRINCIPAL: 2 COLUMNAS (CONTENIDO | BOTONES) */
             .pos-wrapper {
                 display: grid;
-                grid-template-rows: 60px 1fr; /* Fila 1: Buscador, Fila 2: Contenido */
+                grid-template-columns: 1fr 110px; /* Columna Izq (Flexible) | Columna Der (110px fija) */
                 height: 100vh;
                 overflow: hidden;
             }
-            /* 1. TECHO (Buscador Fijo) */
-            .left-panel .search-area {
-                display: none;
+            /* --- COLUMNA IZQUIERDA (CONTENIDO) --- */
+            .left-panel {
+                display: grid;
+                grid-template-rows: 60px 1.5fr 1fr; /* 1. Buscador | 2. Productos (Más grande) | 3. Ticket (Más chico) */
+                padding: 0;
+                border: none;
+                border-right: 2px solid #ccc;
+                overflow: hidden;
             }
-            /* Ocultar buscador de PC */
 
+                .left-panel .search-area {
+                    display: none;
+                }
+            /* Ocultar buscador viejo */
+            /* 1. Buscador Móvil */
             .mobile-search-bar {
                 display: flex;
                 align-items: center;
+                padding: 5px 10px;
                 background: white;
-                padding: 0 10px;
                 border-bottom: 1px solid #ddd;
-                z-index: 50;
             }
 
             .mobile-input {
                 width: 100%;
-                height: 40px;
-                border-radius: 20px;
+                height: 45px;
+                border-radius: 8px;
                 border: 1px solid #ccc;
-                padding-left: 15px;
-                background: #f9fafb;
+                padding-left: 10px;
                 font-weight: bold;
+                background: #f9fafb;
             }
-            /* 2. CUERPO DIVIDIDO */
-            .left-panel {
-                display: grid;
-                grid-template-columns: 1fr 70px; /* Izq: Productos, Der: Botones */
-                padding: 0;
-                border: none;
-                overflow: hidden;
-            }
-            /* Columna Izquierda: Productos */
+            /* 2. Grid de Productos */
             .products-grid {
                 padding: 10px;
-                grid-template-columns: repeat(2, 1fr); /* 2 Columnas siempre */
-                gap: 10px;
+                grid-template-columns: repeat(2, 1fr); /* 2 Columnas */
+                gap: 8px;
+                background: #f3f4f6;
                 overflow-y: auto;
-                padding-bottom: 80px; /* Espacio para que no se corte el final */
+                border-bottom: 2px solid #ccc;
             }
-            /* Ajuste de cards en móvil */
+            /* Cards más compactas */
             .prod-card {
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                padding: 5px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
 
             .prod-img {
-                height: 80px;
+                height: 70px;
+                margin-bottom: 5px;
             }
 
             .prod-name {
                 font-size: 0.75rem;
+                margin-bottom: 2px;
             }
 
             .prod-price {
-                font-size: 0.9rem;
+                font-size: 0.95rem;
             }
-            /* Columna Derecha: TORRE DE BOTONES */
+            /* 3. Ticket INCRUSTADO (Abajo a la izquierda) */
+            .mobile-ticket-inline {
+                display: flex;
+                flex-direction: column;
+                background: white;
+                overflow: hidden;
+            }
+
+            .m-ticket-header {
+                background: #374151;
+                color: white;
+                padding: 5px 10px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .m-ticket-body {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding: 5px;
+            }
+            /* Items del ticket móvil */
+            .mt-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px dashed #eee;
+                padding: 5px 0;
+                font-size: 0.8rem;
+            }
+
+            .mt-desc {
+                flex-grow: 1;
+                line-height: 1.1;
+                padding-right: 5px;
+            }
+
+            .mt-qty-box {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                background: #f3f4f6;
+                border-radius: 4px;
+                padding: 2px;
+                margin-right: 5px;
+            }
+
+            .mt-btn {
+                width: 25px;
+                height: 25px;
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: var(--color-primary);
+            }
+
+            .mt-total {
+                font-weight: bold;
+                min-width: 50px;
+                text-align: right;
+            }
+            /* --- COLUMNA DERECHA (BARRA DE MANDO) --- */
             .right-panel {
                 display: none !important;
             }
-            /* Adiós panel PC */
+            /* Ocultar panel PC */
 
             .mobile-sidebar {
                 display: flex;
                 flex-direction: column;
                 background: var(--color-dark);
-                padding: 5px;
-                gap: 8px;
+                padding: 8px;
+                gap: 10px;
                 align-items: center;
-                overflow-y: auto;
-                box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+                box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+                z-index: 100;
             }
 
             .btn-mob {
-                width: 55px;
-                height: 55px;
-                border-radius: 12px;
+                width: 100%;
+                height: 60px; /* Botones cuadrados grandes */
+                border-radius: 10px;
                 border: none;
                 background: rgba(255,255,255,0.1);
                 color: white;
@@ -444,13 +522,13 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                font-size: 0.6rem;
+                font-size: 0.65rem;
                 font-weight: bold;
-                flex-shrink: 0;
+                transition: transform 0.1s;
             }
 
                 .btn-mob i {
-                    font-size: 1.4rem;
+                    font-size: 1.5rem;
                     margin-bottom: 2px;
                 }
 
@@ -458,12 +536,13 @@
                     background: rgba(255,255,255,0.3);
                     transform: scale(0.95);
                 }
-            /* Colores específicos móvil */
+            /* Colores Móvil */
             .mob-pay {
                 background: var(--color-success);
                 color: white;
-                margin-top: auto;
-                height: 70px;
+                margin-top: auto; /* Empuja al fondo */
+                height: 80px; /* Más alto */
+                font-size: 0.8rem;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
             }
 
@@ -473,37 +552,30 @@
 
             .mob-iva-on {
                 background: var(--color-iva-on);
-                border: 1px solid white;
+                border: 2px solid white;
             }
 
             .mob-client {
                 background: var(--color-primary);
             }
 
-            .mob-badge {
-                position: absolute;
-                top: 5px;
-                right: 5px;
-                font-size: 0.6rem;
-                padding: 2px 5px;
+            .mob-print {
+                background: #6b7280;
             }
         }
     </style>
 </head>
 <body>
 
-    @* --- ESTRUCTURA PRINCIPAL --- *@
+    @* --- ESTRUCTURA PRINCIPAL (GRID) --- *@
     <div class="pos-wrapper">
 
-        @* --- ZONA SUPERIOR MÓVIL (BUSCADOR) --- *@
-        <div class="mobile-search-bar">
-            <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar producto..." autocomplete="off">
-        </div>
-
-        @* --- PANEL IZQUIERDO (PC: Catálogo / MÓVIL: Catálogo + Barra Lateral) --- *@
+        @* --- ZONA IZQUIERDA (PC: Catálogo / MÓVIL: Buscador + Catálogo + Ticket) --- *@
         <div class="left-panel">
-            @* Buscador PC *@
-            <div class="search-area">
+
+            @* 1. BUSCADOR (Visible en ambos, estilos distintos) *@
+            <div class="search-area d-none d-lg-block">
+                @* PC *@
                 <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-primary border-end-0"><i class="bi bi-search fs-4 text-primary"></i></span>
                     <input type="text" id="inputBusqueda" class="form-control search-input border-start-0 ps-0" placeholder="BUSCAR / ESCANEAR (F2)..." autocomplete="off" autofocus>
@@ -511,7 +583,12 @@
                 </div>
             </div>
 
-            @* GRID DE PRODUCTOS *@
+            @* Buscador Móvil *@
+            <div class="mobile-search-bar">
+                <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off">
+            </div>
+
+            @* 2. CATÁLOGO DE PRODUCTOS *@
             <div id="contenedorResultados" class="products-grid">
                 <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
                     <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
@@ -519,116 +596,83 @@
                 </div>
             </div>
 
-            @* --- BARRA LATERAL DERECHA (SOLO MÓVIL) --- *@
-            <div class="mobile-sidebar">
-                @* 1. Ticket *@
-                <button class="btn-mob position-relative" onclick="verTicketMovil()">
-                    <i class="bi bi-receipt"></i>
-                    <span>TICKET</span>
-                    <span class="badge rounded-pill bg-danger mob-badge" id="mobBadge" style="display:none;">0</span>
-                </button>
-
-                @* 2. Cliente *@
-                <button class="btn-mob mob-client" onclick="asignarCliente()">
-                    <i class="bi bi-person-fill"></i>
-                    <span>CTE</span>
-                </button>
-
-                @* 3. IVA *@
-                <button id="btnMobIva" class="btn-mob" onclick="toggleIVA()">
-                    <i class="bi bi-percent"></i>
-                    <span id="txtMobIva">NO IVA</span>
-                </button>
-
-                @* 4. Borrar *@
-                <button class="btn-mob mob-del" onclick="limpiarTicket()">
-                    <i class="bi bi-trash3"></i>
-                    <span>BORRAR</span>
-                </button>
-
-                @* 5. Espaciador flexible *@
-                <div style="flex-grow: 1;"></div>
-
-                @* 6. COBRAR (Al final) *@
-                <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
-                    <i class="bi bi-cash-stack"></i>
-                    <span>COBRAR</span>
-                </button>
+            @* 3. TICKET INCRUSTADO (SOLO MÓVIL - NUEVO) *@
+            <div class="mobile-ticket-inline">
+                <div class="m-ticket-header">
+                    <span>TICKET ACTUAL</span>
+                    <span id="mobTotalInline" class="text-warning">$0.00</span>
+                </div>
+                <div id="mobileTicketList" class="m-ticket-body">
+                    @* Items se inyectan aquí *@
+                    <div class="text-center text-muted small py-4">Ticket Vacío</div>
+                </div>
             </div>
         </div>
 
-        @* --- PANEL DERECHO (SOLO PC) --- *@
+        @* --- ZONA DERECHA (PC: Ticket Completo / MÓVIL: Barra Lateral) --- *@
+
+        @* PC: Panel Completo *@
         <div class="right-panel d-none d-lg-flex">
             <div class="ticket-header">
                 <div class="fw-bold"><i class="bi bi-cart3 me-2"></i>TICKET</div>
                 <div class="small opacity-75">@User.Identity.Name</div>
             </div>
-
             <div class="ticket-list-container">
                 <table class="t-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 45%;">Descripción</th>
-                            <th style="width: 20%;">Precio</th>
-                            <th style="width: 20%;">Cant.</th>
-                            <th style="width: 15%;">Total</th>
-                            <th style="width: 5%;"></th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th style="width:45%;">Descripción</th><th style="width:20%;">Precio</th><th style="width:20%;">Cant.</th><th style="width:15%;">Total</th><th style="width:5%;"></th></tr></thead>
                     <tbody id="tablaTicketBody"></tbody>
                 </table>
                 <div id="emptyTicketMsg" class="text-center py-5 text-muted"><p>Ticket Vacío</p></div>
             </div>
-
             <div class="financial-summary">
-                <div class="fin-row">
-                    <span>Subtotal</span>
-                    <span id="lblSubtotal">$0.00</span>
-                </div>
-                <div class="fin-row">
-                    <span>IVA (16%)</span>
-                    <span id="lblIVA">$0.00</span>
-                </div>
-                <div class="fin-total">
-                    <span>TOTAL:</span>
-                    <span id="lblTotal">$0.00</span>
-                </div>
+                <div class="fin-row"><span>Subtotal</span><span id="lblSubtotal">$0.00</span></div>
+                <div class="fin-row"><span>IVA (16%)</span><span id="lblIVA">$0.00</span></div>
+                <div class="fin-total"><span>TOTAL:</span><span id="lblTotal">$0.00</span></div>
             </div>
-
             <div class="action-panel">
-                <button class="btn-big btn-cancel" onclick="limpiarTicket()">
-                    <i class="bi bi-trash3-fill"></i> Borrar
-                </button>
-                <button class="btn-big btn-client" onclick="asignarCliente()">
-                    <i class="bi bi-person-fill"></i> Cliente
-                </button>
-                <button class="btn-big btn-discount" onclick="Swal.fire('Tip', 'Próximamente', 'info')">
-                    <i class="bi bi-percent"></i> Desc.
-                </button>
-                @* Botón IVA PC *@
-                <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()">
-                    <i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span>
-                </button>
-                <button class="btn-big btn-pay" onclick="abrirModalCobro()">
-                    <i class="bi bi-cash-stack"></i> COBRAR
-                </button>
+                <button class="btn-big btn-cancel" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i> Borrar</button>
+                <button class="btn-big btn-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i> Cliente</button>
+                <button class="btn-big btn-discount" onclick="Swal.fire('Tip', 'Próximamente', 'info')"><i class="bi bi-percent"></i> Desc.</button>
+                <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()"><i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span></button>
+                <button class="btn-big btn-pay" onclick="abrirModalCobro()"><i class="bi bi-cash-stack"></i> COBRAR</button>
             </div>
         </div>
-    </div>
 
-    @* OFFCANVAS MÓVIL (TICKET) *@
-    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasTicket" style="height: 80vh;">
-        <div class="offcanvas-header bg-dark text-white">
-            <h5 class="offcanvas-title">Ticket de Venta</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body p-0">
-            @* TOTAL FLOTANTE EN OFFCANVAS MÓVIL *@
-            <div class="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">
-                <span class="fw-bold">Total a Pagar:</span>
-                <span class="h4 mb-0 text-success fw-bold" id="mobOffcanvasTotal">$0.00</span>
-            </div>
-            <div id="mobileTicketContent" class="p-3"></div>
+        @* MÓVIL: Barra Lateral Derecha *@
+        <div class="mobile-sidebar">
+
+            @* 1. Cliente *@
+            <button class="btn-mob mob-client" onclick="asignarCliente()">
+                <i class="bi bi-person-fill"></i>
+                <span>CTE</span>
+            </button>
+
+            @* 2. IVA *@
+            <button id="btnMobIva" class="btn-mob mob-iva-on" onclick="toggleIVA()">
+                <i class="bi bi-percent"></i>
+                <span id="txtMobIva">CON IVA</span>
+            </button>
+
+            @* 3. Borrar *@
+            <button class="btn-mob mob-del" onclick="limpiarTicket()">
+                <i class="bi bi-trash3"></i>
+                <span>BORRAR</span>
+            </button>
+
+            @* 4. Imprimir (Reemplaza al Ticket viejo) *@
+            <button class="btn-mob mob-print" onclick="Swal.fire('Info', 'Imprimir último ticket', 'info')">
+                <i class="bi bi-printer"></i>
+                <span>IMPR.</span>
+            </button>
+
+            @* Espaciador *@
+            <div style="flex-grow: 1;"></div>
+
+            @* 5. COBRAR *@
+            <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
+                <i class="bi bi-cash-stack"></i>
+                <span>COBRAR</span>
+            </button>
         </div>
     </div>
 
@@ -657,22 +701,18 @@
             });
         });
 
-        // Toggle IVA (Actualiza PC y Móvil)
         function toggleIVA() {
             aplicaIVA = !aplicaIVA;
+            const btn = $('#btnIVAToggle'); const txt = $('#txtBtnIva');
+            const btnMob = $('#btnMobIva'); const txtMob = $('#txtMobIva');
 
-            // PC UI
-            const btn = $('#btnIVAToggle');
-            const txt = $('#txtBtnIva');
-            if (aplicaIVA) { btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA'); }
-            else { btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA'); }
-
-            // Móvil UI
-            const btnMob = $('#btnMobIva');
-            const txtMob = $('#txtMobIva');
-            if (aplicaIVA) { btnMob.addClass('mob-iva-on'); txtMob.text('CON IVA'); }
-            else { btnMob.removeClass('mob-iva-on'); txtMob.text('NO IVA'); }
-
+            if (aplicaIVA) {
+                btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA');
+                btnMob.addClass('mob-iva-on'); txtMob.text('CON IVA');
+            } else {
+                btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA');
+                btnMob.removeClass('mob-iva-on'); txtMob.text('SIN IVA');
+            }
             recalcularTotalesVisuales();
         }
 
@@ -681,20 +721,16 @@
             let iva = 0;
             let totalFinal = totalNumerico;
 
-            if (aplicaIVA) {
-                iva = subtotal * 0.16;
-                totalFinal = subtotal + iva;
-            }
+            if (aplicaIVA) { iva = subtotal * 0.16; totalFinal = subtotal + iva; }
 
             const fmtTotal = '$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-            // Textos PC
             $('#lblSubtotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             $('#lblIVA').text('$' + iva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             $('#lblTotal').text(fmtTotal);
 
-            // Textos Móvil
-            $('#mobOffcanvasTotal').text(fmtTotal);
+            // Actualizar total en el ticket móvil
+            $('#mobTotalInline').text(fmtTotal);
         }
 
         $('#inputBusqueda').on('keyup', function() {
@@ -726,36 +762,53 @@
         }
 
         function restarUnidad(id) {
-            $.post('/Ventas/RestarDelTicket', { id: id }, function(res) {
-                if (res.success) cargarTicket();
-            });
+            $.post('/Ventas/RestarDelTicket', { id: id }, function(res) { if (res.success) cargarTicket(); });
         }
 
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
-                const tbody = $('#tablaTicketBody'); tbody.empty();
+                const tbody = $('#tablaTicketBody');
+                const mobList = $('#mobileTicketList');
+                tbody.empty();
+                mobList.empty();
+
                 totalNumerico = parseFloat(data.total.replace(/,/g, ''));
-                if(data.count > 0) { $('#mobBadge').text(data.count).show(); $('#emptyTicketMsg').hide(); }
-                else { $('#mobBadge').hide(); $('#emptyTicketMsg').show(); }
+                if(data.count > 0) { $('#emptyTicketMsg').hide(); }
+                else {
+                    $('#emptyTicketMsg').show();
+                    mobList.html('<div class="text-center text-muted small py-4">Ticket Vacío</div>');
+                }
 
                 data.items.forEach(item => {
+                    const totalItem = (item.precio * item.cantidad).toFixed(2);
+
+                    // PC
                     tbody.append(`
                         <tr>
                             <td><div class="fw-bold text-dark small">${item.nombre}</div><div class="text-muted" style="font-size:0.7rem">${item.productoId}</div></td>
                             <td class="text-end">$${item.precio.toFixed(2)}</td>
-                            <td>
-                                <div class="qty-control">
-                                    <button class="btn-qty" onclick="restarUnidad(${item.productoId})"><i class="bi bi-dash"></i></button>
-                                    <div class="qty-val">${item.cantidad}</div>
-                                    <button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button>
-                                </div>
-                            </td>
-                            <td class="text-end fw-bold">$${(item.precio * item.cantidad).toFixed(2)}</td>
+                            <td><div class="qty-control"><button class="btn-qty" onclick="restarUnidad(${item.productoId})"><i class="bi bi-dash"></i></button><div class="qty-val">${item.cantidad}</div><button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button></div></td>
+                            <td class="text-end fw-bold">$${totalItem}</td>
                             <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5" style="cursor:pointer" onclick="eliminarDelTicket(${item.productoId})"></i></td>
                         </tr>
                     `);
+
+                    // MÓVIL (Incrustado)
+                    mobList.append(`
+                        <div class="mt-item">
+                            <div class="mt-desc">
+                                <div class="fw-bold text-dark">${item.nombre}</div>
+                                <div class="text-muted" style="font-size:0.7rem">$${item.precio.toFixed(2)} c/u</div>
+                            </div>
+                            <div class="mt-qty-box">
+                                <div class="mt-btn" onclick="restarUnidad(${item.productoId})">-</div>
+                                <div>${item.cantidad}</div>
+                                <div class="mt-btn" onclick="agregarAlTicket(${item.productoId})">+</div>
+                            </div>
+                            <div class="mt-total">$${totalItem}</div>
+                        </div>
+                    `);
                 });
-                $('#mobileTicketContent').html($('.ticket-list-container').html());
                 recalcularTotalesVisuales();
             });
         }
@@ -763,7 +816,6 @@
         function eliminarDelTicket(id) { $.post('/Ventas/EliminarDelTicket', { id: id }, function() { cargarTicket(); }); }
         function limpiarTicket() { $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); }); }
         function asignarCliente() { Swal.fire({ title: 'Cliente', input: 'text', inputValue: clienteActual, showCancelButton: true }).then((r) => { if(r.isConfirmed) { clienteActual = r.value; Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1000}); } }); }
-        function verTicketMovil() { new bootstrap.Offcanvas(document.getElementById('offcanvasTicket')).show(); }
 
         function abrirModalCobro() {
             if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
@@ -788,9 +840,7 @@
             $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo, aplicaIVA: aplicaIVA }, function(res) {
                 if (res.success) {
                     Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
-                        limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty();
-                        // Limpiar móvil también
-                        $('#inputBusquedaMovil').val('');
+                        limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty(); $('#inputBusquedaMovil').val('');
                     });
                 } else { Swal.fire('Error', res.message, 'error'); }
             }).fail(function() { Swal.fire('Error', 'No se pudo conectar', 'error'); });
