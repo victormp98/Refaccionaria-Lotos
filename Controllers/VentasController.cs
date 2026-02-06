@@ -48,7 +48,7 @@ namespace RefaccionariaWeb.Controllers
             return Json(productos);
         }
 
-        // --- API INTERNA PARA EL TICKET (SIN RECARGAS) ---
+        // --- API INTERNA PARA EL TICKET ---
 
         [HttpPost]
         public async Task<JsonResult> AgregarAlTicket(int id)
@@ -108,9 +108,10 @@ namespace RefaccionariaWeb.Controllers
             return Json(new { success = true });
         }
 
+        // --- FINALIZAR VENTA (CORREGIDO PARA RECIBIR MÉTODO DE PAGO) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FinalizarVenta(string nombreCliente, string rfc = null)
+        public async Task<IActionResult> FinalizarVenta(string nombreCliente, string metodoPago, string rfc = null)
         {
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
 
@@ -127,10 +128,11 @@ namespace RefaccionariaWeb.Controllers
                 {
                     ClienteId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     FechaPedido = DateTime.Now,
-                    Status = PedidoStatus.Entregado, // Mostrador se entrega inmediato
+                    Status = PedidoStatus.Entregado, // Venta mostrador se considera entregada
                     TotalPedido = carrito.Sum(x => x.Cantidad * x.Precio),
                     NombreReceptor = nombreCliente ?? "Público General",
-                    DireccionEnvio = "Venta en Mostrador",
+                    // GUARDAMOS EL MÉTODO DE PAGO AQUÍ PARA REFERENCIA
+                    DireccionEnvio = "Mostrador - " + (metodoPago ?? "Efectivo"),
                     CiudadEnvio = "N/A",
                     EstadoEnvio = "N/A",
                     CodigoPostalEnvio = "00000",
@@ -142,15 +144,18 @@ namespace RefaccionariaWeb.Controllers
                 _context.Pedidos.Add(pedido);
                 await _context.SaveChangesAsync();
 
-                // 2. Detalles, Stock y BITÁCORA
+                // 2. Procesar Items
                 foreach (var item in carrito)
                 {
                     var producto = await _context.Productos.FindAsync(item.ProductoId);
+
+                    // Doble validación de stock antes de cerrar
                     if (producto == null || producto.Stock < item.Cantidad)
                         throw new Exception($"Stock insuficiente para {item.Nombre}");
 
                     // A) Restar Stock
                     producto.Stock -= item.Cantidad;
+                    _context.Update(producto);
 
                     // B) Crear Detalle
                     _context.DetallesPedido.Add(new DetallePedido
@@ -161,11 +166,11 @@ namespace RefaccionariaWeb.Controllers
                         PrecioUnitario = item.Precio
                     });
 
-                    // C) 🟢 REGISTRAR EN BITÁCORA (Salida por Venta) 🟢
+                    // C) REGISTRAR EN BITÁCORA
                     _context.MovimientosInventario.Add(new MovimientoInventario
                     {
                         ProductoId = item.ProductoId,
-                        TipoMovimiento = "Salida", // Texto simple como acordamos
+                        TipoMovimiento = "Salida Venta", // Identificador claro
                         Cantidad = item.Cantidad,
                         FechaRegistro = DateTime.Now,
                         UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier)
@@ -175,6 +180,7 @@ namespace RefaccionariaWeb.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                // 3. LIMPIAR EL CARRITO (CRÍTICO)
                 HttpContext.Session.Remove("Carrito");
 
                 return Json(new { success = true, pedidoId = pedido.Id });
