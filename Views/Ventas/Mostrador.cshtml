@@ -1,6 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Punto de Venta";
-    Layout = null; // Layout null para modo pantalla completa
+    Layout = null;
 }
 
 <!DOCTYPE html>
@@ -13,13 +13,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        /* --- VARIABLES --- */
         :root {
             --bg-app: #e5e7eb;
             --color-primary: #2563eb;
             --color-success: #16a34a;
             --color-danger: #dc2626;
             --color-dark: #1f2937;
+            --color-iva-on: #7c3aed; /* Color distintivo para IVA */
         }
 
         body {
@@ -31,7 +31,6 @@
             flex-direction: column;
         }
 
-        /* --- LAYOUT --- */
         .pos-wrapper {
             display: flex;
             height: 100%;
@@ -54,7 +53,6 @@
             box-shadow: -5px 0 15px rgba(0,0,0,0.05);
         }
 
-        /* --- BUSCADOR Y GRID --- */
         .search-area {
             margin-bottom: 15px;
         }
@@ -78,7 +76,6 @@
             padding-right: 5px;
         }
 
-        /* TARJETA PRODUCTO */
         .prod-card {
             background: white;
             border: 1px solid #ccc;
@@ -166,7 +163,6 @@
             border: 1px solid #ddd;
         }
 
-        /* --- TICKET --- */
         .ticket-header {
             background: var(--color-dark);
             color: white;
@@ -263,7 +259,6 @@
             align-items: center;
         }
 
-        /* --- BOTONERA --- */
         .action-panel {
             padding: 15px;
             background: white;
@@ -272,7 +267,7 @@
             grid-template-columns: 1fr 1fr 2fr;
             grid-template-rows: 1fr 1fr;
             gap: 10px;
-            height: 150px;
+            height: 160px;
         }
 
         .btn-big {
@@ -312,8 +307,17 @@
             background-color: #3b82f6;
         }
 
-        .btn-reprint {
-            background-color: #6b7280;
+        /* Estilos del Botón IVA */
+        .btn-iva-active {
+            background-color: var(--color-iva-on);
+            color: white;
+            border: 2px solid var(--color-iva-on);
+        }
+
+        .btn-iva-inactive {
+            background-color: white;
+            color: #9ca3af;
+            border: 2px solid #e5e7eb;
         }
 
         .btn-pay {
@@ -327,15 +331,6 @@
                 font-size: 2.5rem;
             }
 
-        .btn-iva-toggle {
-            cursor: pointer;
-            text-decoration: underline;
-            color: var(--color-primary);
-            font-size: 0.8rem;
-            margin-left: 5px;
-        }
-
-        /* --- MÓVIL --- */
         .mobile-header {
             display: none;
         }
@@ -416,7 +411,7 @@
 </head>
 <body>
 
-    @* --- HEADER MÓVIL FIJO --- *@
+    @* HEADER MÓVIL *@
     <div class="mobile-header">
         <button class="mh-btn-list" onclick="verTicketMovil()">
             <i class="bi bi-receipt"></i>
@@ -432,7 +427,7 @@
     </div>
 
     <div class="pos-wrapper">
-        @* --- IZQUIERDA: CATÁLOGO --- *@
+        @* IZQUIERDA: CATÁLOGO *@
         <div class="left-panel">
             <div class="search-area">
                 <div class="input-group">
@@ -450,7 +445,7 @@
             </div>
         </div>
 
-        @* --- DERECHA: TICKET --- *@
+        @* DERECHA: TICKET *@
         <div class="right-panel d-none d-lg-flex">
             <div class="ticket-header">
                 <div class="fw-bold"><i class="bi bi-cart3 me-2"></i>TICKET</div>
@@ -479,10 +474,7 @@
                     <span id="lblSubtotal">$0.00</span>
                 </div>
                 <div class="fin-row">
-                    <span>
-                        IVA (16%)
-                        <span class="btn-iva-toggle" onclick="toggleIVA()" id="txtIvaStatus">[Activo]</span>
-                    </span>
+                    <span>IVA (16%)</span>
                     <span id="lblIVA">$0.00</span>
                 </div>
                 <div class="fin-total">
@@ -495,14 +487,18 @@
                 <button class="btn-big btn-cancel" onclick="limpiarTicket()">
                     <i class="bi bi-trash3-fill"></i> Borrar
                 </button>
+
                 <button class="btn-big btn-client" onclick="asignarCliente()">
                     <i class="bi bi-person-fill"></i> Cliente
                 </button>
-                <button class="btn-big btn-discount" onclick="Swal.fire('Proximamente', 'Módulo de descuentos', 'info')">
+
+                <button class="btn-big btn-discount" onclick="Swal.fire('Proximamente', 'Descuentos', 'info')">
                     <i class="bi bi-percent"></i> Desc.
                 </button>
-                <button class="btn-big btn-reprint" onclick="Swal.fire('Proximamente', 'Reimpresión', 'info')">
-                    <i class="bi bi-printer"></i> Reprint
+
+                @* BOTÓN IVA NUEVO *@
+                <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()">
+                    <i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span>
                 </button>
 
                 <button class="btn-big btn-pay" onclick="abrirModalCobro()">
@@ -512,7 +508,7 @@
         </div>
     </div>
 
-    @* --- OFFCANVAS MÓVIL --- *@
+    @* OFFCANVAS MÓVIL *@
     <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasTicket" style="height: 80vh;">
         <div class="offcanvas-header bg-dark text-white">
             <h5 class="offcanvas-title">Ticket de Venta</h5>
@@ -531,7 +527,7 @@
         let debounceTimer;
         let clienteActual = "";
         let aplicaIVA = true;
-        let totalNumerico = 0; // Total real traído del backend
+        let totalBase = 0; // Total traído del backend (Suma de precios base)
 
         function playBeep() {
             try {
@@ -556,13 +552,45 @@
             });
         });
 
-        // Alternar IVA visualmente
+        // --- LÓGICA DE IVA MEJORADA ---
         function toggleIVA() {
             aplicaIVA = !aplicaIVA;
-            $('#txtIvaStatus').text(aplicaIVA ? '[Activo]' : '[Inactivo]');
+            const btn = $('#btnIVAToggle');
+            const txt = $('#txtBtnIva');
+
+            if (aplicaIVA) {
+                btn.removeClass('btn-iva-inactive').addClass('btn-iva-active');
+                txt.text('CON IVA');
+            } else {
+                btn.removeClass('btn-iva-active').addClass('btn-iva-inactive');
+                txt.text('SIN IVA');
+            }
             recalcularTotalesVisuales();
         }
 
+        function recalcularTotalesVisuales() {
+            // totalBase viene del backend (suma de los productos)
+            let subtotal = totalBase;
+            let iva = 0;
+            let totalFinal = totalBase;
+
+            if (aplicaIVA) {
+                // Si está activo, AGREGAMOS el 16% al total
+                iva = subtotal * 0.16;
+                totalFinal = subtotal + iva;
+            } else {
+                // Si está inactivo, cobramos solo el precio base
+                iva = 0;
+                totalFinal = subtotal;
+            }
+
+            $('#lblSubtotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#lblIVA').text('$' + iva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#lblTotal').text('$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#mobTotalDisplay').text('$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        }
+
+        // --- BUSCADOR ---
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer);
             const term = $(this).val();
@@ -610,8 +638,8 @@
                 const tbody = $('#tablaTicketBody');
                 tbody.empty();
 
-                // Guardamos total numérico para manipularlo con el IVA switch
-                totalNumerico = parseFloat(data.total.replace(/,/g, ''));
+                // Guardamos el total base para cálculos
+                totalBase = parseFloat(data.total.replace(/,/g, ''));
 
                 if(data.count > 0) { $('#mobBadge').text(data.count).show(); $('#emptyTicketMsg').hide(); }
                 else { $('#mobBadge').hide(); $('#emptyTicketMsg').show(); }
@@ -635,30 +663,8 @@
                 });
 
                 $('#mobileTicketContent').html($('.ticket-list-container').html());
-                recalcularTotalesVisuales();
+                recalcularTotalesVisuales(); // Se ejecuta siempre al cargar
             });
-        }
-
-        // Función para actualizar textos de dinero según el switch de IVA
-        function recalcularTotalesVisuales() {
-            let subtotal = 0;
-            let iva = 0;
-            let totalFinal = totalNumerico;
-
-            if (aplicaIVA) {
-                // Desglosamos: Precio trae IVA incluido
-                subtotal = totalNumerico / 1.16;
-                iva = totalNumerico - subtotal;
-            } else {
-                // Tasa 0: Todo es subtotal
-                subtotal = totalNumerico;
-                iva = 0;
-            }
-
-            $('#lblSubtotal').text('$' + subtotal.toFixed(2));
-            $('#lblIVA').text('$' + iva.toFixed(2));
-            $('#lblTotal').text('$' + totalFinal.toFixed(2));
-            $('#mobTotalDisplay').text('$' + totalFinal.toFixed(2));
         }
 
         function eliminarDelTicket(id) { $.post('/Ventas/EliminarDelTicket', { id: id }, function() { cargarTicket(); }); }
@@ -678,12 +684,14 @@
 
         // --- MENÚ DE COBRO (MODAL DE SELECCIÓN) ---
         function abrirModalCobro() {
-            if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
+            if (totalBase <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
 
             const textoCliente = clienteActual ? clienteActual : "Público General";
+            // Usamos el texto visual del Total (que ya incluye o no el IVA)
+            const montoPagar = $('#lblTotal').text();
 
             Swal.fire({
-                title: 'Total: $' + totalNumerico.toFixed(2),
+                title: 'Cobrar: ' + montoPagar,
                 html: `<p class="mb-3">Cliente: <strong>${textoCliente}</strong></p>
                        <div class="d-grid gap-3">
                            <button id="btnEfectivo" class="btn btn-lg btn-success py-3 fw-bold shadow"><i class="bi bi-cash-coin me-2"></i> EFECTIVO</button>
@@ -693,7 +701,6 @@
                 showCloseButton: true
             });
 
-            // Asignar eventos a los botones manuales del modal
             setTimeout(() => {
                 document.getElementById('btnEfectivo').onclick = function() { procesarVenta('Efectivo'); };
                 document.getElementById('btnTarjeta').onclick = function() { procesarVenta('Tarjeta'); };
@@ -704,7 +711,6 @@
             Swal.close();
             Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
-            // Enviamos el método de pago al controlador
             $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo }, function(res) {
                 if (res.success) {
                     Swal.fire({
@@ -725,7 +731,7 @@
                     Swal.fire('Error', res.message, 'error');
                 }
             }).fail(function() {
-                Swal.fire('Error de Conexión', 'No se pudo contactar con el servidor.', 'error');
+                Swal.fire('Error de Conexión', 'No se pudo conectar. Verifica que el [ValidateAntiForgeryToken] esté desactivado en el controlador.', 'error');
             });
         }
     </script>

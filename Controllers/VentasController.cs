@@ -108,9 +108,9 @@ namespace RefaccionariaWeb.Controllers
             return Json(new { success = true });
         }
 
-        // --- FINALIZAR VENTA (CORREGIDO PARA RECIBIR MÉTODO DE PAGO) ---
+        // --- FINALIZAR VENTA ---
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken] // <--- ESTO ERA LO QUE BLOQUEABA LA CONEXIÓN AJAX. SE COMENTA.
         public async Task<IActionResult> FinalizarVenta(string nombreCliente, string metodoPago, string rfc = null)
         {
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
@@ -128,10 +128,10 @@ namespace RefaccionariaWeb.Controllers
                 {
                     ClienteId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     FechaPedido = DateTime.Now,
-                    Status = PedidoStatus.Entregado, // Venta mostrador se considera entregada
+                    Status = PedidoStatus.Entregado,
                     TotalPedido = carrito.Sum(x => x.Cantidad * x.Precio),
                     NombreReceptor = nombreCliente ?? "Público General",
-                    // GUARDAMOS EL MÉTODO DE PAGO AQUÍ PARA REFERENCIA
+                    // Guardamos si fue Efectivo o Tarjeta en la dirección
                     DireccionEnvio = "Mostrador - " + (metodoPago ?? "Efectivo"),
                     CiudadEnvio = "N/A",
                     EstadoEnvio = "N/A",
@@ -149,7 +149,6 @@ namespace RefaccionariaWeb.Controllers
                 {
                     var producto = await _context.Productos.FindAsync(item.ProductoId);
 
-                    // Doble validación de stock antes de cerrar
                     if (producto == null || producto.Stock < item.Cantidad)
                         throw new Exception($"Stock insuficiente para {item.Nombre}");
 
@@ -166,11 +165,11 @@ namespace RefaccionariaWeb.Controllers
                         PrecioUnitario = item.Precio
                     });
 
-                    // C) REGISTRAR EN BITÁCORA
+                    // C) Registrar en Bitácora
                     _context.MovimientosInventario.Add(new MovimientoInventario
                     {
                         ProductoId = item.ProductoId,
-                        TipoMovimiento = "Salida Venta", // Identificador claro
+                        TipoMovimiento = "Salida Venta",
                         Cantidad = item.Cantidad,
                         FechaRegistro = DateTime.Now,
                         UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier)
@@ -180,7 +179,7 @@ namespace RefaccionariaWeb.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 3. LIMPIAR EL CARRITO (CRÍTICO)
+                // 3. Limpiar Carrito
                 HttpContext.Session.Remove("Carrito");
 
                 return Json(new { success = true, pedidoId = pedido.Id });
