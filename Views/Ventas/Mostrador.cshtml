@@ -1,249 +1,163 @@
 ﻿@{
-    ViewData["Title"] = "Punto de Venta";
+    ViewData["Title"] = "Terminal Punto de Venta";
 }
 
 <style>
-    /* --- VARIABLES --- */
+    /* --- VARIABLES & BASE --- */
     :root {
-        --pos-footer-height: 85px; /* Altura fija de la barra de botones */
-        --pos-bg: #f1f5f9;
-        --pos-dark: #1e293b;
+        --pos-bg: #f8fafc;
+        --pos-dark: #0f172a;
+        --pos-accent: #3b82f6;
+        --pos-success: #22c55e;
     }
 
-    body {
-        background-color: var(--pos-bg);
+    body { background-color: var(--pos-bg); }
+
+    /* ANIMACIÓN DE "AGREGADO" (PULSO VERDE) */
+    @keyframes pulse-green {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); border-color: var(--pos-success); }
+        50% { transform: scale(0.98); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); border-color: var(--pos-success); background-color: #dcfce7; }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
 
-    /* --- LAYOUT PRINCIPAL --- */
-    /* En PC, forzamos que no haya scroll en la ventana principal */
-    @@media (min-width: 992px) {
-        body {
-            overflow: hidden;
+    .item-added-anim {
+        animation: pulse-green 0.4s ease-out;
+    }
+
+    /* --- LAYOUT PC --- */
+    @media (min-width: 992px) {
+        body { overflow: hidden; }
+        .pos-container {
+            height: calc(100vh - 90px - 70px); /* Ajuste altura */
+            display: flex; gap: 20px; padding: 20px; padding-bottom: 0;
+        }
+        
+        .catalog-section {
+            flex: 65%;
+            background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        .pos-container {
-            /* Ocupamos toda la altura visible, restando el espacio del footer */
-            height: calc(100vh - var(--pos-footer-height) - 70px);
-            display: flex;
+        /* En PC usamos lista horizontal limpia */
+        .prod-card {
+            display: flex; align-items: center; padding: 12px;
+            border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s;
+        }
+        .prod-card:hover { background-color: #f8fafc; padding-left: 18px; }
+        .pc-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 15px; }
+        .pc-info { flex-grow: 1; }
+        .pc-price { font-size: 1.1rem; font-weight: 800; color: var(--pos-dark); }
+    }
+
+    /* --- LAYOUT MÓVIL (EL CAMBIO FUERTE) --- */
+    @media (max-width: 991.98px) {
+        .pos-container { display: block; padding: 15px; padding-bottom: 120px; }
+        .ticket-section { display: none; }
+        
+        .catalog-section { background: transparent; }
+        .catalog-header { background: transparent !important; border: none !important; padding: 0 !important; margin-bottom: 15px; }
+        
+        /* EN MÓVIL: GRILLA DE 2 COLUMNAS */
+        .catalog-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 Columnas */
             gap: 15px;
-            padding: 15px;
-            padding-bottom: 0; /* El footer está fijo, no necesitamos padding aquí */
+            overflow: visible !important;
         }
-    }
 
-    /* En MÓVIL, dejamos que fluya normal */
-    @@media (max-width: 991.98px) {
-        .pos-container {
-            display: block;
+        /* TARJETA MÓVIL (Card Vertical) */
+        .prod-card {
+            background: white;
+            border-radius: 15px;
             padding: 10px;
-            padding-bottom: 100px; /* Espacio vital para que el footer no tape el último producto */
+            display: flex;
+            flex-direction: column; /* Vertical */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid white;
+            transition: transform 0.1s;
+            height: 100%;
         }
-    }
+        .prod-card:active { transform: scale(0.95); }
 
-    /* --- CATÁLOGO (IZQUIERDA) --- */
-    .catalog-section {
-        flex: 65%;
-        background: white;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden; /* Importante */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .catalog-header {
-        padding: 15px;
-        background: white;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .catalog-body {
-        flex-grow: 1;
-        overflow-y: auto; /* Scroll interno */
-        padding: 10px;
-    }
-
-    /* Tarjeta Producto */
-    .prod-row {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #f1f5f9;
-        cursor: pointer;
-        transition: 0.1s;
-    }
-
-        .prod-row:hover {
-            background-color: #f8fafc;
+        .pc-img { 
+            width: 100%; height: 100px; /* Imagen grande arriba */
+            border-radius: 10px; object-fit: cover; margin-bottom: 10px;
+            background: #f1f5f9;
         }
-
-    .prod-img {
-        width: 45px;
-        height: 45px;
-        border-radius: 6px;
-        object-fit: cover;
-        background: #eee;
-        margin-right: 12px;
+        .pc-info { text-align: center; }
+        .pc-title { font-size: 0.85rem !important; margin-bottom: 5px; height: 2.4em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .pc-sku { display: none; } /* Ocultamos SKU en móvil para ahorrar espacio */
+        .pc-price { color: var(--pos-accent) !important; font-size: 1rem !important; }
+        .pc-stock { display: block; font-size: 0.7rem; color: #64748b; margin-top: 5px; }
     }
 
-    .prod-info {
-        flex-grow: 1;
-        min-width: 0;
-    }
+    /* --- ESTILOS COMUNES --- */
+    .catalog-header { padding: 15px; background: white; border-bottom: 1px solid #f1f5f9; }
+    .catalog-body { flex-grow: 1; overflow-y: auto; padding: 10px; }
 
-    .prod-title {
-        font-weight: 700;
-        font-size: 0.9rem;
-        color: #334155;
-        margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .prod-sku {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        font-weight: 600;
-    }
-
-    .prod-price {
-        font-weight: 800;
-        color: #0f172a;
-        font-size: 1rem;
-    }
-
-    /* --- TICKET (DERECHA) --- */
+    .pc-title { font-weight: 700; font-size: 0.95rem; color: #334155; margin: 0; }
+    .pc-sku { font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+    
+    /* TICKET (DERECHA PC) */
     .ticket-section {
-        flex: 35%;
-        background: white;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        flex: 35%; background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+        display: flex; flex-direction: column; overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
+    .ticket-header { background: var(--pos-dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .ticket-body { flex-grow: 1; overflow-y: auto; padding: 0; background: #f8fafc; }
+    .ticket-item { padding: 12px 15px; border-bottom: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; background: white; }
+    .ticket-footer-info { padding: 20px; background: white; border-top: 2px dashed #e2e8f0; }
 
-    .ticket-header {
-        background: #334155;
-        color: white;
-        padding: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .ticket-body {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 0;
-        background: #f8fafc;
-    }
-
-    .ticket-item {
-        padding: 10px 15px;
-        border-bottom: 1px dashed #cbd5e1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: white;
-    }
-
-    .ticket-footer-info {
-        padding: 15px;
-        background: white;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    /* --- BARRA DE COMANDOS (FIXED FOOTER - LA SOLUCIÓN) --- */
+    /* --- BARRA DE COMANDOS (FLOATING PILL) --- */
     .command-bar {
-        position: fixed; /* CLAVADO AL SUELO */
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: var(--pos-footer-height);
+        position: fixed; bottom: 20px; left: 20px; right: 20px;
+        height: 80px;
+        z-index: 9999;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* Contenedor Flotante Negro */
+    .cmd-container {
         background: var(--pos-dark);
-        z-index: 9999; /* ENCIMA DE TODO */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+        color: white;
+        width: 100%; height: 100%;
+        border-radius: 20px; /* Bordes muy redondos */
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 15px;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
     }
 
-    /* Botones de la barra */
     .btn-pos {
-        height: 55px;
-        border-radius: 8px;
-        font-weight: 700;
-        text-transform: uppercase;
-        border: none;
-        padding: 0 25px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: transform 0.1s;
+        height: 100%; border-radius: 12px; font-weight: 700; text-transform: uppercase; border: none; padding: 0 25px; display: flex; align-items: center; gap: 10px; transition: transform 0.1s;
     }
+    .btn-pos:active { transform: scale(0.95); }
+    
+    .btn-pay { background: var(--pos-success); color: white; font-size: 1.1rem; flex-grow: 1; justify-content: center; max-width: 400px; box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
+    .btn-cancel { background: rgba(255,255,255,0.1); color: #ef4444; width: 50px; padding: 0; justify-content: center; }
+    .btn-client { background: rgba(255,255,255,0.1); color: #3b82f6; width: 50px; padding: 0; justify-content: center; }
 
-        .btn-pos:active {
-            transform: scale(0.95);
-        }
-
-    .btn-pay {
-        background: #22c55e;
-        color: white;
-        font-size: 1.2rem;
-        flex-grow: 1;
-        justify-content: center;
-        max-width: 400px;
-    }
-
-    .btn-cancel {
-        background: #ef4444;
-        color: white;
-    }
-
-    .btn-client {
-        background: #3b82f6;
-        color: white;
-    }
-
-    /* RESPONSIVE */
-    @@media (max-width: 991.98px) {
-        .ticket-section {
-            display: none;
-        }
-        /* Ocultar ticket visual en móvil */
-        .btn-pay {
-            font-size: 1.1rem;
-        }
-
-        .command-bar {
-            padding: 10px;
-            height: 75px;
-        }
-        /* Un poco más delgada en móvil */
-        .btn-pos {
-            height: 45px;
-            padding: 0 15px;
-        }
+    /* Ajuste de barra flotante en móvil */
+    @media (max-width: 991.98px) {
+        .command-bar { bottom: 15px; left: 10px; right: 10px; height: 70px; }
+        .cmd-container { border-radius: 15px; padding: 8px; }
+        .btn-pay { font-size: 1rem; }
     }
 </style>
 
-@* --- ÁREA PRINCIPAL --- *@
 <div class="pos-container">
     @* IZQUIERDA: CATÁLOGO *@
     <div class="catalog-section">
         <div class="catalog-header">
             <div class="input-group">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" id="inputBusqueda" class="form-control border-start-0 ps-0" placeholder="Buscar producto (F2)..." autocomplete="off" autofocus>
+                <span class="input-group-text bg-white border-end-0 ps-3"><i class="bi bi-search text-primary"></i></span>
+                <input type="text" id="inputBusqueda" class="form-control border-start-0 ps-0 py-2 shadow-none" placeholder="Buscar producto..." autocomplete="off" autofocus>
                 <button class="btn btn-light border" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x"></i></button>
             </div>
         </div>
         <div id="contenedorResultados" class="catalog-body">
+            @* AQUI ENTRAN LOS PRODUCTOS *@
             <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
                 <i class="bi bi-upc-scan fs-1"></i>
                 <p class="mt-2 fw-bold">Listo para vender</p>
@@ -263,44 +177,73 @@
         <div class="ticket-footer-info">
             <div class="d-flex justify-content-between align-items-center">
                 <span class="text-muted">Total:</span>
-                <span class="fs-2 fw-bold text-dark" id="lblTotalDisplay">$0.00</span>
+                <span class="fs-1 fw-bold text-dark" id="lblTotalDisplay">$0.00</span>
             </div>
         </div>
     </div>
 </div>
 
-@* --- BARRA NEGRA INFERIOR (FIXED) --- *@
+@* --- BARRA FLOTANTE (ESTILO DINÁMICO) --- *@
 <div class="command-bar">
-    @* Izquierda: Cliente *@
-    <div class="d-flex align-items-center gap-2" style="flex: 1;">
-        <button class="btn-pos btn-cancel" onclick="limpiarTicket()" title="Borrar">
-            <i class="bi bi-trash3-fill"></i> <span class="d-none d-md-inline">Borrar</span>
-        </button>
-        <div class="input-group input-group-lg d-none d-md-flex" style="max-width: 300px;">
-            <span class="input-group-text bg-dark border-secondary text-white border-end-0"><i class="bi bi-person-fill"></i></span>
-            <input type="text" id="nombreCliente" class="form-control bg-dark border-secondary text-white border-start-0" placeholder="Cliente General">
-        </div>
-        <button class="btn-pos btn-client d-md-none" onclick="pedirClienteMovil()"><i class="bi bi-person-circle"></i></button>
-    </div>
+    <div class="cmd-container">
+        @* Botones Izquierda *@
+        <div class="d-flex gap-2 h-100">
+            <button class="btn-pos btn-cancel" onclick="limpiarTicket()" title="Borrar">
+                <i class="bi bi-trash3-fill fs-5"></i>
+            </button>
+            
+            <button class="btn-pos btn-client d-md-none" onclick="pedirClienteMovil()">
+                <i class="bi bi-person-circle fs-5"></i>
+            </button>
 
-    @* Derecha: Cobrar *@
-    <button class="btn-pos btn-pay shadow" onclick="finalizarVenta()">
-        <span>COBRAR</span>
-        <span class="bg-white text-success badge rounded-pill ms-2" id="btnTotal">$0.00</span>
-    </button>
+            <div class="input-group h-100 d-none d-md-flex" style="width: 250px;">
+                <span class="input-group-text bg-dark border-0 text-secondary"><i class="bi bi-person-fill"></i></span>
+                <input type="text" id="nombreCliente" class="form-control bg-dark border-0 text-white shadow-none" placeholder="Cliente General">
+            </div>
+        </div>
+
+        @* Botón Cobrar *@
+        <button class="btn-pos btn-pay" onclick="finalizarVenta()">
+            <span>COBRAR</span>
+            <span class="bg-white text-success badge rounded-pill ms-2" id="btnTotal">$0.00</span>
+        </button>
+    </div>
 </div>
 
 @section Scripts {
     <script>
         let debounceTimer;
+        // SONIDO BEEP (Base64 para no depender de archivos)
+        const beepAudio = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Placeholder simple, abajo pongo uno real corto
+        // Beep real corto en base64
+        const realBeep = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); 
+        // Mejor usamos un tono sintético del navegador si es posible, si no, visual.
+        
+        function playBeep() {
+            // Un beep corto y agudo usando AudioContext es más rápido y compatible
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    const ctx = new AudioContext();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 1200; // Tono agudo
+                    gain.gain.value = 0.1; // Volumen bajo
+                    osc.start();
+                    setTimeout(() => osc.stop(), 100); // Duración 100ms
+                }
+            } catch(e) { console.log("Audio no soportado"); }
+        }
 
         $(document).ready(function() {
             cargarTicket();
-
-            // Atajos
+            
             $(document).keydown(function(e) {
                 if(e.key === "F12") { e.preventDefault(); finalizarVenta(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
+                if(e.key === "Escape") { limpiarTicket(); }
             });
         });
 
@@ -313,11 +256,10 @@
             }).then((r) => { if(r.isConfirmed) $('#nombreCliente').val(r.value); });
         }
 
-        // --- BUSCADOR ---
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer);
             const term = $(this).val();
-
+            
             if (term.length < 2) {
                 if(term.length === 0) $('#contenedorResultados').html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50"><i class="bi bi-upc-scan fs-1"></i><p class="mt-2 fw-bold">Listo para vender</p></div>');
                 return;
@@ -335,23 +277,27 @@
             container.empty();
 
             if (productos.length === 0) {
-                container.append('<div class="text-center py-5 text-muted">Sin resultados</div>');
+                container.append('<div class="text-center py-5 text-muted">No encontrado</div>');
                 return;
             }
 
             productos.forEach(p => {
-                const stockColor = p.stock < 5 ? 'text-danger' : 'text-success';
+                const stockStyle = p.stock < 5 ? 'text-danger' : 'text-success';
+                
+                // ID único para la animación
+                const cardId = `prod-card-${p.id}`;
+
                 container.append(`
-                    <div class="prod-row" onclick="agregarAlTicket(${p.id})">
-                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img">
-                        <div class="prod-info">
-                            <div class="d-flex justify-content-between">
-                                <h6 class="prod-title">${p.nombre}</h6>
-                                <span class="prod-price">$${p.precioVenta.toFixed(2)}</span>
+                    <div id="${cardId}" class="prod-card" onclick="agregarAlTicket(${p.id})">
+                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="pc-img">
+                        <div class="pc-info">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="pc-title">${p.nombre}</h6>
+                                <span class="pc-price">$${p.precioVenta.toFixed(2)}</span>
                             </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="prod-sku">${p.sku}</span>
-                                <span class="${stockColor} small fw-bold">${p.stock} disp.</span>
+                            <div class="d-flex justify-content-between mt-1">
+                                <span class="pc-sku">${p.sku}</span>
+                                <span class="pc-stock ${stockStyle}">${p.stock} disp.</span>
                             </div>
                         </div>
                     </div>
@@ -361,11 +307,18 @@
 
         // --- TICKET ---
         function agregarAlTicket(id) {
+            // 1. Feedback Inmediato Visual (Antes de la respuesta del server)
+            const card = $(`#prod-card-${id}`);
+            card.addClass('item-added-anim');
+            setTimeout(() => card.removeClass('item-added-anim'), 400); // Quitar clase al terminar
+            
+            // 2. Feedback Sonoro
+            playBeep();
+
+            // 3. Petición
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
                 if (res.success) {
                     cargarTicket();
-                    const Toast = Swal.mixin({ toast: true, position: 'bottom-start', showConfirmButton: false, timer: 800 });
-                    Toast.fire({ icon: 'success', title: 'Agregado' });
                 } else {
                     Swal.fire({ icon: 'warning', text: res.message, toast: true, position: 'top' });
                 }
@@ -376,7 +329,7 @@
             $.get('/Ventas/ObtenerTicket', function(data) {
                 const lista = $('#listaTicket');
                 lista.empty();
-
+                
                 $('#lblTotalDisplay').text('$' + data.total);
                 $('#btnTotal').text('$' + data.total);
 
@@ -442,7 +395,6 @@
                                 cancelButtonText: 'Imprimir Ticket'
                             }).then((r) => {
                                 if (!r.isConfirmed) {
-                                    // Lógica imprimir ticket
                                     window.open('/Pedidos/Details/' + res.pedidoId, '_blank');
                                 }
                                 limpiarTicket();
