@@ -66,7 +66,6 @@
         color: #333;
     }
 
-    /* Botón flotante móvil */
     .btn-print-mob {
         position: absolute;
         top: 15px;
@@ -100,14 +99,16 @@
     @* ENCABEZADO *@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-           
-            <h4 class="fw-bold mb-0"><i class="bi bi-safe2 me-2"></i>Cortes de Caja</h4>
+            @* CORRECCIÓN DE COLOR: 
+               - Quitamos 'text-primary' (azul).
+               - Usamos 'text-body' para que herede el color normal (gris oscuro) igual que los demás títulos.
+            *@
+            <h4 class="fw-bold text-body mb-0"><i class="bi bi-safe2 me-2"></i>Cortes de Caja</h4>
             <span class="text-muted small">Historial y Auditoría de efectivo</span>
         </div>
 
-        @* CORRECCIÓN: Ahora abre la nueva vista limpia *@
         <a asp-action="ReporteGeneral" target="_blank" class="btn btn-outline-dark btn-sm">
-            <i class="bi bi-file-text me-1"></i> Imprimir Lista
+            <i class="bi bi-receipt me-1"></i> Imprimir Lista
         </a>
     </div>
 
@@ -216,7 +217,7 @@
                 @if (!abierta && Math.Abs(item.Diferencia) > 0.5m)
                 {
                     <div class="mt-2 text-center p-1 rounded bg-light fw-bold @(item.Diferencia < 0 ? "text-danger" : "text-success")">
-                        DIFERENCIA: $@item.Diferencia.ToString("N2")
+                        DIF: $@item.Diferencia.ToString("N2")
                     </div>
                 }
             </div>
