@@ -18,7 +18,7 @@ namespace RefaccionariaWeb.Controllers
         }
 
         // GET: /Cortes/Index (LISTA GENERAL)
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> ReporteGeneral()
         {
             var historial = await _context.CortesCaja
                 .Include(c => c.Usuario)

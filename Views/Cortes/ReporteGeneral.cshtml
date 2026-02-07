@@ -1,0 +1,165 @@
+﻿@model IEnumerable<RefaccionariaWeb.Models.CorteCaja>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Reporte General de Cortes</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .report-header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .report-title {
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        /* Tabla diseñada para tinta negra */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background-color: #f0f0f0 !important;
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            vertical-align: middle;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        /* Totales y Firmas */
+        .summary-box {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .summary-table {
+            width: 300px;
+            border: 2px solid #000;
+        }
+
+        .signatures {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .sig-line {
+            width: 200px;
+            border-top: 1px solid #000;
+            text-align: center;
+            font-size: 0.8rem;
+            padding-top: 5px;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print mb-4">
+        <button onclick="window.print()" class="btn btn-dark fw-bold">🖨️ Mandar a Impresora</button>
+        <button onclick="window.close()" class="btn btn-outline-secondary">Cerrar</button>
+    </div>
+
+    <div class="report-header">
+        <div class="report-title">Refaccionaria UT</div>
+        <div>REPORTE HISTÓRICO DE CORTES DE CAJA</div>
+        <small>Generado: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>FOLIO</th>
+                <th>FECHA</th>
+                <th>CAJERO</th>
+                <th>FONDO</th>
+                <th>VTA EFECTIVO</th>
+                <th>VTA TARJETA</th>
+                <th>TOTAL CAJÓN</th>
+                <th>DECLARADO</th>
+                <th>DIFERENCIA</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                bool abierta = item.FechaCierre == null;
+                <tr>
+                    <td class="text-center">#@item.Id</td>
+                    <td class="text-center">@item.FechaApertura.ToString("dd/MM/yy HH:mm")</td>
+                    <td>@(item.Usuario?.UserName ?? "---")</td>
+                    <td class="text-right">$@item.MontoInicial.ToString("N0")</td>
+                    <td class="text-right">$@item.TotalVentasEfectivo.ToString("N2")</td>
+                    <td class="text-right">$@item.TotalVentasTarjeta.ToString("N2")</td>
+                    <td class="text-right fw-bold">$@((item.MontoInicial + item.TotalVentasEfectivo).ToString("N2"))</td>
+                    <td class="text-right">@(abierta ? "---" : "$" + item.MontoDeclarado.ToString("N2"))</td>
+                    <td class="text-right fw-bold @(item.Diferencia < 0 ? "text-danger" : "")">
+                        @(abierta ? "..." : "$" + item.Diferencia.ToString("N2"))
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="summary-box">
+        <table class="summary-table">
+            <tr>
+                <td class="fw-bold bg-light">TOTAL VENTAS (Periodo)</td>
+                <td class="text-right fw-bold">$@Model.Sum(x => x.TotalVentasEfectivo + x.TotalVentasTarjeta).ToString("N2")</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="signatures">
+        <div class="sig-line">FIRMA ADMINISTRADOR</div>
+        <div class="sig-line">FIRMA AUDITOR</div>
+    </div>
+
+</body>
+</html>

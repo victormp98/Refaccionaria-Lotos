@@ -5,7 +5,7 @@
 }
 
 <style>
-    /* ESTILOS ESPECÍFICOS */
+    /* ESTILOS PANTALLA */
     .card-dashboard {
         border: none;
         border-radius: 12px;
@@ -22,7 +22,7 @@
         color: #6c757d;
     }
 
-    /* ESTILOS MÓVIL (TARJETAS) */
+    /* ESTILOS MÓVIL */
     .mobile-card {
         background: white;
         border-radius: 10px;
@@ -66,13 +66,14 @@
         color: #333;
     }
 
+    /* Botón flotante móvil */
     .btn-print-mob {
         position: absolute;
         top: 15px;
         right: 15px;
     }
 
-    /* MEDIA QUERIES */
+    /* Control de Vistas */
     @@media (max-width: 768px) {
         .desktop-view {
             display: none;
@@ -99,17 +100,18 @@
     @* ENCABEZADO *@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold text-dark mb-0"><i class="bi bi-safe2 me-2 text-primary"></i>Cortes de Caja</h4>
+           
+            <h4 class="fw-bold mb-0"><i class="bi bi-safe2 me-2"></i>Cortes de Caja</h4>
             <span class="text-muted small">Historial y Auditoría de efectivo</span>
         </div>
 
-        @* BOTÓN 1: REPORTE GENERAL (IMPRIME LA TABLA ACTUAL) *@
-        <button class="btn btn-outline-dark btn-sm" onclick="window.print()">
-            <i class="bi bi-list-task me-1"></i> Imprimir Lista
-        </button>
+        @* CORRECCIÓN: Ahora abre la nueva vista limpia *@
+        <a asp-action="ReporteGeneral" target="_blank" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-file-text me-1"></i> Imprimir Lista
+        </a>
     </div>
 
-    @* --- VISTA ESCRITORIO (TABLA) --- *@
+    @* --- VISTA ESCRITORIO --- *@
     <div class="desktop-view">
         <div class="card card-dashboard">
             <div class="table-responsive">
@@ -124,7 +126,7 @@
                             <th class="text-end text-primary">Declarado</th>
                             <th class="text-center">Diferencia</th>
                             <th class="text-center">Estado</th>
-                            <th class="text-center">Acción</th> @* NUEVA COLUMNA *@
+                            <th class="text-center">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -157,8 +159,6 @@
                                     @(abierta ? "..." : "$" + item.Diferencia.ToString("N2"))
                                 </td>
                                 <td class="text-center">@Html.Raw(badgeHtml)</td>
-
-                                @* BOTÓN 2: IMPRESIÓN INDIVIDUAL *@
                                 <td class="text-center">
                                     @if (!abierta)
                                     {
@@ -175,20 +175,17 @@
         </div>
     </div>
 
-    @* --- VISTA MÓVIL (TARJETAS) --- *@
+    @* --- VISTA MÓVIL --- *@
     <div class="mobile-view">
         @foreach (var item in Model)
         {
             bool abierta = item.FechaCierre == null;
             string statusClass = "status-ok";
-            string statusText = "CUADRADO";
-
-            if (abierta) { statusClass = "status-open"; statusText = "EN CURSO"; }
-            else if (item.Diferencia < -5) { statusClass = "status-danger"; statusText = "FALTANTE"; }
-            else if (item.Diferencia > 5) { statusClass = "status-warn"; statusText = "SOBRANTE"; }
+            if (abierta) { statusClass = "status-open"; }
+            else if (item.Diferencia < -5) { statusClass = "status-danger"; }
+            else if (item.Diferencia > 5) { statusClass = "status-warn"; }
 
             <div class="mobile-card @statusClass">
-                @* Botón Flotante para Imprimir Ticket en Móvil *@
                 @if (!abierta)
                 {
                     <a asp-action="Imprimir" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-light border shadow-sm btn-print-mob text-primary">
@@ -197,7 +194,6 @@
                 }
 
                 <div class="mb-2 pb-2 border-bottom pe-5">
-                    @* Padding right para no encimar con botón *@
                     <div class="fw-bold text-dark">#@item.Id - @(item.Usuario?.UserName ?? "Cajero")</div>
                     <div class="small text-muted">@item.FechaApertura.ToString("dd MMM - HH:mm")</div>
                 </div>
@@ -228,7 +224,7 @@
 
         @if (!Model.Any())
         {
-            <div class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>No hay cortes registrados.</div>
+            <div class="text-center py-5 text-muted">No hay cortes registrados.</div>
         }
     </div>
 </div>
