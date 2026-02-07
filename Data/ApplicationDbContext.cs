@@ -14,6 +14,7 @@ namespace RefaccionariaWeb.Data
         public DbSet<Scrap> Scraps { get; set; }
         public DbSet<MovimientoInventario> MovimientosInventario { get; set; }
         public DbSet<RefaccionariaWeb.Models.SucursalConfig> SucursalConfigs { get; set; }
+        public DbSet<CorteCaja> CortesCaja { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +27,7 @@ namespace RefaccionariaWeb.Data
             modelBuilder.Entity<DetallePedido>().ToTable("detallespedido");
             modelBuilder.Entity<Scrap>().ToTable("scraps");
             modelBuilder.Entity<MovimientoInventario>().ToTable("MovimientosInventario");
+
         }
     }
 }

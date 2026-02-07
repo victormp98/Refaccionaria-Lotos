@@ -1,6 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Punto de Venta";
     Layout = null;
+    
+    // --- LÓGICA DE SEGURIDAD RECIBIDA DEL CONTROLADOR ---
+    // Si es 0, bloqueamos la pantalla. Si tiene número, dejamos vender.
+    int cajaId = ViewBag.CajaAbiertaId != null ? (int)ViewBag.CajaAbiertaId : 0;
 }
 
 <!DOCTYPE html>
@@ -30,579 +34,160 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
         }
 
-        /* ================= ESTILOS PC (Escritorio - INTOCABLES) ================= */
-        .pos-wrapper {
-            display: flex;
-            height: 100%;
-            width: 100%;
-        }
+        /* ================= ESTILOS PC ================= */
+        .pos-wrapper { display: flex; height: 100%; width: 100%; }
+        .left-panel { flex: 60%; display: flex; flex-direction: column; padding: 15px; border-right: 1px solid #ccc; }
+        .right-panel { flex: 40%; background: #fff; display: flex; flex-direction: column; box-shadow: -5px 0 15px rgba(0,0,0,0.05); }
 
-        .left-panel {
-            flex: 60%;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            border-right: 1px solid #ccc;
-        }
+        .search-area { margin-bottom: 15px; }
+        .search-input { height: 60px; font-size: 1.5rem; font-weight: bold; border: 2px solid var(--color-primary); border-radius: 4px; box-shadow: none !important; }
 
-        .right-panel {
-            flex: 40%;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
-        }
-
-        .search-area {
-            margin-bottom: 15px;
-        }
-
-        .search-input {
-            height: 60px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border: 2px solid var(--color-primary);
-            border-radius: 4px;
-            box-shadow: none !important;
-        }
-
-        .products-grid {
-            flex-grow: 1;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-            align-content: start;
-            padding-right: 5px;
-        }
+        .products-grid { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; align-content: start; padding-right: 5px; }
 
         /* Card PC */
-        .prod-card {
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px;
-            cursor: pointer;
-            transition: all 0.1s;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
+        .prod-card { background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; cursor: pointer; transition: all 0.1s; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
+        .prod-card:active { transform: scale(0.95); border-color: var(--color-success); }
+        .prod-card:hover { border-color: var(--color-primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .prod-img { width: 100%; height: 100px; object-fit: cover; background: #f3f4f6; margin-bottom: 8px; border-radius: 2px; }
+        .prod-name { font-size: 0.85rem; font-weight: 700; line-height: 1.2; margin-bottom: 5px; color: var(--color-dark); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.4em; }
+        .prod-price { font-size: 1.1rem; font-weight: 900; color: var(--color-success); text-align: right; margin-top: auto; }
 
-            .prod-card:active {
-                transform: scale(0.95);
-                border-color: var(--color-success);
-            }
+        /* TICKET PC */
+        .ticket-header { background: var(--color-dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .ticket-list-container { flex-grow: 1; overflow-y: auto; background: #f9fafb; }
+        .t-table { width: 100%; border-collapse: collapse; }
+        .t-table th { background: #e5e7eb; position: sticky; top: 0; padding: 8px; font-size: 0.75rem; text-transform: uppercase; text-align: left; color: #374151; border-bottom: 1px solid #d1d5db; }
+        .t-table td { padding: 10px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
+        .qty-control { display: flex; align-items: center; gap: 5px; border: 1px solid #d1d5db; border-radius: 4px; background: white; width: fit-content; }
+        .btn-qty { border: none; background: transparent; color: var(--color-primary); font-weight: bold; padding: 2px 8px; cursor: pointer; }
+        .qty-val { font-weight: bold; font-size: 0.9rem; width: 20px; text-align: center; }
 
-            .prod-card:hover {
-                border-color: var(--color-primary);
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
+        .financial-summary { background: #f3f4f6; padding: 15px 20px; border-top: 2px solid #d1d5db; }
+        .fin-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; color: #4b5563; }
+        .fin-total { display: flex; justify-content: space-between; margin-top: 10px; font-size: 1.8rem; font-weight: 900; color: var(--color-dark); align-items: center; }
 
-        .flash-anim {
-            animation: flash-green 0.3s ease-out;
-        }
+        .action-panel { padding: 15px; background: white; border-top: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; height: 160px; }
+        .btn-big { border: none; border-radius: 4px; font-weight: 700; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; color: white; font-size: 0.8rem; }
+        .btn-big i { font-size: 1.5rem; margin-bottom: 5px; }
+        .btn-big:active { filter: brightness(0.9); transform: translateY(2px); }
+        
+        .btn-cancel { background-color: var(--color-danger); }
+        .btn-client { background-color: #3b82f6; }
+        .btn-iva-active { background-color: var(--color-iva-on); color: white; border: 2px solid var(--color-iva-on); }
+        .btn-iva-inactive { background-color: white; color: #9ca3af; border: 2px solid #e5e7eb; }
+        .btn-pay { background-color: var(--color-success); grid-column: 3; grid-row: 1 / span 2; font-size: 1.5rem; }
+        .btn-cut { background-color: #6b7280; } /* Botón Corte PC */
 
-        @@keyframes flash-green {
-            0% {
-                background-color: rgba(34, 197, 94, 0.5);
-            }
-
-            100% {
-                background-color: white;
-            }
-        }
-
-        .prod-img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            background: #f3f4f6;
-            margin-bottom: 8px;
-            border-radius: 2px;
-        }
-
-        .prod-sku {
-            font-size: 0.7rem;
-            color: #6b7280;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .prod-name {
-            font-size: 0.85rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 5px;
-            color: var(--color-dark);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            height: 2.4em;
-        }
-
-        .prod-price {
-            font-size: 1.1rem;
-            font-weight: 900;
-            color: var(--color-success);
-            text-align: right;
-            margin-top: auto;
-        }
-
-        .prod-stock {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255,255,255,0.9);
-            padding: 2px 5px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            border-radius: 2px;
-            border: 1px solid #ddd;
-        }
-
-        .ticket-header {
-            background: var(--color-dark);
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .ticket-list-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            background: #f9fafb;
-        }
-
-        .t-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-            .t-table th {
-                background: #e5e7eb;
-                position: sticky;
-                top: 0;
-                padding: 8px;
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                text-align: left;
-                color: #374151;
-                border-bottom: 1px solid #d1d5db;
-            }
-
-            .t-table td {
-                padding: 10px 8px;
-                border-bottom: 1px solid #e5e7eb;
-                vertical-align: middle;
-            }
-
-        .qty-control {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            background: white;
-            width: fit-content;
-        }
-
-        .btn-qty {
-            border: none;
-            background: transparent;
-            color: var(--color-primary);
-            font-weight: bold;
-            padding: 2px 8px;
-            cursor: pointer;
-        }
-
-        .qty-val {
-            font-weight: bold;
-            font-size: 0.9rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        .financial-summary {
-            background: #f3f4f6;
-            padding: 15px 20px;
-            border-top: 2px solid #d1d5db;
-        }
-
-        .fin-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: #4b5563;
-        }
-
-        .fin-total {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--color-dark);
-            align-items: center;
-        }
-
-        .action-panel {
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #e5e7eb;
-            display: grid;
-            grid-template-columns: 1fr 1fr 2fr;
-            grid-template-rows: 1fr 1fr;
-            gap: 10px;
-            height: 160px;
-        }
-
-        .btn-big {
-            border: none;
-            border-radius: 4px;
-            font-weight: 700;
-            text-transform: uppercase;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.1s;
-            color: white;
-            font-size: 0.8rem;
-        }
-
-            .btn-big i {
-                font-size: 1.5rem;
-                margin-bottom: 5px;
-            }
-
-            .btn-big:active {
-                filter: brightness(0.9);
-                transform: translateY(2px);
-            }
-
-        .btn-cancel {
-            background-color: var(--color-danger);
-        }
-
-        .btn-discount {
-            background-color: #f59e0b;
-        }
-
-        .btn-client {
-            background-color: #3b82f6;
-        }
-
-        .btn-reprint {
-            background-color: #6b7280;
-        }
-
-        .btn-iva-active {
-            background-color: var(--color-iva-on);
-            color: white;
-            border: 2px solid var(--color-iva-on);
-        }
-
-        .btn-iva-inactive {
-            background-color: white;
-            color: #9ca3af;
-            border: 2px solid #e5e7eb;
-        }
-
-        .btn-pay {
-            background-color: var(--color-success);
-            grid-column: 3;
-            grid-row: 1 / span 2;
-            font-size: 1.5rem;
-        }
-
-            .btn-pay i {
-                font-size: 2.5rem;
-            }
-
-        .mobile-search-bar, .mobile-ticket-inline, .mobile-sidebar {
-            display: none;
-        }
+        .mobile-search-bar, .mobile-ticket-inline, .mobile-sidebar { display: none; }
 
         /* ================= ESTILOS MÓVIL (MANDO VERTICAL AJUSTADO) ================= */
         @@media (max-width: 991.98px) {
-            body {
-                background: #f3f4f6;
-                padding: 0;
-            }
+            body { background: #f3f4f6; padding: 0; }
+            .pos-wrapper { display: grid; grid-template-columns: 1fr 110px; height: 100vh; overflow: hidden; }
 
-            .pos-wrapper {
-                display: grid;
-                grid-template-columns: 1fr 110px; /* Panel 1fr | Barra 110px */
-                height: 100vh;
-                overflow: hidden;
-            }
-            /* --- COLUMNA IZQUIERDA (FLEX VERTICAL PARA IMÁN) --- */
-            .left-panel {
-                display: flex;
-                flex-direction: column;
-                padding: 0;
-                border: none;
-                border-right: 2px solid #ccc;
-                overflow: hidden;
-                background: white;
-                height: 100%;
-            }
+            /* Panel Izquierdo */
+            .left-panel { display: flex; flex-direction: column; padding: 0; border: none; border-right: 2px solid #ccc; overflow: hidden; background: white; height: 100%; }
+            .left-panel .search-area { display: none; } 
+            
+            .mobile-search-bar { display: flex; align-items: center; padding: 10px; background: white; border-bottom: 1px solid #ddd; height: 60px; flex-shrink: 0; }
+            .mobile-input { width: 100%; height: 40px; border-radius: 8px; border: 1px solid #ccc; padding-left: 10px; font-weight: bold; background: #f9fafb; }
 
-                .left-panel .search-area {
-                    display: none;
-                }
-            /* 1. BUSCADOR */
-            .mobile-search-bar {
-                display: flex;
-                align-items: center;
-                padding: 10px;
-                background: white;
-                border-bottom: 1px solid #ddd;
-                height: 60px;
-                flex-shrink: 0;
-            }
+            /* Lista de Productos (Aplastada y Ocultable) */
+            .products-grid { padding: 0 !important; display: none; background: white; overflow-y: auto; flex: 0 1 auto; max-height: 55vh; border-bottom: 1px solid #374151; grid-template-columns: 1fr !important; }
+            
+            .prod-card { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; height: auto !important; min-height: 50px !important; margin: 0 !important; padding: 8px 10px !important; border: none !important; border-bottom: 1px solid #eee !important; border-radius: 0 !important; box-shadow: none !important; background: white !important; }
+            .prod-card:active { background: #e0f2fe !important; }
+            .prod-img { width: 50px !important; height: 50px !important; border-radius: 4px !important; margin: 0 10px 0 0 !important; object-fit: cover !important; }
+            .prod-name { flex-grow: 1; font-size: 0.85rem !important; font-weight: 500 !important; margin: 0 !important; text-align: left !important; height: auto !important; -webkit-line-clamp: 2; color: #333; line-height: 1.2 !important; }
+            .prod-price { font-size: 1rem !important; margin: 0 !important; min-width: 75px !important; text-align: right !important; color: var(--color-success) !important; font-weight: 700 !important; }
 
-            .mobile-input {
-                width: 100%;
-                height: 40px;
-                border-radius: 8px;
-                border: 1px solid #ccc;
-                padding-left: 10px;
-                font-weight: bold;
-                background: #f9fafb;
-            }
-            /* 2. LISTA RESULTADOS (FLEX 0: Solo ocupa lo que necesita) */
-            .products-grid {
-                padding: 0 !important;
-                display: none;
-                background: white;
-                overflow-y: auto;
-                /* CLAVE DEL IMÁN: No crecer, solo encogerse si es necesario, base auto */
-                flex: 0 1 auto;
-                max-height: 55vh;
-                border-bottom: 1px solid #374151;
-                grid-template-columns: 1fr !important;
-            }
-            /* Tarjeta Aplastada (Renglón) */
-            .prod-card {
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: flex-start !important;
-                height: auto !important;
-                min-height: 50px !important;
-                margin: 0 !important;
-                padding: 8px 10px !important;
-                border: none !important;
-                border-bottom: 1px solid #eee !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                background: white !important;
-            }
+            /* Ticket Imán */
+            .mobile-ticket-inline { display: flex; flex-direction: column; background: #f9fafb; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+            .m-ticket-header { background: #374151; color: white; padding: 8px 10px; font-size: 0.85rem; font-weight: bold; display: flex; justify-content: space-between; flex-shrink: 0; }
+            .m-ticket-body { flex: 1; overflow-y: auto; padding: 0; }
+            
+            .mt-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding: 10px; font-size: 0.85rem; background: white; }
+            .mt-desc { flex-grow: 1; line-height: 1.1; padding-right: 10px; }
+            .mt-qty-box { display: flex; align-items: center; gap: 8px; margin-right: 10px; }
+            .mt-btn { width: 28px; height: 28px; background: #f3f4f6; border: 1px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--color-primary); }
+            .mt-total { font-weight: bold; min-width: 60px; text-align: right; font-size: 0.95rem; }
 
-                .prod-card:active {
-                    background: #e0f2fe !important;
-                }
+            /* Barra Lateral Vertical (Fila India) */
+            .right-panel { display: none !important; }
+            .mobile-sidebar { display: flex; flex-direction: column; background: var(--color-dark); padding: 8px; gap: 8px; align-items: center; box-shadow: -2px 0 10px rgba(0,0,0,0.3); z-index: 100; overflow-y: auto; justify-content: flex-start; }
+            
+            .btn-mob { width: 100%; height: 55px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; flex-shrink: 0; }
+            .btn-mob i { font-size: 1.4rem; margin-bottom: 2px; }
+            .btn-mob:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
-            .prod-img {
-                width: 50px !important;
-                height: 50px !important;
-                border-radius: 4px !important;
-                margin: 0 10px 0 0 !important;
-                object-fit: cover !important;
-            }
-
-            .prod-name {
-                flex-grow: 1;
-                font-size: 0.85rem !important;
-                font-weight: 500 !important;
-                margin: 0 !important;
-                text-align: left !important;
-                height: auto !important;
-                -webkit-line-clamp: 2;
-                color: #333;
-                line-height: 1.2 !important;
-            }
-
-            .prod-sku, .prod-stock {
-                display: none !important;
-            }
-
-            .prod-price {
-                font-size: 1rem !important;
-                margin: 0 !important;
-                min-width: 75px !important;
-                text-align: right !important;
-                color: var(--color-success) !important;
-                font-weight: 700 !important;
-            }
-            /* 3. TICKET (FLEX 1: Ocupa todo el resto del espacio) */
-            .mobile-ticket-inline {
-                display: flex;
-                flex-direction: column;
-                background: #f9fafb;
-                /* CLAVE DEL IMÁN: Crecer para llenar todo el hueco */
-                flex: 1 1 auto;
-                min-height: 0;
-                overflow: hidden;
-            }
-
-            .m-ticket-header {
-                background: #374151;
-                color: white;
-                padding: 8px 10px;
-                font-size: 0.85rem;
-                font-weight: bold;
-                display: flex;
-                justify-content: space-between;
-                flex-shrink: 0;
-            }
-
-            .m-ticket-body {
-                flex: 1;
-                overflow-y: auto;
-                padding: 0;
-            }
-
-            .mt-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 1px solid #e5e7eb;
-                padding: 10px;
-                font-size: 0.85rem;
-                background: white;
-            }
-
-            .mt-desc {
-                flex-grow: 1;
-                line-height: 1.1;
-                padding-right: 10px;
-            }
-
-            .mt-qty-box {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-right: 10px;
-            }
-
-            .mt-btn {
-                width: 28px;
-                height: 28px;
-                background: #f3f4f6;
-                border: 1px solid #ccc;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                color: var(--color-primary);
-            }
-
-            .mt-total {
-                font-weight: bold;
-                min-width: 60px;
-                text-align: right;
-                font-size: 0.95rem;
-            }
-            /* --- BARRA LATERAL DERECHA --- */
-            .right-panel {
-                display: none !important;
-            }
-
-            .mobile-sidebar {
-                display: flex;
-                flex-direction: column;
-                background: var(--color-dark);
-                padding: 8px;
-                gap: 8px;
-                align-items: center;
-                box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-                z-index: 100;
-                overflow-y: auto;
-                /* Justify Start: Todo pegado arriba */
-                justify-content: flex-start;
-            }
-
-            .btn-mob {
-                width: 100%;
-                height: 55px;
-                border-radius: 10px;
-                border: none;
-                background: rgba(255,255,255,0.1);
-                color: white;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.65rem;
-                font-weight: bold;
-                flex-shrink: 0;
-            }
-
-                .btn-mob i {
-                    font-size: 1.4rem;
-                    margin-bottom: 2px;
-                }
-
-                .btn-mob:active {
-                    background: rgba(255,255,255,0.3);
-                    transform: scale(0.95);
-                }
-
-            .mob-del {
-                background: var(--color-danger);
-            }
-
-            .mob-iva-on {
-                background: var(--color-iva-on);
-                border: 1px solid white;
-            }
-
-            .mob-client {
-                background: var(--color-primary);
-            }
-
-            .mob-print {
-                background: #6b7280;
-            }
-
-            .mob-back {
-                background: #4b5563;
-                text-decoration: none;
-            }
-            /* COBRAR (Sin margin-top auto, pegado al anterior) */
-            .mob-pay {
-                background: var(--color-success);
-                color: white;
-                height: 80px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            }
+            .mob-del { background: var(--color-danger); }
+            .mob-iva-on { background: var(--color-iva-on); border: 1px solid white; }
+            .mob-client { background: var(--color-primary); }
+            .mob-cut { background: #4b5563; } /* Color Gris Oscuro para Corte */
+            .mob-pay { background: var(--color-success); color: white; height: 80px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+            .mob-back { background: #4b5563; text-decoration: none; }
         }
     </style>
 </head>
 <body>
+
+    @* --- [NUEVO] MODAL DE APERTURA (BLOQUEANTE) --- *@
+    <div class="modal fade" id="modalApertura" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-box-seam me-2"></i>APERTURA DE CAJA</h5>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-muted mb-3">Tu turno está cerrado. Ingresa el fondo inicial para comenzar.</p>
+                    <div class="form-floating mb-3">
+                        <input type="number" class="form-control fs-1 fw-bold text-center text-primary" id="txtFondoInicial" placeholder="0.00" value="500">
+                        <label>Fondo Inicial ($)</label>
+                    </div>
+                    <button class="btn btn-primary btn-lg w-100 py-3 fw-bold" onclick="abrirCaja()">
+                        <i class="bi bi-check-circle-fill me-2"></i> ABRIR CAJA
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* --- [NUEVO] MODAL DE CIERRE/CORTE --- *@
+    <div class="modal fade" id="modalCorte" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold">CORTE DE CAJA (CIERRE)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="p-3 bg-light border-bottom">
+                        <div class="d-flex justify-content-between mb-2"><span>Fondo Inicial:</span><strong id="lblCorteInicio">$0.00</strong></div>
+                        <div class="d-flex justify-content-between mb-2"><span>Ventas Efectivo:</span><strong class="text-success" id="lblCorteEfectivo">$0.00</strong></div>
+                        <div class="d-flex justify-content-between mb-2"><span>Ventas Tarjeta:</span><strong class="text-primary" id="lblCorteTarjeta">$0.00</strong></div>
+                        <hr>
+                        <div class="d-flex justify-content-between fs-5 fw-bold"><span>DEBE HABER (Efectivo):</span><span id="lblCorteEsperado">$0.00</span></div>
+                    </div>
+                    <div class="p-4">
+                        <label class="form-label fw-bold text-muted small">EFECTIVO CONTADO (REAL)</label>
+                        <input type="number" class="form-control fs-1 fw-bold text-center border-2 border-dark mb-3" id="txtMontoDeclarado" placeholder="0.00">
+                        <button class="btn btn-danger btn-lg w-100 py-3 fw-bold" onclick="cerrarCaja()">
+                            <i class="bi bi-lock-fill me-2"></i> CERRAR TURNO
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @* --- ESTRUCTURA --- *@
     <div class="pos-wrapper">
 
         @* --- ZONA IZQUIERDA --- *@
         <div class="left-panel">
-
-            @* PC: Buscador *@
             <div class="search-area d-none d-lg-block">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-2 border-primary border-end-0"><i class="bi bi-search fs-4 text-primary"></i></span>
@@ -611,12 +196,10 @@
                 </div>
             </div>
 
-            @* MÓVIL: Buscador *@
             <div class="mobile-search-bar">
                 <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off">
             </div>
 
-            @* 2. LISTA RESULTADOS *@
             <div id="contenedorResultados" class="products-grid">
                 <div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
                     <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
@@ -624,7 +207,6 @@
                 </div>
             </div>
 
-            @* 3. TICKET INCRUSTADO (Imán) *@
             <div class="mobile-ticket-inline">
                 <div class="m-ticket-header">
                     <span>TICKET ACTUAL</span>
@@ -639,7 +221,7 @@
         @* --- ZONA DERECHA (PC) --- *@
         <div class="right-panel d-none d-lg-flex">
             <div class="ticket-header">
-                <div class="fw-bold"><i class="bi bi-cart3 me-2"></i>TICKET</div>
+                <div class="fw-bold"><i class="bi bi-cart3 me-2"></i> TICKET (Caja #@cajaId)</div>
                 <div class="small opacity-75">@User.Identity.Name</div>
             </div>
             <div class="ticket-list-container">
@@ -657,45 +239,41 @@
             <div class="action-panel">
                 <button class="btn-big btn-cancel" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i> Borrar</button>
                 <button class="btn-big btn-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i> Cliente</button>
-                <button class="btn-big btn-discount" onclick="Swal.fire('Tip', 'Próximamente', 'info')"><i class="bi bi-percent"></i> Desc.</button>
+                @* BOTÓN CORTE PC (NUEVO) *@
+                <button class="btn-big btn-cut" onclick="prepararCorte()"><i class="bi bi-calculator"></i> CORTE</button>
                 <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()"><i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span></button>
                 <button class="btn-big btn-pay" onclick="abrirModalCobro()"><i class="bi bi-cash-stack"></i> COBRAR</button>
             </div>
         </div>
 
-        @* MÓVIL: Barra Lateral (Fila India) *@
+        @* MÓVIL: Barra Lateral *@
         <div class="mobile-sidebar">
-            @* 0. SALIR (NUEVO) *@
             <a href="/Home/Index" class="btn-mob mob-back">
                 <i class="bi bi-box-arrow-left"></i>
                 <span>SALIR</span>
             </a>
 
-            @* 1. Cliente *@
             <button class="btn-mob mob-client" onclick="asignarCliente()">
                 <i class="bi bi-person-fill"></i>
                 <span>CTE</span>
             </button>
 
-            @* 2. IVA *@
             <button id="btnMobIva" class="btn-mob mob-iva-on" onclick="toggleIVA()">
                 <i class="bi bi-percent"></i>
                 <span id="txtMobIva">CON IVA</span>
             </button>
 
-            @* 3. Borrar *@
             <button class="btn-mob mob-del" onclick="limpiarTicket()">
                 <i class="bi bi-trash3"></i>
                 <span>BORRAR</span>
             </button>
 
-            @* 4. IMPRIMIR *@
-            <button class="btn-mob mob-print" onclick="Swal.fire('Info', 'Imprimir último ticket', 'info')">
-                <i class="bi bi-printer"></i>
-                <span>IMPR.</span>
+            @* BOTÓN CORTE MÓVIL (NUEVO) *@
+            <button class="btn-mob mob-cut" onclick="prepararCorte()">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>CORTE</span>
             </button>
 
-            @* 5. COBRAR (PEGADITO, SIN ESPACIOS) *@
             <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
                 <i class="bi bi-cash-stack"></i>
                 <span>COBRAR</span>
@@ -703,7 +281,7 @@
         </div>
     </div>
 
-    @* OFFCANVAS (Oculto) *@
+    @* OFFCANVAS *@
     <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasTicket" style="height: 80vh;">
         <div class="offcanvas-header bg-dark text-white">
             <h5 class="offcanvas-title">Ticket Detalle</h5>
@@ -721,11 +299,21 @@
         let clienteActual = "";
         let aplicaIVA = true;
         let totalNumerico = 0;
+        
+        // --- RECIBIR ID DE CAJA DESDE C# ---
+        const CAJA_ABIERTA_ID = @cajaId;
 
         function playBeep() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const g = ctx.createGain(); osc.connect(g); g.connect(ctx.destination); osc.frequency.value=1500; g.gain.value=0.05; osc.start(); setTimeout(()=>osc.stop(),80); } catch(e){} }
 
         $(document).ready(function() {
-            cargarTicket();
+            // --- BLOQUEO DE PANTALLA SI NO HAY CAJA ---
+            if (CAJA_ABIERTA_ID === 0) {
+                var modalApertura = new bootstrap.Modal(document.getElementById('modalApertura'));
+                modalApertura.show();
+            } else {
+                cargarTicket(); // Solo cargamos el ticket si hay caja activa
+            }
+
             $(document).keydown(function(e) {
                 if(e.key === "F12") { e.preventDefault(); abrirModalCobro(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
@@ -736,16 +324,84 @@
             });
         });
 
+        // --- FUNCIONES NUEVAS DE CAJA ---
+        function abrirCaja() {
+            const monto = $('#txtFondoInicial').val();
+            if (!monto || monto < 0) { Swal.fire('Error', 'Ingresa un monto válido', 'warning'); return; }
+
+            $.post('/Ventas/AbrirCaja', { montoInicial: monto }, function(res) {
+                if (res.success) {
+                    Swal.fire({icon: 'success', title: 'Turno Abierto', timer: 1500, showConfirmButton: false}).then(() => location.reload());
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            });
+        }
+
+        function prepararCorte() {
+            // Pedir al controlador los datos del turno actual
+            $.get('/Ventas/ObtenerDatosCorte', function(res) {
+                if (res.success) {
+                    $('#lblCorteInicio').text(fmtMoney(res.inicio));
+                    $('#lblCorteEfectivo').text(fmtMoney(res.efectivo));
+                    $('#lblCorteTarjeta').text(fmtMoney(res.tarjeta));
+                    $('#lblCorteEsperado').text(fmtMoney(res.totalEsperado));
+                    
+                    $('#txtMontoDeclarado').val(''); // Limpiar para que cuenten
+                    new bootstrap.Modal(document.getElementById('modalCorte')).show();
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            });
+        }
+
+        function cerrarCaja() {
+            const monto = $('#txtMontoDeclarado').val();
+            if (monto === "") { Swal.fire('Ojo', 'Debes contar el dinero y poner la cantidad', 'warning'); return; }
+
+            Swal.fire({
+                title: '¿Confirmar Cierre?',
+                text: "Se cerrará tu sesión de caja actual.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, Cerrar Turno'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Ventas/CerrarCaja', { montoDeclarado: monto }, function(res) {
+                        if (res.success) {
+                            let msg = "Caja cerrada correctamente.";
+                            let icon = "success";
+                            
+                            // SEMÁFORO DE DIFERENCIA (Tolerancia $5 pesos)
+                            if (res.diferencia < -5) { msg = `⚠️ FALTANTE: $${res.diferencia.toFixed(2)}`; icon = "error"; }
+                            else if (res.diferencia > 5) { msg = `⚠️ SOBRANTE: $${res.diferencia.toFixed(2)}`; icon = "warning"; }
+                            else { msg = "✅ CUADRE PERFECTO"; }
+
+                            Swal.fire({title: 'Reporte Final', text: msg, icon: icon}).then(() => {
+                                window.location.href = "/Home/Index"; // Sacar al usuario al home
+                            });
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function fmtMoney(amount) {
+            return '$' + amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        // --- FUNCIONES EXISTENTES (SIN CAMBIOS) ---
         function toggleIVA() {
             aplicaIVA = !aplicaIVA;
             const btn = $('#btnIVAToggle'); const txt = $('#txtBtnIva');
             const btnMob = $('#btnMobIva'); const txtMob = $('#txtMobIva');
-
-            if (aplicaIVA) {
-                btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA');
+            if (aplicaIVA) { 
+                btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA'); 
                 btnMob.addClass('mob-iva-on'); txtMob.text('CON IVA');
-            } else {
-                btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA');
+            } else { 
+                btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA'); 
                 btnMob.removeClass('mob-iva-on'); txtMob.text('SIN IVA');
             }
             recalcularTotalesVisuales();
@@ -755,9 +411,7 @@
             let subtotal = totalNumerico;
             let iva = 0;
             let totalFinal = totalNumerico;
-
             if (aplicaIVA) { iva = subtotal * 0.16; totalFinal = subtotal + iva; }
-
             const fmtTotal = '$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             $('#lblSubtotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
             $('#lblIVA').text('$' + iva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
@@ -769,63 +423,45 @@
             clearTimeout(debounceTimer);
             const term = $(this).val();
             const listContainer = $('#contenedorResultados');
-
-            // LOGICA: Si está vacío, OCULTAR lista para que ticket suba
-            if (term.length < 2) {
-                if (window.innerWidth < 992) listContainer.hide();
+            if (term.length < 2) { 
+                if (window.innerWidth < 992) listContainer.hide(); 
                 if(term.length === 0) listContainer.html('<div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
                 return;
             }
-
             if (window.innerWidth < 992) listContainer.show();
-
             debounceTimer = setTimeout(() => { $.get('/Ventas/BuscarProductos', { term: term }, function(data) { renderizarResultados(data); }); }, 300);
         });
 
         function renderizarResultados(productos) {
             const container = $('#contenedorResultados'); container.empty();
             if (productos.length === 0) { container.append('<div class="col-12 text-center py-3 text-muted small">No encontrado</div>'); return; }
-
             productos.forEach(p => {
-                container.append(`
-                    <div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})">
-                        <img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img">
-                        <div class="prod-name">${p.nombre}</div>
-                        <div class="prod-price">$${p.precioVenta.toFixed(2)}</div>
-                    </div>
-                `);
+                container.append(`<div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})"><img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img"><div class="prod-name">${p.nombre}</div><div class="prod-price">$${p.precioVenta.toFixed(2)}</div></div>`);
             });
         }
 
         function agregarAlTicket(id) {
             playBeep();
             const card = $(`#prod-${id}`); card.css('background', '#dcfce7'); setTimeout(() => card.css('background', ''), 200);
-
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
                 if (res.success) cargarTicket();
                 else Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top' });
             });
         }
 
-        function restarUnidad(id) {
-            $.post('/Ventas/RestarDelTicket', { id: id }, function(res) { if (res.success) cargarTicket(); });
-        }
+        function restarUnidad(id) { $.post('/Ventas/RestarDelTicket', { id: id }, function(res) { if (res.success) cargarTicket(); }); }
 
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
-                const tbody = $('#tablaTicketBody');
-                const mobList = $('#mobileTicketList');
+                const tbody = $('#tablaTicketBody'); const mobList = $('#mobileTicketList');
                 tbody.empty(); mobList.empty();
-
                 totalNumerico = parseFloat(data.total.replace(/,/g, ''));
-                if(data.count > 0) { $('#emptyTicketMsg').hide(); }
+                if(data.count > 0) { $('#emptyTicketMsg').hide(); } 
                 else { $('#emptyTicketMsg').show(); mobList.html('<div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div>'); }
 
                 data.items.forEach(item => {
                     const totalItem = (item.precio * item.cantidad).toFixed(2);
-                    // PC
                     tbody.append(`<tr><td><div class="fw-bold text-dark small">${item.nombre}</div><div class="text-muted" style="font-size:0.7rem">${item.productoId}</div></td><td class="text-end">$${item.precio.toFixed(2)}</td><td><div class="qty-control"><button class="btn-qty" onclick="restarUnidad(${item.productoId})"><i class="bi bi-dash"></i></button><div class="qty-val">${item.cantidad}</div><button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button></div></td><td class="text-end fw-bold">$${totalItem}</td><td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5" style="cursor:pointer" onclick="eliminarDelTicket(${item.productoId})"></i></td></tr>`);
-                    // MÓVIL
                     mobList.append(`<div class="mt-item"><div class="mt-desc"><div class="fw-bold text-dark">${item.nombre}</div><div class="text-muted" style="font-size:0.7rem">$${item.precio.toFixed(2)} c/u</div></div><div class="mt-qty-box"><div class="mt-btn" onclick="restarUnidad(${item.productoId})">-</div><div>${item.cantidad}</div><div class="mt-btn" onclick="agregarAlTicket(${item.productoId})">+</div></div><div class="mt-total">$${totalItem}</div></div>`);
                 });
                 recalcularTotalesVisuales();
@@ -858,7 +494,7 @@
                 if (res.success) {
                     Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
                         limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty(); $('#inputBusquedaMovil').val('');
-                        if (window.innerWidth < 992) $('#contenedorResultados').hide();
+                        if (window.innerWidth < 992) $('#contenedorResultados').hide(); 
                     });
                 } else { Swal.fire('Error', res.message, 'error'); }
             }).fail(function() { Swal.fire('Error', 'No se pudo conectar', 'error'); });

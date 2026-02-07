@@ -20,10 +20,124 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        public IActionResult Mostrador()
+        // ==========================================
+        // 1. VISTA PRINCIPAL (CON VALIDACIÓN DE CAJA)
+        // ==========================================
+        public async Task<IActionResult> Mostrador()
         {
+            // BUSCAMOS SI EL USUARIO YA TIENE UNA "CUBETA" (CAJA) ABIERTA
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var cajaAbierta = await _context.CortesCaja
+                .Where(c => c.UsuarioId == usuarioId && c.FechaCierre == null)
+                .OrderByDescending(c => c.FechaApertura)
+                .FirstOrDefaultAsync();
+
+            // Pasamos el ID a la vista. 
+            // Si es 0, el Frontend sabrá que debe bloquear la pantalla.
+            ViewBag.CajaAbiertaId = cajaAbierta?.Id ?? 0;
+
             return View();
         }
+
+        // ==========================================
+        // 2. GESTIÓN DE CAJA (LO NUEVO)
+        // ==========================================
+
+        [HttpPost]
+        public async Task<JsonResult> AbrirCaja(decimal montoInicial)
+        {
+            try
+            {
+                var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                // Validar que no tenga ya una abierta
+                var existe = await _context.CortesCaja.AnyAsync(c => c.UsuarioId == usuarioId && c.FechaCierre == null);
+                if (existe) return Json(new { success = false, message = "Ya tienes un turno abierto." });
+
+                var nuevaCaja = new CorteCaja
+                {
+                    UsuarioId = usuarioId,
+                    FechaApertura = DateTime.Now,
+                    MontoInicial = montoInicial,
+                    FechaCierre = null // Abierta
+                };
+
+                _context.CortesCaja.Add(nuevaCaja);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, mensaje = "Caja abierta correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> ObtenerDatosCorte()
+        {
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var caja = await _context.CortesCaja
+                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.FechaCierre == null);
+
+            if (caja == null) return Json(new { success = false, message = "No hay caja abierta." });
+
+            // SUMAR VENTAS DE ESTA SESIÓN
+            // Buscamos "Efectivo" o "Tarjeta" en la dirección (tu lógica actual)
+            var ventasEfectivo = await _context.Pedidos
+                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Efectivo"))
+                .SumAsync(p => p.TotalPedido);
+
+            var ventasTarjeta = await _context.Pedidos
+                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Tarjeta"))
+                .SumAsync(p => p.TotalPedido);
+
+            return Json(new
+            {
+                success = true,
+                inicio = caja.MontoInicial,
+                efectivo = ventasEfectivo,
+                tarjeta = ventasTarjeta,
+                totalEsperado = caja.MontoInicial + ventasEfectivo
+            });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CerrarCaja(decimal montoDeclarado)
+        {
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var caja = await _context.CortesCaja
+                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.FechaCierre == null);
+
+            if (caja == null) return Json(new { success = false, message = "No hay caja abierta." });
+
+            // Recalcular montos finales
+            var ventasEfectivo = await _context.Pedidos
+                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Efectivo"))
+                .SumAsync(p => p.TotalPedido);
+
+            var ventasTarjeta = await _context.Pedidos
+                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Tarjeta"))
+                .SumAsync(p => p.TotalPedido);
+
+            // CERRAR
+            caja.TotalVentasEfectivo = ventasEfectivo;
+            caja.TotalVentasTarjeta = ventasTarjeta;
+            caja.MontoDeclarado = montoDeclarado;
+            caja.FechaCierre = DateTime.Now;
+            caja.Diferencia = montoDeclarado - (caja.MontoInicial + ventasEfectivo);
+
+            _context.Update(caja);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, diferencia = caja.Diferencia });
+        }
+
+
+        // ==========================================
+        // 3. OPERATIVA (BUSCAR Y CARRITO)
+        // ==========================================
 
         [HttpGet]
         public async Task<JsonResult> BuscarProductos(string term)
@@ -48,7 +162,6 @@ namespace RefaccionariaWeb.Controllers
             return Json(productos);
         }
 
-        // --- SUMAR (+1) ---
         [HttpPost]
         public async Task<JsonResult> AgregarAlTicket(int id)
         {
@@ -60,8 +173,7 @@ namespace RefaccionariaWeb.Controllers
 
             if (item != null)
             {
-                if (item.Cantidad + 1 > producto.Stock)
-                    return Json(new { success = false, message = "Stock insuficiente" });
+                if (item.Cantidad + 1 > producto.Stock) return Json(new { success = false, message = "Stock insuficiente" });
                 item.Cantidad++;
             }
             else
@@ -81,7 +193,6 @@ namespace RefaccionariaWeb.Controllers
             return Json(new { success = true });
         }
 
-        // --- RESTAR (-1) [NUEVO] ---
         [HttpPost]
         public JsonResult RestarDelTicket(int id)
         {
@@ -91,11 +202,8 @@ namespace RefaccionariaWeb.Controllers
                 var item = carrito.FirstOrDefault(c => c.ProductoId == id);
                 if (item != null)
                 {
-                    item.Cantidad--; // Restamos 1
-                    if (item.Cantidad <= 0)
-                    {
-                        carrito.Remove(item); // Si llega a 0, lo borramos
-                    }
+                    item.Cantidad--;
+                    if (item.Cantidad <= 0) carrito.Remove(item);
                     HttpContext.Session.SetObject("Carrito", carrito);
                 }
             }
@@ -128,38 +236,47 @@ namespace RefaccionariaWeb.Controllers
             return Json(new { success = true });
         }
 
-        // --- FINALIZAR VENTA (AHORA CALCULA EL IVA REAL) ---
+        // ==========================================
+        // 4. FINALIZAR VENTA (FUSIÓN: CAJA + INVENTARIO)
+        // ==========================================
+
         [HttpPost]
         public async Task<IActionResult> FinalizarVenta(string nombreCliente, string metodoPago, bool aplicaIVA, string rfc = null)
         {
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
-
             if (carrito == null || !carrito.Any()) return Json(new { success = false, message = "El ticket está vacío." });
+
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // --- VALIDACIÓN DE CAJA (IMPORTANTE) ---
+            var cajaAbierta = await _context.CortesCaja
+                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.FechaCierre == null);
+
+            if (cajaAbierta == null)
+            {
+                return Json(new { success = false, message = "⚠️ ERROR: Tu turno está cerrado. Refresca para abrir caja." });
+            }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Calcular totales
                 decimal subtotal = carrito.Sum(x => x.Cantidad * x.Precio);
                 decimal totalFinal = subtotal;
                 string infoIva = " (Sin IVA)";
 
-                // APLICAR LÓGICA DE IVA
                 if (aplicaIVA)
                 {
-                    // Opción A: El precio YA incluye IVA, desglosamos (lo más común en retail)
-                    // Opción B: Se suma el 16%. Según lo que me dijiste, quieres SUMARLO.
                     totalFinal = subtotal * 1.16m;
                     infoIva = " (Con IVA 16%)";
                 }
 
-                // 1. Crear Pedido
+                // 1. Crear Pedido (CON EL ID DE LA CAJA)
                 var pedido = new Pedido
                 {
-                    ClienteId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    ClienteId = usuarioId,
                     FechaPedido = DateTime.Now,
                     Status = PedidoStatus.Entregado,
-                    TotalPedido = totalFinal, // GUARDAMOS EL TOTAL YA CON O SIN IVA
+                    TotalPedido = totalFinal,
                     NombreReceptor = nombreCliente ?? "Público General",
                     DireccionEnvio = "Mostrador - " + (metodoPago ?? "Efectivo") + infoIva,
                     CiudadEnvio = "N/A",
@@ -167,13 +284,16 @@ namespace RefaccionariaWeb.Controllers
                     CodigoPostalEnvio = "00000",
                     TipoEntrega = 2,
                     RequiereFactura = !string.IsNullOrEmpty(rfc),
-                    Rfc = rfc
+                    Rfc = rfc,
+
+                    // AQUÍ ESTÁ EL ESLABÓN:
+                    CorteCajaId = cajaAbierta.Id
                 };
 
                 _context.Pedidos.Add(pedido);
                 await _context.SaveChangesAsync();
 
-                // 2. Procesar Items y Stock
+                // 2. Procesar Items y Movimientos de Inventario (TU CÓDIGO)
                 foreach (var item in carrito)
                 {
                     var producto = await _context.Productos.FindAsync(item.ProductoId);
@@ -191,13 +311,14 @@ namespace RefaccionariaWeb.Controllers
                         PrecioUnitario = item.Precio
                     });
 
+                    // REGISTRO EN KARDEX (TU CÓDIGO CONSERVADO)
                     _context.MovimientosInventario.Add(new MovimientoInventario
                     {
                         ProductoId = item.ProductoId,
                         TipoMovimiento = "Salida Venta",
                         Cantidad = item.Cantidad,
                         FechaRegistro = DateTime.Now,
-                        UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                        UsuarioId = usuarioId
                     });
                 }
 

@@ -76,6 +76,10 @@ namespace RefaccionariaWeb.Models
         public string? NumeroGuia { get; set; }
 
         public DateTime? FechaEnvio { get; set; }
+        public int? CorteCajaId { get; set; }
+
+        [ForeignKey("CorteCajaId")]
+        public virtual CorteCaja CorteCaja { get; set; }
 
         // === RELACIÓN CON LOS DETALLES DEL PEDIDO ===
         public virtual ICollection<DetallePedido> Detalles { get; set; } = new List<DetallePedido>();
