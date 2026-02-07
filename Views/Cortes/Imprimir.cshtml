@@ -1,66 +1,129 @@
 ﻿@model RefaccionariaWeb.Models.CorteCaja
 @{
-    Layout = null; // Sin menú ni nada, hoja limpia
+    Layout = null;
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Corte #@Model.Id</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
+        /* ESTILO TICKET TÉRMICO (Igual que el General) */
         body {
-            background: #f3f4f6;
-            padding: 40px;
-            font-family: sans-serif;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            margin: 0;
+            padding: 10px;
+            background: #eee; /* Gris en pantalla para diferenciar el papel */
+            color: #000;
         }
 
-        .ticket {
-            max-width: 400px; /* Ancho tipo ticket ancho o media carta */
-            margin: 0 auto;
+        .ticket-wrapper {
             background: white;
-            padding: 20px;
+            max-width: 300px; /* Ancho impresora 80mm */
+            margin: 0 auto;
+            padding: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
         }
 
-        .row-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
         }
 
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 2px dashed #333;
+        .title {
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            border-bottom: 1px dashed #000;
+            margin: 8px 0;
+        }
+
+        .double-divider {
+            border-bottom: 3px double #000;
+            margin: 10px 0;
+        }
+
+        .row-data {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .col-label {
+            text-align: left;
+        }
+
+        .col-val {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0 5px 0;
+            font-size: 13px;
+            text-decoration: underline;
         }
 
         .signature-box {
-            margin-top: 50px;
-            border-top: 1px solid #333;
+            margin-top: 40px;
+            border-top: 1px solid #000;
             text-align: center;
             padding-top: 5px;
-            font-size: 0.8rem;
+            font-size: 11px;
         }
 
+        /* BOTONES PANTALLA */
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-print {
+            background: #222;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* REGLAS DE IMPRESIÓN */
         @@media print {
             body {
                 background: white;
                 padding: 0;
+                margin: 0;
             }
 
-            .ticket {
+            .ticket-wrapper {
                 box-shadow: none;
-                border: none;
                 max-width: 100%;
                 width: 100%;
+                padding: 0;
+                margin: 0;
             }
 
             .no-print {
@@ -71,74 +134,116 @@
 </head>
 <body>
 
-    <div class="text-center mb-4 no-print">
-        <button onclick="window.print()" class="btn btn-primary btn-lg shadow">🖨️ Imprimir Comprobante</button>
-        <button onclick="window.close()" class="btn btn-secondary btn-lg shadow">Cerrar</button>
+    <div class="no-print">
+        <button onclick="window.print()" class="btn-print">🖨️ IMPRIMIR</button>
+        <button onclick="window.close()" class="btn-close">Cerrar</button>
     </div>
 
-    <div class="ticket">
-        <div class="text-center mb-4">
-            <h4 class="fw-bold">REFACCIONARIA UT</h4>
-            <h6 class="text-muted">REPORTE DE CORTE DE CAJA</h6>
-            <div class="fw-bold fs-5 mt-2">FOLIO: #@Model.Id</div>
+    <div class="ticket-wrapper">
+        @* ENCABEZADO *@
+        <div class="header">
+            <div class="title">REFACCIONARIA UT</div>
+            <div class="subtitle">COMPROBANTE DE CORTE</div>
+            <div style="font-size: 11px; margin-top:5px;">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
         </div>
 
-        <div class="mb-4 pb-2 border-bottom">
-            <div class="row-item"><span>📅 Fecha Apertura:</span> <strong>@Model.FechaApertura.ToString("dd/MM/yy HH:mm")</strong></div>
-            <div class="row-item"><span>🏁 Fecha Cierre:</span> <strong>@(Model.FechaCierre?.ToString("dd/MM/yy HH:mm") ?? "ABIERTA")</strong></div>
-            <div class="row-item"><span>👤 Cajero:</span> <strong>@(Model.Usuario?.UserName ?? "Usuario")</strong></div>
+        <div class="double-divider"></div>
+
+        @* DATOS GENERALES *@
+        <div class="row-data">
+            <span class="col-label">FOLIO:</span>
+            <span class="col-val">#@Model.Id</span>
+        </div>
+        <div class="row-data">
+            <span class="col-label">CAJERO:</span>
+            <span class="col-val">@Model.Usuario?.UserName</span>
+        </div>
+        <div class="row-data">
+            <span class="col-label">APERTURA:</span>
+            <span class="col-val">@Model.FechaApertura.ToString("dd/MM HH:mm")</span>
+        </div>
+        <div class="row-data">
+            <span class="col-label">CIERRE:</span>
+            <span class="col-val">@(Model.FechaCierre?.ToString("dd/MM HH:mm") ?? "---")</span>
         </div>
 
-        <div class="mb-4">
-            <h6 class="fw-bold text-uppercase border-bottom pb-1 mb-2">Resumen Financiero</h6>
+        <div class="divider"></div>
 
-            <div class="row-item"><span>Fondo Inicial:</span> <span>$@Model.MontoInicial.ToString("N2")</span></div>
-            <div class="row-item text-success"><span>(+) Ventas Efectivo:</span> <span>$@Model.TotalVentasEfectivo.ToString("N2")</span></div>
-            <div class="row-item text-primary"><span>(+) Ventas Tarjeta:</span> <span>$@Model.TotalVentasTarjeta.ToString("N2")</span></div>
+        @* DINERO *@
+        <div class="section-title">DETALLE DE EFECTIVO</div>
 
-            <div class="row-item mt-3 fw-bold" style="background:#f8f9fa; padding:5px;">
-                <span>(=) Total en Cajón:</span>
-                <span>$@((Model.MontoInicial + Model.TotalVentasEfectivo).ToString("N2"))</span>
+        <div class="row-data">
+            <span class="col-label">FONDO INICIAL:</span>
+            <span class="col-val">$@Model.MontoInicial.ToString("N2")</span>
+        </div>
+        <div class="row-data">
+            <span class="col-label">(+) VENTAS EFECTIVO:</span>
+            <span class="col-val">$@Model.TotalVentasEfectivo.ToString("N2")</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row-data" style="font-size: 14px;">
+            <span class="col-label">(=) TOTAL CAJÓN:</span>
+            <span class="col-val">$@((Model.MontoInicial + Model.TotalVentasEfectivo).ToString("N2"))</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row-data">
+            <span class="col-label">(-) ENTREGADO:</span>
+            <span class="col-val">$@Model.MontoDeclarado.ToString("N2")</span>
+        </div>
+
+        <div class="double-divider"></div>
+
+        @* RESULTADO FINAL *@
+        @if (Model.Diferencia == 0)
+        {
+            <div style="text-align: center; font-weight: bold; font-size: 14px;">
+                *** CUADRE PERFECTO ***
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="row-data" style="font-size: 14px;">
+                <span class="col-label">DIFERENCIA:</span>
+                <span class="col-val">
+                    @if (Model.Diferencia > 0)
+                    {
+                        <span>SOBRA: </span>
+                    }
+                    else
+                    {
 
-        <div class="mb-4">
-            <h6 class="fw-bold text-uppercase border-bottom pb-1 mb-2">Arqueo (Conteo)</h6>
-            <div class="row-item"><span>Declarado por Cajero:</span> <strong>$@Model.MontoDeclarado.ToString("N2")</strong></div>
+                        <span>FALTA: </span>
+                    }
+                    $@Math.Abs(Model.Diferencia).ToString("N2")
+                </span>
+            </div>
+        }
 
-            @if (Model.Diferencia != 0)
-            {
-                <div class="total-row @(Model.Diferencia < 0 ? "text-danger" : "text-success")">
-                    <span>DIFERENCIA:</span>
-                    <span>$@Model.Diferencia.ToString("N2")</span>
-                </div>
-            }
-            else
-            {
-                <div class="total-row text-success text-center d-block">
-                    ✅ CUADRE PERFECTO
-                </div>
-            }
+        <br>
+        @* INFO EXTRA *@
+        <div class="row-data" style="font-size: 11px;">
+            <span class="col-label">VTA TARJETA (BANCO):</span>
+            <span class="col-val">$@Model.TotalVentasTarjeta.ToString("N2")</span>
         </div>
 
         <br><br>
-        <div class="row">
-            <div class="col-6">
-                <div class="signature-box">Firma Cajero</div>
-            </div>
-            <div class="col-6">
-                <div class="signature-box">Firma Supervisor</div>
-            </div>
+
+        @* FIRMAS *@
+        <div class="signature-box">
+            FIRMA CAJERO RESPONSABLE
         </div>
 
-        <div class="text-center mt-4 small text-muted">
-            Impreso: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+        <div class="signature-box">
+            FIRMA SUPERVISOR / ADMIN
         </div>
+
+        <br>
+        <div style="text-align: center;">.</div>
     </div>
 
-    <script>
-        // Opcional: Imprimir automáticamente al abrir
-        // window.onload = function() { window.print(); }
-    </script>
 </body>
 </html>
