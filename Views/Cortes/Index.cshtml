@@ -1,113 +1,234 @@
 ﻿@model IEnumerable<RefaccionariaWeb.Models.CorteCaja>
 
 @{
-    ViewData["Title"] = "Auditoría de Cajas";
+    ViewData["Title"] = "Historial de Cortes";
 }
 
-<div class="container-fluid p-4">
+<style>
+    /* ESTILOS ESPECÍFICOS */
+    .card-dashboard {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table-header {
+        background-color: #f8f9fa;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        color: #6c757d;
+    }
+
+    /* ESTILOS MÓVIL (TARJETAS) */
+    .mobile-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-left: 5px solid #ccc;
+        position: relative;
+    }
+
+        .mobile-card.status-ok {
+            border-left-color: #198754;
+        }
+
+        .mobile-card.status-warn {
+            border-left-color: #ffc107;
+        }
+
+        .mobile-card.status-danger {
+            border-left-color: #dc3545;
+        }
+
+        .mobile-card.status-open {
+            border-left-color: #0d6efd;
+        }
+
+    .mc-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+
+    .mc-label {
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+
+    .mc-val {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .btn-print-mob {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    /* MEDIA QUERIES */
+    @@media (max-width: 768px) {
+        .desktop-view {
+            display: none;
+        }
+
+        .mobile-view {
+            display: block;
+        }
+    }
+
+    @@media (min-width: 769px) {
+        .desktop-view {
+            display: block;
+        }
+
+        .mobile-view {
+            display: none;
+        }
+    }
+</style>
+
+<div class="container-fluid p-3 p-lg-4">
+
+    @* ENCABEZADO *@
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark"><i class="bi bi-safe2-fill me-2"></i>Historial de Cortes</h2>
-        <button class="btn btn-outline-dark" onclick="window.print()">
-            <i class="bi bi-printer"></i> Imprimir
+        <div>
+            <h4 class="fw-bold text-dark mb-0"><i class="bi bi-safe2 me-2 text-primary"></i>Cortes de Caja</h4>
+            <span class="text-muted small">Historial y Auditoría de efectivo</span>
+        </div>
+
+        @* BOTÓN 1: REPORTE GENERAL (IMPRIME LA TABLA ACTUAL) *@
+        <button class="btn btn-outline-dark btn-sm" onclick="window.print()">
+            <i class="bi bi-list-task me-1"></i> Imprimir Lista
         </button>
     </div>
 
-    <div class="card shadow border-0">
-        <div class="card-body p-0">
+    @* --- VISTA ESCRITORIO (TABLA) --- *@
+    <div class="desktop-view">
+        <div class="card card-dashboard">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-secondary small text-uppercase">
+                    <thead class="table-header">
                         <tr>
-                            <th class="py-3 ps-4">Fecha / Cajero</th>
-                            <th class="text-end">Fondo Inicial</th>
+                            <th class="py-3 ps-4">Folio / Cajero</th>
+                            <th class="text-end">Fondo</th>
                             <th class="text-end">Ventas (Efec)</th>
                             <th class="text-end">Ventas (Tarj)</th>
-                            <th class="text-end fw-bold bg-light border-start border-end">Total Cajón</th>
-                            <th class="text-end fw-bold text-primary">Declarado</th>
+                            <th class="text-end bg-light border-start border-end text-dark">Total Cajón</th>
+                            <th class="text-end text-primary">Declarado</th>
                             <th class="text-center">Diferencia</th>
                             <th class="text-center">Estado</th>
+                            <th class="text-center">Acción</th> @* NUEVA COLUMNA *@
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            // Lógica de colores (Semáforo)
-                            string colorFila = "";
-                            string badgeEstado = "";
-
-                            // Si sigue abierta
                             bool abierta = item.FechaCierre == null;
+                            string colorDif = item.Diferencia < 0 ? "text-danger" : "text-success";
+                            string badgeHtml = "";
 
-                            if (abierta)
-                            {
-                                badgeEstado = "<span class='badge bg-primary'>ABIERTA</span>";
-                            }
-                            else
-                            {
-                                if (item.Diferencia < -5)
-                                {
-                                    colorFila = "bg-danger bg-opacity-10";
-                                    badgeEstado = "<span class='badge bg-danger'>FALTANTE</span>";
-                                }
-                                else if (item.Diferencia > 5)
-                                {
-                                    colorFila = "bg-warning bg-opacity-10";
-                                    badgeEstado = "<span class='badge bg-warning text-dark'>SOBRANTE</span>";
-                                }
-                                else
-                                {
-                                    badgeEstado = "<span class='badge bg-success'>OK</span>";
-                                }
-                            }
+                            if (abierta) { badgeHtml = "<span class='badge bg-primary rounded-pill'>ABIERTA</span>"; }
+                            else if (item.Diferencia < -5) { badgeHtml = "<span class='badge bg-danger rounded-pill'>FALTANTE</span>"; }
+                            else if (item.Diferencia > 5) { badgeHtml = "<span class='badge bg-warning text-dark rounded-pill'>SOBRANTE</span>"; }
+                            else { badgeHtml = "<span class='badge bg-success rounded-pill'>OK</span>"; }
 
-                            <tr class="@colorFila">
+                            <tr>
                                 <td class="ps-4">
-                                    <div class="fw-bold">@item.FechaApertura.ToString("dd/MMM HH:mm")</div>
-                                    <div class="small text-muted"><i class="bi bi-person"></i> @(item.Usuario?.UserName ?? "Usuario")</div>
+                                    <div class="fw-bold text-dark">#@item.Id - @(item.Usuario?.UserName ?? "Usuario")</div>
+                                    <div class="small text-muted">@item.FechaApertura.ToString("dd/MMM HH:mm")</div>
                                 </td>
-                                <td class="text-end text-muted">$@item.MontoInicial.ToString("N2")</td>
-                                <td class="text-end">$@item.TotalVentasEfectivo.ToString("N2")</td>
-                                <td class="text-end text-primary">$@item.TotalVentasTarjeta.ToString("N2")</td>
-
-                                @* Total que debería haber en billetes (Fondo + Ventas Efectivo) *@
-                                <td class="text-end fw-bold bg-light border-start border-end">
+                                <td class="text-end text-secondary">$@item.MontoInicial.ToString("N0")</td>
+                                <td class="text-end fw-bold">$@item.TotalVentasEfectivo.ToString("N2")</td>
+                                <td class="text-end text-muted">$@item.TotalVentasTarjeta.ToString("N2")</td>
+                                <td class="text-end fw-bold bg-light border-start border-end fs-6">
                                     $@((item.MontoInicial + item.TotalVentasEfectivo).ToString("N2"))
                                 </td>
+                                <td class="text-end fw-bold text-primary fs-6">
+                                    @(abierta ? "---" : "$" + item.MontoDeclarado.ToString("N2"))
+                                </td>
+                                <td class="text-center fw-bold @colorDif">
+                                    @(abierta ? "..." : "$" + item.Diferencia.ToString("N2"))
+                                </td>
+                                <td class="text-center">@Html.Raw(badgeHtml)</td>
 
-                                <td class="text-end fw-bold fs-6">
-                                    @if (abierta)
+                                @* BOTÓN 2: IMPRESIÓN INDIVIDUAL *@
+                                <td class="text-center">
+                                    @if (!abierta)
                                     {
-                                        <span>---</span>
-                                    }
-                                    else
-                                    {
-
-                                        <span>$@item.MontoDeclarado.ToString("N2")</span>
+                                        <a asp-action="Imprimir" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir Ticket">
+                                            <i class="bi bi-printer-fill"></i>
+                                        </a>
                                     }
                                 </td>
-
-                                <td class="text-center fw-bold">
-                                    @if (abierta)
-                                    {
-                                        <span>...</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="@(item.Diferencia < 0 ? "text-danger" : "text-success")">
-                                            $@item.Diferencia.ToString("N2")
-                                        </span>
-                                    }
-                                </td>
-                                <td class="text-center">@Html.Raw(badgeEstado)</td>
                             </tr>
                         }
                     </tbody>
                 </table>
-                @if (!Model.Any())
-                {
-                    <div class="text-center py-5 text-muted">No hay cortes registrados.</div>
-                }
             </div>
         </div>
+    </div>
+
+    @* --- VISTA MÓVIL (TARJETAS) --- *@
+    <div class="mobile-view">
+        @foreach (var item in Model)
+        {
+            bool abierta = item.FechaCierre == null;
+            string statusClass = "status-ok";
+            string statusText = "CUADRADO";
+
+            if (abierta) { statusClass = "status-open"; statusText = "EN CURSO"; }
+            else if (item.Diferencia < -5) { statusClass = "status-danger"; statusText = "FALTANTE"; }
+            else if (item.Diferencia > 5) { statusClass = "status-warn"; statusText = "SOBRANTE"; }
+
+            <div class="mobile-card @statusClass">
+                @* Botón Flotante para Imprimir Ticket en Móvil *@
+                @if (!abierta)
+                {
+                    <a asp-action="Imprimir" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-light border shadow-sm btn-print-mob text-primary">
+                        <i class="bi bi-printer-fill"></i>
+                    </a>
+                }
+
+                <div class="mb-2 pb-2 border-bottom pe-5">
+                    @* Padding right para no encimar con botón *@
+                    <div class="fw-bold text-dark">#@item.Id - @(item.Usuario?.UserName ?? "Cajero")</div>
+                    <div class="small text-muted">@item.FechaApertura.ToString("dd MMM - HH:mm")</div>
+                </div>
+
+                <div class="mc-row"><span class="mc-label">Fondo:</span><span class="mc-val text-muted">$@item.MontoInicial.ToString("N0")</span></div>
+                <div class="mc-row"><span class="mc-label">Venta Efec:</span><span class="mc-val text-success">+$@item.TotalVentasEfectivo.ToString("N2")</span></div>
+                <div class="mc-row"><span class="mc-label">Venta Tarj:</span><span class="mc-val text-primary">+$@item.TotalVentasTarjeta.ToString("N2")</span></div>
+
+                <hr class="my-1 border-secondary opacity-25">
+
+                <div class="mc-row align-items-center">
+                    <span class="mc-label fw-bold text-dark">TOTAL CAJÓN:</span>
+                    <span class="mc-val fs-6">$@((item.MontoInicial + item.TotalVentasEfectivo).ToString("N2"))</span>
+                </div>
+                <div class="mc-row align-items-center">
+                    <span class="mc-label text-primary">Declarado:</span>
+                    <span class="mc-val text-primary">@(abierta ? "---" : "$" + item.MontoDeclarado.ToString("N2"))</span>
+                </div>
+
+                @if (!abierta && Math.Abs(item.Diferencia) > 0.5m)
+                {
+                    <div class="mt-2 text-center p-1 rounded bg-light fw-bold @(item.Diferencia < 0 ? "text-danger" : "text-success")">
+                        DIFERENCIA: $@item.Diferencia.ToString("N2")
+                    </div>
+                }
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>No hay cortes registrados.</div>
+        }
     </div>
 </div>

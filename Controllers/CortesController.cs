@@ -7,7 +7,6 @@ using RefaccionariaWeb.Models;
 namespace RefaccionariaWeb.Controllers
 {
     // SEGURIDAD: Solo el Admin entra aquí.
-    // Si tu rol se llama diferente (ej: "Administrador"), avísame para cambiarlo.
     [Authorize(Roles = "Admin")]
     public class CortesController : Controller
     {
@@ -18,16 +17,32 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        // GET: /Cortes/Index
+        // GET: /Cortes/Index (LISTA GENERAL)
         public async Task<IActionResult> Index()
         {
-            // Traemos el historial ordenado por fecha (el más reciente arriba)
             var historial = await _context.CortesCaja
-                .Include(c => c.Usuario) // Para ver quién abrió la caja
+                .Include(c => c.Usuario)
                 .OrderByDescending(c => c.FechaApertura)
                 .ToListAsync();
 
             return View(historial);
+        }
+
+        // --- [NUEVO] IMPRIMIR UN SOLO TICKET ---
+        // GET: /Cortes/Imprimir/5
+        public async Task<IActionResult> Imprimir(int id)
+        {
+            var corte = await _context.CortesCaja
+                .Include(c => c.Usuario)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (corte == null)
+            {
+                return NotFound();
+            }
+
+            // Usaremos una vista especial limpia para imprimir
+            return View(corte);
         }
     }
 }
