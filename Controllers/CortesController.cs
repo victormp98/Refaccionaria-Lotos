@@ -17,7 +17,16 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        // GET: /Cortes/Reporte General (LISTA GENERAL)
+        // GET: /Cortes/Index (LISTA GENERAL)
+        public async Task<IActionResult> Index()
+        {
+            var historial = await _context.CortesCaja
+                .Include(c => c.Usuario)
+                .OrderByDescending(c => c.FechaApertura)
+                .ToListAsync();
+
+            return View(historial);
+        }
         public async Task<IActionResult> ReporteGeneral()
         {
             var historial = await _context.CortesCaja
