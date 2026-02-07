@@ -1,0 +1,161 @@
+﻿@model RefaccionariaWeb.Models.Pedido
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Ticket #@Model.Id</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 0;
+            padding: 20px;
+            background: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .ticket {
+            background: white;
+            width: 300px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .divider {
+            border-bottom: 1px dashed #000;
+            margin: 8px 0;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+
+        .prod-row {
+            margin-bottom: 5px;
+        }
+
+        .prod-name {
+            font-weight: bold;
+            display: block;
+        }
+
+        .prod-nums {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+
+        .total-big {
+            font-size: 16px;
+            font-weight: bold;
+            border-top: 2px solid #000;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+
+        .no-print {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+
+        .btn-print {
+            background: #000;
+            color: white;
+        }
+
+        .btn-close {
+            background: white;
+            border: 1px solid #000;
+        }
+
+        @@media print {
+            body {
+                background: white;
+                padding: 0;
+                display: block;
+            }
+
+            .ticket {
+                width: 100%;
+                max-width: 100%;
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button onclick="window.print()" class="btn btn-print">🖨️ IMPRIMIR</button>
+        <button onclick="window.close()" class="btn btn-close">CERRAR</button>
+    </div>
+
+    <div class="ticket">
+        <div class="center bold" style="font-size:16px;">REFACCIONARIA UT</div>
+        <div class="center" style="font-size:11px;">Reynosa, Tamaulipas</div>
+        <div class="center" style="font-size:11px;">@Model.FechaPedido.ToString("dd/MM/yyyy HH:mm")</div>
+
+        <div class="divider"></div>
+
+        <div class="row"><span>FOLIO:</span> <span class="bold">#@Model.Id</span></div>
+        <div class="row"><span>CLIENTE:</span> <span>@(Model.NombreReceptor ?? "Público")</span></div>
+        <div class="row"><span>PAGO:</span> <span>@Model.DireccionEnvio</span></div>
+
+        <div class="divider"></div>
+
+        @foreach (var item in Model.Detalles)
+        {
+            <div class="prod-row">
+                <span class="prod-name">@item.Producto.Nombre</span>
+                <div class="prod-nums">
+                    <span>@item.Cantidad x $@item.PrecioUnitario.ToString("N2")</span>
+                    <span class="bold">$@((item.Cantidad * item.PrecioUnitario).ToString("N2"))</span>
+                </div>
+            </div>
+        }
+
+        <div class="divider"></div>
+
+        <div class="row total-big">
+            <span>TOTAL:</span>
+            <span>$@Model.TotalPedido.ToString("N2")</span>
+        </div>
+
+        <div class="center" style="margin-top:20px; font-size:11px;">
+            *** GRACIAS POR SU COMPRA ***<br>
+            REVISE SU MERCANCÍA<br>
+            NO HAY CAMBIOS SIN TICKET
+        </div>
+        <div class="center">.</div>
+    </div>
+</body>
+</html>

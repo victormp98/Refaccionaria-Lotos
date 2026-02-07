@@ -1,9 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Punto de Venta";
     Layout = null;
-
-    // --- LÓGICA DE SEGURIDAD RECIBIDA DEL CONTROLADOR ---
-    // Si es 0, bloqueamos la pantalla. Si tiene número, dejamos vender.
     int cajaId = ViewBag.CajaAbiertaId != null ? (int)ViewBag.CajaAbiertaId : 0;
 }
 
@@ -17,7 +14,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        /* --- VARIABLES --- */
+        /* --- ESTILOS BASE --- */
         :root {
             --bg-app: #e5e7eb;
             --color-primary: #2563eb;
@@ -38,7 +35,6 @@
             padding: 0;
         }
 
-        /* ================= ESTILOS PC ================= */
         .pos-wrapper {
             display: flex;
             height: 100%;
@@ -84,7 +80,7 @@
             padding-right: 5px;
         }
 
-        /* Card PC */
+        /* CARDS */
         .prod-card {
             background: white;
             border: 1px solid #ccc;
@@ -102,11 +98,6 @@
             .prod-card:active {
                 transform: scale(0.95);
                 border-color: var(--color-success);
-            }
-
-            .prod-card:hover {
-                border-color: var(--color-primary);
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             }
 
         .prod-img {
@@ -228,12 +219,14 @@
             align-items: center;
         }
 
+        /* --- BOTONERA PC (REDISEÑADA PARA QUE QUEPAN TODOS) --- */
         .action-panel {
             padding: 15px;
             background: white;
             border-top: 1px solid #e5e7eb;
             display: grid;
-            grid-template-columns: 1fr 1fr 2fr;
+            /* AHORA SON 3 COLUMNAS PEQUEÑAS + 1 GRANDE (COBRAR) */
+            grid-template-columns: 1fr 1fr 1fr 2fr;
             grid-template-rows: 1fr 1fr;
             gap: 10px;
             height: 160px;
@@ -251,17 +244,12 @@
             cursor: pointer;
             transition: 0.1s;
             color: white;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
             .btn-big i {
-                font-size: 1.5rem;
-                margin-bottom: 5px;
-            }
-
-            .btn-big:active {
-                filter: brightness(0.9);
-                transform: translateY(2px);
+                font-size: 1.3rem;
+                margin-bottom: 3px;
             }
 
         .btn-cancel {
@@ -271,6 +259,15 @@
         .btn-client {
             background-color: #3b82f6;
         }
+
+        .btn-cut {
+            background-color: #4b5563;
+        }
+
+        .btn-reprint {
+            background-color: #6b7280;
+        }
+        /* Nuevo Botón Gris */
 
         .btn-iva-active {
             background-color: var(--color-iva-on);
@@ -284,23 +281,19 @@
             border: 2px solid #e5e7eb;
         }
 
+        /* El botón COBRAR ocupa la columna 4 y las 2 filas */
         .btn-pay {
             background-color: var(--color-success);
-            grid-column: 3;
+            grid-column: 4;
             grid-row: 1 / span 2;
             font-size: 1.5rem;
         }
-
-        .btn-cut {
-            background-color: #6b7280;
-        }
-        /* Botón Corte PC */
 
         .mobile-search-bar, .mobile-ticket-inline, .mobile-sidebar {
             display: none;
         }
 
-        /* ================= ESTILOS MÓVIL (MANDO VERTICAL AJUSTADO) ================= */
+        /* MÓVIL */
         @@media (max-width: 991.98px) {
             body {
                 background: #f3f4f6;
@@ -313,7 +306,7 @@
                 height: 100vh;
                 overflow: hidden;
             }
-            /* Panel Izquierdo */
+
             .left-panel {
                 display: flex;
                 flex-direction: column;
@@ -348,7 +341,7 @@
                 font-weight: bold;
                 background: #f9fafb;
             }
-            /* Lista de Productos (Aplastada y Ocultable) */
+
             .products-grid {
                 padding: 0 !important;
                 display: none;
@@ -408,7 +401,7 @@
                 color: var(--color-success) !important;
                 font-weight: 700 !important;
             }
-            /* Ticket Imán */
+
             .mobile-ticket-inline {
                 display: flex;
                 flex-direction: column;
@@ -477,7 +470,7 @@
                 text-align: right;
                 font-size: 0.95rem;
             }
-            /* Barra Lateral Vertical (Fila India) */
+
             .right-panel {
                 display: none !important;
             }
@@ -537,7 +530,11 @@
             .mob-cut {
                 background: #4b5563;
             }
-            /* Color Gris Oscuro para Corte */
+
+            .mob-print {
+                background: #6b7280;
+            }
+            /* Nuevo Color Móvil */
             .mob-pay {
                 background: var(--color-success);
                 color: white;
@@ -554,59 +551,42 @@
 </head>
 <body>
 
-    @* --- [NUEVO] MODAL DE APERTURA (BLOQUEANTE) --- *@
+    @* MODALES (Sin cambios) *@
     <div class="modal fade" id="modalApertura" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-box-seam me-2"></i>APERTURA DE CAJA</h5>
-                </div>
+                <div class="modal-header bg-primary text-white"><h5 class="modal-title fw-bold"><i class="bi bi-box-seam me-2"></i>APERTURA DE CAJA</h5></div>
                 <div class="modal-body p-4 text-center">
                     <p class="text-muted mb-3">Tu turno está cerrado. Ingresa el fondo inicial para comenzar.</p>
-                    <div class="form-floating mb-3">
-                        <input type="number" class="form-control fs-1 fw-bold text-center text-primary" id="txtFondoInicial" placeholder="0.00" value="500">
-                        <label>Fondo Inicial ($)</label>
-                    </div>
-                    <button class="btn btn-primary btn-lg w-100 py-3 fw-bold" onclick="abrirCaja()">
-                        <i class="bi bi-check-circle-fill me-2"></i> ABRIR CAJA
-                    </button>
+                    <div class="form-floating mb-3"><input type="number" class="form-control fs-1 fw-bold text-center text-primary" id="txtFondoInicial" placeholder="0.00" value="500"><label>Fondo Inicial ($)</label></div>
+                    <button class="btn btn-primary btn-lg w-100 py-3 fw-bold" onclick="abrirCaja()">ABRIR CAJA</button>
                 </div>
             </div>
         </div>
     </div>
 
-    @* --- [NUEVO] MODAL DE CIERRE/CORTE --- *@
     <div class="modal fade" id="modalCorte" data-bs-backdrop="static" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title fw-bold">CORTE DE CAJA (CIERRE)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header bg-dark text-white"><h5 class="modal-title fw-bold">CORTE DE CAJA</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body p-0">
                     <div class="p-3 bg-light border-bottom">
                         <div class="d-flex justify-content-between mb-2"><span>Fondo Inicial:</span><strong id="lblCorteInicio">$0.00</strong></div>
                         <div class="d-flex justify-content-between mb-2"><span>Ventas Efectivo:</span><strong class="text-success" id="lblCorteEfectivo">$0.00</strong></div>
                         <div class="d-flex justify-content-between mb-2"><span>Ventas Tarjeta:</span><strong class="text-primary" id="lblCorteTarjeta">$0.00</strong></div>
-                        <hr>
-                        <div class="d-flex justify-content-between fs-5 fw-bold"><span>DEBE HABER (Efectivo):</span><span id="lblCorteEsperado">$0.00</span></div>
+                        <hr><div class="d-flex justify-content-between fs-5 fw-bold"><span>DEBE HABER (Efec):</span><span id="lblCorteEsperado">$0.00</span></div>
                     </div>
                     <div class="p-4">
                         <label class="form-label fw-bold text-muted small">EFECTIVO CONTADO (REAL)</label>
                         <input type="number" class="form-control fs-1 fw-bold text-center border-2 border-dark mb-3" id="txtMontoDeclarado" placeholder="0.00">
-                        <button class="btn btn-danger btn-lg w-100 py-3 fw-bold" onclick="cerrarCaja()">
-                            <i class="bi bi-lock-fill me-2"></i> CERRAR TURNO
-                        </button>
+                        <button class="btn btn-danger btn-lg w-100 py-3 fw-bold" onclick="cerrarCaja()"><i class="bi bi-lock-fill me-2"></i> CERRAR TURNO</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    @* --- ESTRUCTURA --- *@
     <div class="pos-wrapper">
-
-        @* --- ZONA IZQUIERDA --- *@
         <div class="left-panel">
             <div class="search-area d-none d-lg-block">
                 <div class="input-group">
@@ -615,40 +595,21 @@
                     <button class="btn btn-light border-2 border-start-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg"></i></button>
                 </div>
             </div>
-
-            <div class="mobile-search-bar">
-                <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off">
-            </div>
-
+            <div class="mobile-search-bar"><input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off"></div>
             <div id="contenedorResultados" class="products-grid">
-                <div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
-                    <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
-                    <h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3>
-                </div>
+                <div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>
             </div>
-
             <div class="mobile-ticket-inline">
-                <div class="m-ticket-header">
-                    <span>TICKET ACTUAL</span>
-                    <span id="mobTotalInline" class="text-warning">$0.00</span>
-                </div>
-                <div id="mobileTicketList" class="m-ticket-body">
-                    <div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div>
-                </div>
+                <div class="m-ticket-header"><span>TICKET ACTUAL</span><span id="mobTotalInline" class="text-warning">$0.00</span></div>
+                <div id="mobileTicketList" class="m-ticket-body"><div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div></div>
             </div>
         </div>
 
         @* --- ZONA DERECHA (PC) --- *@
         <div class="right-panel d-none d-lg-flex">
-            <div class="ticket-header">
-                <div class="fw-bold"><i class="bi bi-cart3 me-2"></i> TICKET (Caja #@cajaId)</div>
-                <div class="small opacity-75">@User.Identity.Name</div>
-            </div>
+            <div class="ticket-header"><div class="fw-bold"><i class="bi bi-cart3 me-2"></i> TICKET (Caja #@cajaId)</div><div class="small opacity-75">@User.Identity.Name</div></div>
             <div class="ticket-list-container">
-                <table class="t-table">
-                    <thead><tr><th style="width:45%;">Descripción</th><th style="width:20%;">Precio</th><th style="width:20%;">Cant.</th><th style="width:15%;">Total</th><th style="width:5%;"></th></tr></thead>
-                    <tbody id="tablaTicketBody"></tbody>
-                </table>
+                <table class="t-table"><thead><tr><th style="width:45%;">Descripción</th><th style="width:20%;">Precio</th><th style="width:20%;">Cant.</th><th style="width:15%;">Total</th><th style="width:5%;"></th></tr></thead><tbody id="tablaTicketBody"></tbody></table>
                 <div id="emptyTicketMsg" class="text-center py-5 text-muted"><p>Ticket Vacío</p></div>
             </div>
             <div class="financial-summary">
@@ -656,48 +617,34 @@
                 <div class="fin-row"><span>IVA (16%)</span><span id="lblIVA">$0.00</span></div>
                 <div class="fin-total"><span>TOTAL:</span><span id="lblTotal">$0.00</span></div>
             </div>
+
+            @* --- BOTONERA PC (CON BOTÓN DE TICKET) --- *@
             <div class="action-panel">
                 <button class="btn-big btn-cancel" onclick="limpiarTicket()"><i class="bi bi-trash3-fill"></i> Borrar</button>
                 <button class="btn-big btn-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i> Cliente</button>
-                @* BOTÓN CORTE PC (NUEVO) *@
+
+                @* BOTÓN TICKET *@
+                <button class="btn-big btn-reprint" onclick="reimprimirUltimo()"><i class="bi bi-printer-fill"></i> Ticket</button>
+
                 <button class="btn-big btn-cut" onclick="prepararCorte()"><i class="bi bi-calculator"></i> CORTE</button>
                 <button id="btnIVAToggle" class="btn-big btn-iva-active" onclick="toggleIVA()"><i class="bi bi-receipt"></i> <span id="txtBtnIva">CON IVA</span></button>
+
                 <button class="btn-big btn-pay" onclick="abrirModalCobro()"><i class="bi bi-cash-stack"></i> COBRAR</button>
             </div>
         </div>
 
         @* MÓVIL: Barra Lateral *@
         <div class="mobile-sidebar">
-            <a href="/Home/Index" class="btn-mob mob-back">
-                <i class="bi bi-box-arrow-left"></i>
-                <span>SALIR</span>
-            </a>
+            <a href="/Home/Index" class="btn-mob mob-back"><i class="bi bi-box-arrow-left"></i><span>SALIR</span></a>
+            <button class="btn-mob mob-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i><span>CTE</span></button>
+            <button id="btnMobIva" class="btn-mob mob-iva-on" onclick="toggleIVA()"><i class="bi bi-percent"></i><span id="txtMobIva">CON IVA</span></button>
+            <button class="btn-mob mob-del" onclick="limpiarTicket()"><i class="bi bi-trash3"></i><span>BORRAR</span></button>
+            <button class="btn-mob mob-cut" onclick="prepararCorte()"><i class="bi bi-file-earmark-bar-graph"></i><span>CORTE</span></button>
 
-            <button class="btn-mob mob-client" onclick="asignarCliente()">
-                <i class="bi bi-person-fill"></i>
-                <span>CTE</span>
-            </button>
+            @* BOTÓN TICKET MÓVIL *@
+            <button class="btn-mob mob-print" onclick="reimprimirUltimo()"><i class="bi bi-printer-fill"></i><span>TICKET</span></button>
 
-            <button id="btnMobIva" class="btn-mob mob-iva-on" onclick="toggleIVA()">
-                <i class="bi bi-percent"></i>
-                <span id="txtMobIva">CON IVA</span>
-            </button>
-
-            <button class="btn-mob mob-del" onclick="limpiarTicket()">
-                <i class="bi bi-trash3"></i>
-                <span>BORRAR</span>
-            </button>
-
-            @* BOTÓN CORTE MÓVIL (NUEVO) *@
-            <button class="btn-mob mob-cut" onclick="prepararCorte()">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-                <span>CORTE</span>
-            </button>
-
-            <button class="btn-mob mob-pay" onclick="abrirModalCobro()">
-                <i class="bi bi-cash-stack"></i>
-                <span>COBRAR</span>
-            </button>
+            <button class="btn-mob mob-pay" onclick="abrirModalCobro()"><i class="bi bi-cash-stack"></i><span>COBRAR</span></button>
         </div>
     </div>
 
@@ -719,166 +666,104 @@
         let clienteActual = "";
         let aplicaIVA = true;
         let totalNumerico = 0;
-
-        // --- RECIBIR ID DE CAJA DESDE C# ---
         const CAJA_ABIERTA_ID = @cajaId;
+
+        // --- VARIABLE PARA GUARDAR EL ID DE LA ÚLTIMA VENTA ---
+        let ultimoPedidoId = 0;
 
         function playBeep() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const g = ctx.createGain(); osc.connect(g); g.connect(ctx.destination); osc.frequency.value=1500; g.gain.value=0.05; osc.start(); setTimeout(()=>osc.stop(),80); } catch(e){} }
 
         $(document).ready(function() {
-            // --- BLOQUEO DE PANTALLA SI NO HAY CAJA ---
             if (CAJA_ABIERTA_ID === 0) {
                 var modalApertura = new bootstrap.Modal(document.getElementById('modalApertura'));
                 modalApertura.show();
-            } else {
-                cargarTicket(); // Solo cargamos el ticket si hay caja activa
-            }
+            } else { cargarTicket(); }
 
             $(document).keydown(function(e) {
                 if(e.key === "F12") { e.preventDefault(); abrirModalCobro(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
             });
-
-            $('#inputBusquedaMovil').on('keyup', function() {
-                $('#inputBusqueda').val($(this).val()).trigger('keyup');
-            });
+            $('#inputBusquedaMovil').on('keyup', function() { $('#inputBusqueda').val($(this).val()).trigger('keyup'); });
         });
 
-        // --- FUNCIONES NUEVAS DE CAJA ---
+        // --- LÓGICA DE REIMPRESIÓN ---
+        function reimprimirUltimo() {
+            if(ultimoPedidoId === 0) {
+                Swal.fire('Aviso', 'No hay venta reciente en esta sesión.', 'info');
+            } else {
+                window.open('/Ventas/ImprimirTicketVenta/' + ultimoPedidoId, '_blank');
+            }
+        }
+
+        // --- CAJA ---
         function abrirCaja() {
             const monto = $('#txtFondoInicial').val();
-            if (!monto || monto < 0) { Swal.fire('Error', 'Ingresa un monto válido', 'warning'); return; }
-
+            if (!monto || monto < 0) { Swal.fire('Error', 'Monto inválido', 'warning'); return; }
             $.post('/Ventas/AbrirCaja', { montoInicial: monto }, function(res) {
-                if (res.success) {
-                    Swal.fire({icon: 'success', title: 'Turno Abierto', timer: 1500, showConfirmButton: false}).then(() => location.reload());
-                } else {
-                    Swal.fire('Error', res.message, 'error');
-                }
+                if (res.success) Swal.fire({icon:'success',title:'Turno Abierto',timer:1500,showConfirmButton:false}).then(()=>location.reload());
+                else Swal.fire('Error', res.message, 'error');
             });
         }
-
         function prepararCorte() {
-            // Pedir al controlador los datos del turno actual
             $.get('/Ventas/ObtenerDatosCorte', function(res) {
                 if (res.success) {
-                    $('#lblCorteInicio').text(fmtMoney(res.inicio));
-                    $('#lblCorteEfectivo').text(fmtMoney(res.efectivo));
-                    $('#lblCorteTarjeta').text(fmtMoney(res.tarjeta));
-                    $('#lblCorteEsperado').text(fmtMoney(res.totalEsperado));
-
-                    $('#txtMontoDeclarado').val(''); // Limpiar para que cuenten
-                    new bootstrap.Modal(document.getElementById('modalCorte')).show();
-                } else {
-                    Swal.fire('Error', res.message, 'error');
-                }
+                    $('#lblCorteInicio').text(fmtMoney(res.inicio)); $('#lblCorteEfectivo').text(fmtMoney(res.efectivo));
+                    $('#lblCorteTarjeta').text(fmtMoney(res.tarjeta)); $('#lblCorteEsperado').text(fmtMoney(res.totalEsperado));
+                    $('#txtMontoDeclarado').val(''); new bootstrap.Modal(document.getElementById('modalCorte')).show();
+                } else Swal.fire('Error', res.message, 'error');
             });
         }
-
         function cerrarCaja() {
             const monto = $('#txtMontoDeclarado').val();
-            if (monto === "") { Swal.fire('Ojo', 'Debes contar el dinero y poner la cantidad', 'warning'); return; }
-
-            Swal.fire({
-                title: '¿Confirmar Cierre?',
-                text: "Se cerrará tu sesión de caja actual.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, Cerrar Turno'
-            }).then((result) => {
+            if (monto === "") { Swal.fire('Ojo', 'Cuenta el dinero', 'warning'); return; }
+            Swal.fire({title:'¿Confirmar Cierre?', icon:'warning', showCancelButton:true, confirmButtonText:'Sí, Cerrar'}).then((result) => {
                 if (result.isConfirmed) {
                     $.post('/Ventas/CerrarCaja', { montoDeclarado: monto }, function(res) {
-                        if (res.success) {
-                            let msg = "Caja cerrada correctamente.";
-                            let icon = "success";
-
-                            // SEMÁFORO DE DIFERENCIA (Tolerancia $5 pesos)
-                            if (res.diferencia < -5) { msg = `⚠️ FALTANTE: $${res.diferencia.toFixed(2)}`; icon = "error"; }
-                            else if (res.diferencia > 5) { msg = `⚠️ SOBRANTE: $${res.diferencia.toFixed(2)}`; icon = "warning"; }
-                            else { msg = "✅ CUADRE PERFECTO"; }
-
-                            Swal.fire({title: 'Reporte Final', text: msg, icon: icon}).then(() => {
-                                window.location.href = "/Home/Index"; // Sacar al usuario al home
-                            });
-                        } else {
-                            Swal.fire('Error', res.message, 'error');
-                        }
+                        if (res.success) Swal.fire({title:'Corte Realizado', icon:'success'}).then(() => window.location.href="/Home/Index");
+                        else Swal.fire('Error', res.message, 'error');
                     });
                 }
             });
         }
+        function fmtMoney(amount) { return '$' + amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
 
-        function fmtMoney(amount) {
-            return '$' + amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        }
-
-        // --- FUNCIONES EXISTENTES (SIN CAMBIOS) ---
+        // --- VENTAS ---
         function toggleIVA() {
             aplicaIVA = !aplicaIVA;
-            const btn = $('#btnIVAToggle'); const txt = $('#txtBtnIva');
-            const btnMob = $('#btnMobIva'); const txtMob = $('#txtMobIva');
-            if (aplicaIVA) {
-                btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA');
-                btnMob.addClass('mob-iva-on'); txtMob.text('CON IVA');
-            } else {
-                btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA');
-                btnMob.removeClass('mob-iva-on'); txtMob.text('SIN IVA');
-            }
+            const btn = $('#btnIVAToggle'); const txt = $('#txtBtnIva'); const btnMob = $('#btnMobIva'); const txtMob = $('#txtMobIva');
+            if (aplicaIVA) { btn.removeClass('btn-iva-inactive').addClass('btn-iva-active'); txt.text('CON IVA'); btnMob.addClass('mob-iva-on'); txtMob.text('CON IVA'); }
+            else { btn.removeClass('btn-iva-active').addClass('btn-iva-inactive'); txt.text('SIN IVA'); btnMob.removeClass('mob-iva-on'); txtMob.text('SIN IVA'); }
             recalcularTotalesVisuales();
         }
-
         function recalcularTotalesVisuales() {
-            let subtotal = totalNumerico;
-            let iva = 0;
-            let totalFinal = totalNumerico;
+            let subtotal = totalNumerico; let iva = 0; let totalFinal = totalNumerico;
             if (aplicaIVA) { iva = subtotal * 0.16; totalFinal = subtotal + iva; }
-            const fmtTotal = '$' + totalFinal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            $('#lblSubtotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-            $('#lblIVA').text('$' + iva.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-            $('#lblTotal').text(fmtTotal);
-            $('#mobTotalInline').text(fmtTotal);
+            $('#lblSubtotal').text('$'+subtotal.toLocaleString('en-US',{minimumFractionDigits:2}));
+            $('#lblIVA').text('$'+iva.toLocaleString('en-US',{minimumFractionDigits:2}));
+            $('#lblTotal').text('$'+totalFinal.toLocaleString('en-US',{minimumFractionDigits:2}));
+            $('#mobTotalInline').text('$'+totalFinal.toLocaleString('en-US',{minimumFractionDigits:2}));
         }
-
         $('#inputBusqueda').on('keyup', function() {
-            clearTimeout(debounceTimer);
-            const term = $(this).val();
-            const listContainer = $('#contenedorResultados');
-            if (term.length < 2) {
-                if (window.innerWidth < 992) listContainer.hide();
-                if(term.length === 0) listContainer.html('<div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>');
-                return;
-            }
+            clearTimeout(debounceTimer); const term = $(this).val(); const listContainer = $('#contenedorResultados');
+            if (term.length < 2) { if (window.innerWidth < 992) listContainer.hide(); if(term.length===0) listContainer.html('<div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size:4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>'); return; }
             if (window.innerWidth < 992) listContainer.show();
             debounceTimer = setTimeout(() => { $.get('/Ventas/BuscarProductos', { term: term }, function(data) { renderizarResultados(data); }); }, 300);
         });
-
         function renderizarResultados(productos) {
             const container = $('#contenedorResultados'); container.empty();
             if (productos.length === 0) { container.append('<div class="col-12 text-center py-3 text-muted small">No encontrado</div>'); return; }
-            productos.forEach(p => {
-                container.append(`<div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})"><img src="${p.imagenUrl || '/images/no-image.png'}" class="prod-img"><div class="prod-name">${p.nombre}</div><div class="prod-price">$${p.precioVenta.toFixed(2)}</div></div>`);
-            });
+            productos.forEach(p => { container.append(`<div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})"><img src="${p.imagenUrl||'/images/no-image.png'}" class="prod-img"><div class="prod-name">${p.nombre}</div><div class="prod-price">$${p.precioVenta.toFixed(2)}</div></div>`); });
         }
-
         function agregarAlTicket(id) {
-            playBeep();
-            const card = $(`#prod-${id}`); card.css('background', '#dcfce7'); setTimeout(() => card.css('background', ''), 200);
-            $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) {
-                if (res.success) cargarTicket();
-                else Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top' });
-            });
+            playBeep(); const card = $(`#prod-${id}`); card.css('background', '#dcfce7'); setTimeout(() => card.css('background', ''), 200);
+            $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) { if (res.success) cargarTicket(); else Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top' }); });
         }
-
         function restarUnidad(id) { $.post('/Ventas/RestarDelTicket', { id: id }, function(res) { if (res.success) cargarTicket(); }); }
-
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
-                const tbody = $('#tablaTicketBody'); const mobList = $('#mobileTicketList');
-                tbody.empty(); mobList.empty();
+                const tbody = $('#tablaTicketBody'); const mobList = $('#mobileTicketList'); tbody.empty(); mobList.empty();
                 totalNumerico = parseFloat(data.total.replace(/,/g, ''));
-                if(data.count > 0) { $('#emptyTicketMsg').hide(); }
-                else { $('#emptyTicketMsg').show(); mobList.html('<div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div>'); }
-
+                if(data.count > 0) { $('#emptyTicketMsg').hide(); } else { $('#emptyTicketMsg').show(); mobList.html('<div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div>'); }
                 data.items.forEach(item => {
                     const totalItem = (item.precio * item.cantidad).toFixed(2);
                     tbody.append(`<tr><td><div class="fw-bold text-dark small">${item.nombre}</div><div class="text-muted" style="font-size:0.7rem">${item.productoId}</div></td><td class="text-end">$${item.precio.toFixed(2)}</td><td><div class="qty-control"><button class="btn-qty" onclick="restarUnidad(${item.productoId})"><i class="bi bi-dash"></i></button><div class="qty-val">${item.cantidad}</div><button class="btn-qty" onclick="agregarAlTicket(${item.productoId})"><i class="bi bi-plus"></i></button></div></td><td class="text-end fw-bold">$${totalItem}</td><td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5" style="cursor:pointer" onclick="eliminarDelTicket(${item.productoId})"></i></td></tr>`);
@@ -887,11 +772,9 @@
                 recalcularTotalesVisuales();
             });
         }
-
         function eliminarDelTicket(id) { $.post('/Ventas/EliminarDelTicket', { id: id }, function() { cargarTicket(); }); }
         function limpiarTicket() { $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); }); }
         function asignarCliente() { Swal.fire({ title: 'Cliente', input: 'text', inputValue: clienteActual, showCancelButton: true }).then((r) => { if(r.isConfirmed) { clienteActual = r.value; Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1000}); } }); }
-
         function abrirModalCobro() {
             if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
             const textoCliente = clienteActual ? clienteActual : "Público General";
@@ -901,18 +784,26 @@
                 html: `<p class="mb-3">Cliente: <strong>${textoCliente}</strong></p><div class="d-grid gap-3"><button id="btnEfectivo" class="btn btn-lg btn-success py-3 fw-bold shadow"><i class="bi bi-cash-coin me-2"></i> EFECTIVO</button><button id="btnTarjeta" class="btn btn-lg btn-primary py-3 fw-bold shadow"><i class="bi bi-credit-card-2-front me-2"></i> TARJETA</button></div>`,
                 showConfirmButton: false, showCloseButton: true
             });
-            setTimeout(() => {
-                document.getElementById('btnEfectivo').onclick = function() { procesarVenta('Efectivo'); };
-                document.getElementById('btnTarjeta').onclick = function() { procesarVenta('Tarjeta'); };
-            }, 100);
+            setTimeout(() => { document.getElementById('btnEfectivo').onclick = function() { procesarVenta('Efectivo'); }; document.getElementById('btnTarjeta').onclick = function() { procesarVenta('Tarjeta'); }; }, 100);
         }
-
         function procesarVenta(metodo) {
             Swal.close();
             Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo, aplicaIVA: aplicaIVA }, function(res) {
                 if (res.success) {
-                    Swal.fire({ title: '¡Venta Exitosa!', html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`, confirmButtonText: 'Nueva Venta', confirmButtonColor: '#1f2937', allowOutsideClick: false }).then(() => {
+                    // 1. GUARDAMOS ID
+                    ultimoPedidoId = res.pedidoId;
+
+                    // 2. ALERT Y PREGUNTA TICKET
+                    Swal.fire({
+                        title: '¡Venta Exitosa!',
+                        html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`,
+                        showCancelButton: true,
+                        confirmButtonText: '🖨️ Imprimir Ticket',
+                        cancelButtonText: 'Cerrar',
+                        confirmButtonColor: '#1f2937'
+                    }).then((result) => {
+                        if (result.isConfirmed) { reimprimirUltimo(); }
                         limpiarTicket(); clienteActual = ""; $('#inputBusqueda').val('').focus(); $('#contenedorResultados').empty(); $('#inputBusquedaMovil').val('');
                         if (window.innerWidth < 992) $('#contenedorResultados').hide();
                     });

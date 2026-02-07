@@ -334,5 +334,22 @@ namespace RefaccionariaWeb.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        // ==========================================
+        // 5. NUEVO MÉTODO PARA IMPRIMIR TICKET CLIENTE
+        // ==========================================
+        public async Task<IActionResult> ImprimirTicketVenta(int id)
+        {
+            var pedido = await _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Detalles)
+                .ThenInclude(dp => dp.Producto)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pedido == null) return NotFound();
+
+            // Retorna la vista estilo OXXO para el cliente
+            return View(pedido);
+        }
     }
 }

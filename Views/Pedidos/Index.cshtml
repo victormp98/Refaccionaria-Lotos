@@ -76,7 +76,14 @@
                             }
 
                             <td class="text-end pe-4">
-                                @* AQUÍ ESTÁ EL CAMBIO CLAVE: origen="historial" *@
+                                @* BOTÓN REIMPRIMIR (NUEVO) *@
+                                @if (!User.IsInRole("Cliente") && item.Status != PedidoStatus.Cancelado)
+                                {
+                                    <a asp-controller="Ventas" asp-action="ImprimirTicketVenta" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-outline-dark rounded-pill px-2 me-1" title="Reimprimir Ticket">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                }
+
                                 <a asp-action="Details" asp-route-id="@item.Id" asp-route-origen="historial" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
                                     <i class="bi bi-eye"></i> Detalles
                                 </a>
@@ -113,8 +120,16 @@
                                 <span class="fw-bold text-success fs-5">$@item.TotalPedido.ToString("N2")</span>
                             }
 
-                            @* AQUÍ TAMBIÉN: origen="historial" *@
-                            <a asp-action="Details" asp-route-id="@item.Id" asp-route-origen="historial" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Detalles</a>
+                            <div>
+                                @* BOTÓN REIMPRIMIR MÓVIL (NUEVO) *@
+                                @if (!User.IsInRole("Cliente") && item.Status != PedidoStatus.Cancelado)
+                                {
+                                    <a asp-controller="Ventas" asp-action="ImprimirTicketVenta" asp-route-id="@item.Id" target="_blank" class="btn btn-light border btn-sm rounded-pill px-3 me-1 text-dark">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                }
+                                <a asp-action="Details" asp-route-id="@item.Id" asp-route-origen="historial" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Detalles</a>
+                            </div>
                         </div>
                     </div>
                 </div>
