@@ -1,0 +1,113 @@
+﻿@model IEnumerable<RefaccionariaWeb.Models.CorteCaja>
+
+@{
+    ViewData["Title"] = "Auditoría de Cajas";
+}
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark"><i class="bi bi-safe2-fill me-2"></i>Historial de Cortes</h2>
+        <button class="btn btn-outline-dark" onclick="window.print()">
+            <i class="bi bi-printer"></i> Imprimir
+        </button>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary small text-uppercase">
+                        <tr>
+                            <th class="py-3 ps-4">Fecha / Cajero</th>
+                            <th class="text-end">Fondo Inicial</th>
+                            <th class="text-end">Ventas (Efec)</th>
+                            <th class="text-end">Ventas (Tarj)</th>
+                            <th class="text-end fw-bold bg-light border-start border-end">Total Cajón</th>
+                            <th class="text-end fw-bold text-primary">Declarado</th>
+                            <th class="text-center">Diferencia</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            // Lógica de colores (Semáforo)
+                            string colorFila = "";
+                            string badgeEstado = "";
+
+                            // Si sigue abierta
+                            bool abierta = item.FechaCierre == null;
+
+                            if (abierta)
+                            {
+                                badgeEstado = "<span class='badge bg-primary'>ABIERTA</span>";
+                            }
+                            else
+                            {
+                                if (item.Diferencia < -5)
+                                {
+                                    colorFila = "bg-danger bg-opacity-10";
+                                    badgeEstado = "<span class='badge bg-danger'>FALTANTE</span>";
+                                }
+                                else if (item.Diferencia > 5)
+                                {
+                                    colorFila = "bg-warning bg-opacity-10";
+                                    badgeEstado = "<span class='badge bg-warning text-dark'>SOBRANTE</span>";
+                                }
+                                else
+                                {
+                                    badgeEstado = "<span class='badge bg-success'>OK</span>";
+                                }
+                            }
+
+                            <tr class="@colorFila">
+                                <td class="ps-4">
+                                    <div class="fw-bold">@item.FechaApertura.ToString("dd/MMM HH:mm")</div>
+                                    <div class="small text-muted"><i class="bi bi-person"></i> @(item.Usuario?.UserName ?? "Usuario")</div>
+                                </td>
+                                <td class="text-end text-muted">$@item.MontoInicial.ToString("N2")</td>
+                                <td class="text-end">$@item.TotalVentasEfectivo.ToString("N2")</td>
+                                <td class="text-end text-primary">$@item.TotalVentasTarjeta.ToString("N2")</td>
+
+                                @* Total que debería haber en billetes (Fondo + Ventas Efectivo) *@
+                                <td class="text-end fw-bold bg-light border-start border-end">
+                                    $@((item.MontoInicial + item.TotalVentasEfectivo).ToString("N2"))
+                                </td>
+
+                                <td class="text-end fw-bold fs-6">
+                                    @if (abierta)
+                                    {
+                                        <span>---</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span>$@item.MontoDeclarado.ToString("N2")</span>
+                                    }
+                                </td>
+
+                                <td class="text-center fw-bold">
+                                    @if (abierta)
+                                    {
+                                        <span>...</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="@(item.Diferencia < 0 ? "text-danger" : "text-success")">
+                                            $@item.Diferencia.ToString("N2")
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">@Html.Raw(badgeEstado)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5 text-muted">No hay cortes registrados.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
