@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RefaccionariaWeb.Controllers
 {
-    [Authorize(Roles = "Admin")] // Solo el jefazo puede mover esto
+    [Authorize(Roles = "Admin")]
     public class ConfiguracionController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -17,24 +17,20 @@ namespace RefaccionariaWeb.Controllers
             _context = context;
         }
 
-        // GET: Configuracion/Edit
         public async Task<IActionResult> Edit()
         {
-            // Buscamos el único registro (ID 1)
             var config = await _context.SucursalConfigs.FindAsync(1);
             if (config == null) return NotFound();
-
             return View(config);
         }
 
-        // POST: Configuracion/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(SucursalConfig config)
         {
             if (ModelState.IsValid)
             {
-                config.Id = 1; // Aseguramos que siempre sobreescriba el mismo
+                config.Id = 1;
                 _context.Update(config);
                 await _context.SaveChangesAsync();
                 TempData["Mensaje"] = "¡Configuración de la tienda actualizada!";

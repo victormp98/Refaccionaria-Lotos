@@ -5,7 +5,6 @@
 }
 
 <style>
-    /* Estilo para los inputs enfocados con el color de tu marca */
     .form-control:focus {
         border-color: #2E86C1;
         box-shadow: 0 0 0 0.25rem rgba(46, 134, 193, 0.1);
@@ -33,7 +32,6 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card config-card shadow-sm">
-                @* CABECERA ESTANDARIZADA *@
                 <div class="card-header bg-white border-0 pt-4 pb-0 text-center">
                     <div class="bg-primary bg-opacity-10 d-inline-block p-3 rounded-circle mb-3">
                         <i class="bi bi-gear-wide-connected text-primary fs-2"></i>
@@ -62,6 +60,16 @@
                                 <input asp-for="NombreTienda" class="form-control form-control-lg rounded-end-pill form-control-custom fs-6" placeholder="Ej. Refaccionaria Lotos" />
                             </div>
                             <span asp-validation-for="NombreTienda" class="text-danger small"></span>
+                        </div>
+
+                        @* RFC DE LA SUCURSAL (EL QUE FALTABA) *@
+                        <div class="mb-3">
+                            <label asp-for="RFC" class="form-label fw-bold small text-muted text-uppercase">RFC de la Empresa</label>
+                            <div class="input-group">
+                                <span class="input-group-text rounded-start-pill"><i class="bi bi-card-text"></i></span>
+                                <input asp-for="RFC" class="form-control rounded-end-pill form-control-custom" placeholder="ABC123456XYZ" />
+                            </div>
+                            <span asp-validation-for="RFC" class="text-danger small"></span>
                         </div>
 
                         @* DIRECCIÓN Y CP *@
@@ -100,7 +108,6 @@
                             </div>
                         </div>
 
-                        @* BOTÓN DE ACCIÓN *@
                         <div class="d-grid gap-2 pt-2">
                             <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm py-3 transition-all">
                                 <i class="bi bi-cloud-check me-2"></i>Actualizar Configuración

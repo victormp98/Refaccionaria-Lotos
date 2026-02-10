@@ -13,6 +13,9 @@ namespace RefaccionariaWeb.Models
         [Required(ErrorMessage = "El nombre de la tienda es obligatorio")]
         public string NombreTienda { get; set; }
 
+        [Required(ErrorMessage = "El RFC de la empresa es obligatorio")]
+        public string RFC { get; set; } // <--- EL QUE ME FALTÓ METER
+
         [Required(ErrorMessage = "La dirección es obligatoria")]
         public string Direccion { get; set; }
 
