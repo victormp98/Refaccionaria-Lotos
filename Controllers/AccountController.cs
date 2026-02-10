@@ -22,6 +22,7 @@ namespace RefaccionariaWeb.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken] // <--- SEGURIDAD AGREGADA
         public async Task<IActionResult> Register(string email, string password, string confirmPassword)
         {
             if (password != confirmPassword)
@@ -59,6 +60,7 @@ namespace RefaccionariaWeb.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken] // <--- SEGURIDAD AGREGADA
         public async Task<IActionResult> Login(string email, string password)
         {
             var result = await _signInManager.PasswordSignInAsync(email, password, false, false);
@@ -72,6 +74,8 @@ namespace RefaccionariaWeb.Controllers
             return View();
         }
 
+        [HttpPost] // <--- ASEGURAMOS QUE SOLO SEA POR POST (DESDE EL BOTÓN)
+        [ValidateAntiForgeryToken] // <--- SEGURIDAD AGREGADA
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
