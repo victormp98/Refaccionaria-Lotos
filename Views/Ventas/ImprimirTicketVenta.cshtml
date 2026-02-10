@@ -20,7 +20,6 @@
     {
         if (Model.DireccionEnvio.Contains("Efectivo")) { metodoPago = "EFECTIVO"; }
         else if (Model.DireccionEnvio.Contains("Tarjeta")) { metodoPago = "TARJETA"; }
-        else { metodoPago = "OTRO"; }
     }
 
     // --- 3. RECUPERAR EL DINERO RECIBIDO (FERIA) ---
@@ -28,17 +27,18 @@
     decimal cambio = 0;
     string recibidoStr = Context.Request.Query["recibido"];
 
-    // Usamos InvariantCulture para que entienda punto o coma en los decimales sin error
     if (!string.IsNullOrEmpty(recibidoStr))
     {
         decimal.TryParse(recibidoStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out recibido);
     }
 
-    // Solo calculamos cambio si pagó con efectivo y el monto es mayor al total
     if (recibido >= total)
     {
         cambio = recibido - total;
     }
+
+    // --- 4. CONFIGURACIÓN DE SUCURSAL (DESDE VIEW_BAG) ---
+    var sucursal = ViewBag.Sucursal as RefaccionariaWeb.Models.SucursalConfig;
 }
 
 <!DOCTYPE html>
@@ -47,111 +47,28 @@
     <meta charset="utf-8" />
     <title>Ticket #@Model.Id</title>
     <style>
-        /* CONFIGURACIÓN GENERAL */
-        body {
-            font-family: 'Courier New', monospace; /* Fuente tipo Ticket */
-            font-size: 12px;
-            margin: 0;
-            padding: 20px;
-            background: #eee;
-            display: flex;
-            justify-content: center;
-        }
-
-        .ticket {
-            background: white;
-            width: 76mm; /* Ancho optimizado para 80mm */
-            padding: 5px 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-top: 10px;
-        }
-
-        /* UTILIDADES DE TEXTO */
+        /* (Mantenemos tus estilos originales de márgenes que ya te gustaron) */
+        body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 20px; background: #eee; display: flex; justify-content: center; }
+        .ticket { background: white; width: 76mm; padding: 5px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 10px; }
         .center { text-align: center; }
-        .right { text-align: right; }
-        .left { text-align: left; }
         .bold { font-weight: bold; }
-        
-        /* ENCABEZADO */
         .header-title { font-size: 16px; font-weight: 900; margin-bottom: 5px; }
         .header-info { font-size: 10px; color: #333; margin-bottom: 2px; }
-
-        .divider {
-            border-bottom: 1px dashed #000;
-            margin: 8px 0;
-        }
-
-        .row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 3px;
-        }
-
-        /* TABLA COMPACTA */
+        .divider { border-bottom: 1px dashed #000; margin: 8px 0; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 3px; }
         .prod-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         .prod-table th { text-align: left; border-bottom: 1px solid #000; font-size: 10px; }
         .prod-table td { vertical-align: top; padding-top: 4px; font-size: 11px; }
-        
         .col-cant { width: 15%; text-align: center; }
         .col-desc { width: 55%; }
         .col-imp { width: 30%; text-align: right; }
-
-        /* TOTALES */
-        .totals-section { margin-top: 10px; }
-        .total-row { display: flex; justify-content: space-between; font-size: 12px; }
-        .total-big { 
-            font-size: 18px; 
-            font-weight: 900; 
-            border-top: 2px solid #000; 
-            padding-top: 5px; 
-            margin-top: 5px; 
-        }
-
-        /* CAJA DE PAGO (AQUÍ SALE LA FERIA) */
-        .payment-info {
-            margin-top: 10px;
-            border: 1px solid #000;
-            padding: 5px;
-            font-size: 11px;
-        }
-
-        /* BOTONES DE PANTALLA (NO IMPRIMEN) */
-        .no-print {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 10px;
-            background: rgba(255,255,255,0.9);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        }
-
+        .total-big { font-size: 18px; font-weight: 900; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; }
+        .payment-info { margin-top: 10px; border: 1px solid #000; padding: 5px; font-size: 11px; }
+        .no-print { position: fixed; top: 10px; right: 10px; display: flex; gap: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .btn { padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; font-size: 12px; }
         .btn-print { background: #000; color: white; }
         .btn-close { background: white; border: 1px solid #000; }
-
-        /* --- MODO IMPRESIÓN (AJUSTE DE MÁRGENES) --- */
-        @@media print {
-            body { 
-                background: white; 
-                margin: 0; 
-                padding: 0; 
-            }
-            .ticket { 
-                box-shadow: none; 
-                margin: 0; 
-                width: 100%; 
-                /* Margen interno de seguridad para que la impresora no corte texto */
-                padding: 2mm 5mm 0 2mm; 
-            }
-            .no-print { display: none; }
-            @@page { 
-                margin: 0; 
-                size: auto; 
-            }
-        }
+        @@media print { body { background: white; margin: 0; padding: 0; } .ticket { box-shadow: none; margin: 0; width: 100%; padding: 2mm 5mm 0 2mm; } .no-print { display: none; } @@page { margin: 0; size: auto; } }
     </style>
 </head>
 <body>
@@ -162,18 +79,21 @@
 
     <div class="ticket">
         <div class="center">
-            <div class="header-title">REFACCIONARIA UT</div>
-            <div class="header-info">RFC: GEN-010101-000</div>
-            <div class="header-info">Calle Principal #123, Centro</div>
-            <div class="header-info">Reynosa, Tamaulipas.</div>
-            <div class="header-info">Tel: (899) 123-4567</div>
+            <div class="header-title">@sucursal.NombreTienda</div>
+            <div class="header-info">@sucursal.Direccion</div>
+            <div class="header-info">@sucursal.Ciudad, @sucursal.Estado. CP: @sucursal.CP</div>
+            <div class="header-info">Tel: @sucursal.Telefono</div>
         </div>
 
         <div class="divider"></div>
 
         <div class="row"><span>FOLIO:</span> <span class="bold">#@Model.Id</span></div>
         <div class="row"><span>FECHA:</span> <span>@Model.FechaPedido.ToString("dd/MM/yyyy HH:mm")</span></div>
-        <div class="row"><span>CLIENTE:</span> <span style="text-align:right; max-width:140px;">@(Model.NombreReceptor ?? "Público")</span></div>
+        
+        <div class="row"><span>CLIENTE:</span> <span class="bold">@(Model.NombreReceptor ?? "Público Gral.")</span></div>
+        @if (!string.IsNullOrEmpty(Model.Rfc)) {
+            <div class="row"><span>RFC CTE:</span> <span>@Model.Rfc</span></div>
+        }
         
         <div class="divider"></div>
 
@@ -216,19 +136,17 @@
         </div>
 
         <div class="payment-info">
-            <div class="row"><span>FORMA PAGO:</span> <span class="bold">@metodoPago</span></div>
-            
+            <div class="row"><span>MÉTODO:</span> <span class="bold">@metodoPago</span></div>
             @if (recibido > 0)
             {
-                <div class="row"><span>EFECTIVO:</span> <span>$@recibido.ToString("N2")</span></div>
+                <div class="row"><span>PAGÓ CON:</span> <span>$@recibido.ToString("N2")</span></div>
                 <div class="row"><span>CAMBIO:</span> <span class="bold">$@cambio.ToString("N2")</span></div>
             }
         </div>
 
         <div class="center" style="margin-top:15px; font-size:10px;">
             ¡GRACIAS POR SU COMPRA!<br>
-            NO HAY CAMBIOS SIN TICKET.<br>
-            <div style="margin-top:5px;">www.refaccionaria.com</div>
+            NO HAY CAMBIOS SIN TICKET.
         </div>
         <div class="center">.</div>
     </div>

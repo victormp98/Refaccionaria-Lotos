@@ -1,0 +1,164 @@
+@startuml
+
+!theme plain
+skinparam style strictuml
+
+' Enums
+enum PedidoStatus {
+    PendienteDePago
+    Pagado
+    EnProceso
+    Enviado
+    Entregado
+    Cancelado
+}
+
+' Models
+class Producto {
+    + int Id
+    + string SKU
+    + string Nombre
+    + string Descripcion
+    + string MarcaPieza
+    + decimal PrecioVenta
+    + decimal PrecioCompra
+    + int Stock
+    + string Pasillo
+    + string Anaquel
+    + string ImagenUrl
+    + bool EsVisibleEnLinea
+}
+
+class Vehiculo {
+    + int Id
+    + string Marca
+    + string Modelo
+    + int AnioInicio
+    + int AnioFin
+    + string Motor
+    + bool Activo
+}
+
+class Compatibilidad {
+    + int Id
+    + int ProductoId
+    + int VehiculoId
+    + string NotaTecnica
+}
+
+class Pedido {
+    + int Id
+    + string ClienteId
+    + DateTime FechaPedido
+    + PedidoStatus Status
+    + decimal TotalPedido
+    + string DireccionEnvio
+    + string CiudadEnvio
+    + string EstadoEnvio
+    + string CodigoPostalEnvio
+    + string PaisEnvio
+    + string NombreReceptor
+    + bool RequiereFactura
+    + string Rfc
+    + string RazonSocial
+    + int TipoEntrega
+    + string Paqueteria
+    + string NumeroGuia
+    + DateTime FechaEnvio
+    + int? CorteCajaId
+}
+
+class DetallePedido {
+    + int Id
+    + int PedidoId
+    + int ProductoId
+    + int Cantidad
+    + decimal PrecioUnitario
+}
+
+class MovimientoInventario {
+    + int Id
+    + int ProductoId
+    + string TipoMovimiento
+    + int Cantidad
+    + DateTime FechaRegistro
+    + string Referencia
+    + string UsuarioId
+    + string NombreUsuario
+}
+
+class Scrap {
+    + int Id
+    + int ProductoId
+    + int Cantidad
+    + string Motivo
+    + DateTime FechaRegistro
+    + string UsuarioId
+    + string NombreUsuario
+}
+
+class CorteCaja {
+    + int Id
+    + string UsuarioId
+    + DateTime FechaApertura
+    + DateTime? FechaCierre
+    + decimal MontoInicial
+    + decimal TotalVentasEfectivo
+    + decimal TotalVentasTarjeta
+    + decimal MontoDeclarado
+    + decimal Diferencia
+}
+
+class SucursalConfig {
+    + int Id
+    + string NombreTienda
+    + string Direccion
+    + string Ciudad
+    + string Estado
+    + string CP
+    + string Telefono
+}
+
+' DTOs (Data Transfer Objects) - Represented separately as they are not persisted directly by EF Core models
+class ItemCarrito << (D,orange) DTO >> {
+    + int ProductoId
+    + string Nombre
+    + decimal Precio
+    + int Cantidad
+    + int StockMaximo
+    + string ImagenUrl
+    + bool EsValido
+    + string MensajeError
+    + decimal SubTotal
+}
+
+class ErrorViewModel << (V,yellow) ViewModel >> {
+    + string RequestId
+    + bool ShowRequestId
+}
+
+' External Systems / Identity
+class IdentityUser << (E,lightgrey) External >> {
+    ' Represents the ASP.NET Core Identity User
+    ' Attributes omitted for brevity
+}
+
+' Relationships
+Producto "1" -- "*" Compatibilidad : tiene >
+Vehiculo "1" -- "*" Compatibilidad : es compatible con >
+
+Producto "1" -- "*" DetallePedido : contiene >
+Pedido "1" -- "*" DetallePedido : incluye >
+
+Pedido "1" -- "1" PedidoStatus : tiene >
+
+Producto "1" -- "*" MovimientoInventario : registra >
+
+Producto "1" -- "*" Scrap : genera >
+
+IdentityUser "1" -- "*" Pedido : realiza >
+IdentityUser "1" -- "*" CorteCaja : realiza >
+
+CorteCaja "1" -- "0..*" Pedido : cubre >
+
+@enduml

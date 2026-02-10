@@ -343,12 +343,24 @@ namespace RefaccionariaWeb.Controllers
             var pedido = await _context.Pedidos
                 .Include(p => p.Cliente)
                 .Include(p => p.Detalles)
-                .ThenInclude(dp => dp.Producto)
+                    .ThenInclude(dp => dp.Producto)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (pedido == null) return NotFound();
 
-            // Retorna la vista estilo OXXO para el cliente
+            // Jalamos la configuración de la sucursal (Id 1)
+            var config = await _context.SucursalConfigs.FirstOrDefaultAsync(c => c.Id == 1);
+
+            // Si la tabla está vacía, evitamos que el sistema truene
+            ViewBag.Sucursal = config ?? new SucursalConfig
+            {
+                NombreTienda = "REFACCIONARIA",
+                Direccion = "CENTRO",
+                Ciudad = "REYNOSA",
+                Estado = "TAMAULIPAS",
+                Telefono = "000-000-0000"
+            };
+
             return View(pedido);
         }
     }
