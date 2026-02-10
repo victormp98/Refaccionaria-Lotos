@@ -28,6 +28,15 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
 .AddDefaultUI()
 .AddDefaultTokenProviders();
 
+// --- CORRECCIÓN AQUÍ: UNIFICAR EL LOGIN ---
+// Esto obliga al sistema a usar TU controlador cuando redirecciona automáticamente
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";  // <--- Ruta de tu Login personalizado
+    options.AccessDeniedPath = "/Account/AccessDenied"; // Opcional
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddDistributedMemoryCache();
