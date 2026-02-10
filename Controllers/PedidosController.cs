@@ -95,12 +95,17 @@ namespace RefaccionariaWeb.Controllers
                 pedido.RazonSocial = string.IsNullOrWhiteSpace(pedido.RazonSocial) ? null : pedido.RazonSocial.Trim();
             }
 
+            // --- CORRECCIÓN: IGNORAR VALIDACIONES DE CAJA Y RELACIONES ---
             ModelState.Remove("ClienteId");
             ModelState.Remove("Cliente");
             ModelState.Remove("TotalPedido");
             ModelState.Remove("FechaPedido");
             ModelState.Remove("Status");
             ModelState.Remove("Detalles");
+
+            // ESTO FALTABA: Decirle al validador que ignore la falta de caja
+            ModelState.Remove("CorteCaja");
+            ModelState.Remove("CorteCajaId");
 
             if (ModelState.IsValid && carrito != null && carrito.Any())
             {
@@ -110,6 +115,10 @@ namespace RefaccionariaWeb.Controllers
                     pedido.ClienteId = currentUser.Id;
                     pedido.FechaPedido = DateTime.Now;
                     pedido.Status = PedidoStatus.PendienteDePago;
+
+                    // Aseguramos que sea NULL explícitamente (Venta Web no tiene caja)
+                    pedido.CorteCajaId = null;
+
                     _context.Add(pedido);
                     await _context.SaveChangesAsync();
 
@@ -126,15 +135,14 @@ namespace RefaccionariaWeb.Controllers
                         // B) Crear Detalle
                         _context.Add(new DetallePedido { PedidoId = pedido.Id, ProductoId = prod.Id, Cantidad = item.Cantidad, PrecioUnitario = item.Precio });
 
-                        // C) 🟢 REGISTRAR EN BITÁCORA (Salida por Venta Web) 🟢
+                        // C) REGISTRAR EN BITÁCORA (Salida por Venta Web)
                         _context.MovimientosInventario.Add(new MovimientoInventario
                         {
                             ProductoId = prod.Id,
-                            TipoMovimiento = "Salida", // Salida de inventario
+                            TipoMovimiento = "Salida Venta Web", // Diferenciamos la venta web
                             Cantidad = item.Cantidad,
                             FechaRegistro = DateTime.Now,
-                            UsuarioId = currentUser.Id // El cliente que compró (o null si prefieres que sea system)
-                            
+                            UsuarioId = currentUser.Id
                         });
 
                         total += (item.Cantidad * item.Precio);
@@ -151,89 +159,16 @@ namespace RefaccionariaWeb.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    ModelState.AddModelError("", ex.Message);
+                    ModelState.AddModelError("", "Error al procesar: " + ex.Message);
                 }
             }
             return View(pedido);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Mostrador,Almacen")]
-        public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus, string paqueteria = null, string guia = null, string returnUrl = null)
-        {
-            var pedido = await _context.Pedidos.FindAsync(id);
-            if (pedido != null)
-            {
-                pedido.Status = nuevoStatus;
-
-                if (nuevoStatus == PedidoStatus.Enviado)
-                {
-                    pedido.Paqueteria = paqueteria;
-                    pedido.NumeroGuia = guia;
-                    pedido.FechaEnvio = DateTime.Now;
-                }
-
-                _context.Update(pedido);
-                await _context.SaveChangesAsync();
-            }
-
-            if (!string.IsNullOrEmpty(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-
-            return RedirectToAction(nameof(Details), new { id = id });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> ConfirmarEntrega(int id)
-        {
-            var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
-            var currentUser = await _userManager.GetUserAsync(User);
-
-            if (pedido == null || pedido.ClienteId != currentUser.Id) return NotFound();
-
-            if (pedido.Status == PedidoStatus.Enviado)
-            {
-                pedido.Status = PedidoStatus.Entregado;
-                _context.Update(pedido);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "¡Gracias por confirmar la recepción de tu pedido!";
-            }
-
-            return RedirectToAction(nameof(Details), new { id = id });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Almacen")]
-        public async Task<IActionResult> ReportarScrap(int id, string motivo)
-        {
-            var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id);
-            if (pedido == null) return NotFound();
-
-            pedido.Status = PedidoStatus.Cancelado;
-            _context.Update(pedido);
-            await _context.SaveChangesAsync();
-
-            TempData["Error"] = $"Pedido #{id} marcado como SCRAP: {motivo}";
-            return RedirectToAction(nameof(Almacen));
-        }
-
-        [Authorize(Roles = "Admin,Almacen")]
-        public async Task<IActionResult> Almacen()
-        {
-            var pedidosAlmacen = await _context.Pedidos
-                .Include(p => p.Cliente)
-                .Include(p => p.Detalles).ThenInclude(d => d.Producto)
-                .Where(p => p.Status == PedidoStatus.Pagado || p.Status == PedidoStatus.EnProceso)
-                .OrderByDescending(p => p.FechaPedido)
-                .ToListAsync();
-
-            return View(pedidosAlmacen);
-        }
+        // ... (UpdateStatus, ConfirmarEntrega, ReportarScrap, Almacen -> SIN CAMBIOS)
+        [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Admin,Mostrador,Almacen")] public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus, string paqueteria = null, string guia = null, string returnUrl = null) { var pedido = await _context.Pedidos.FindAsync(id); if (pedido != null) { pedido.Status = nuevoStatus; if (nuevoStatus == PedidoStatus.Enviado) { pedido.Paqueteria = paqueteria; pedido.NumeroGuia = guia; pedido.FechaEnvio = DateTime.Now; } _context.Update(pedido); await _context.SaveChangesAsync(); } if (!string.IsNullOrEmpty(returnUrl)) { return Redirect(returnUrl); } return RedirectToAction(nameof(Details), new { id = id }); }
+        [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Cliente")] public async Task<IActionResult> ConfirmarEntrega(int id) { var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id); var currentUser = await _userManager.GetUserAsync(User); if (pedido == null || pedido.ClienteId != currentUser.Id) return NotFound(); if (pedido.Status == PedidoStatus.Enviado) { pedido.Status = PedidoStatus.Entregado; _context.Update(pedido); await _context.SaveChangesAsync(); TempData["Success"] = "¡Gracias por confirmar la recepción de tu pedido!"; } return RedirectToAction(nameof(Details), new { id = id }); }
+        [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Admin,Almacen")] public async Task<IActionResult> ReportarScrap(int id, string motivo) { var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id); if (pedido == null) return NotFound(); pedido.Status = PedidoStatus.Cancelado; _context.Update(pedido); await _context.SaveChangesAsync(); TempData["Error"] = $"Pedido #{id} marcado como SCRAP: {motivo}"; return RedirectToAction(nameof(Almacen)); }
+        [Authorize(Roles = "Admin,Almacen")] public async Task<IActionResult> Almacen() { var pedidosAlmacen = await _context.Pedidos.Include(p => p.Cliente).Include(p => p.Detalles).ThenInclude(d => d.Producto).Where(p => p.Status == PedidoStatus.Pagado || p.Status == PedidoStatus.EnProceso).OrderByDescending(p => p.FechaPedido).ToListAsync(); return View(pedidosAlmacen); }
     }
 }

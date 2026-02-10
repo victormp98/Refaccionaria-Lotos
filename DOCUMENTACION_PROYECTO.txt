@@ -1,134 +1,185 @@
+# Instructivo Técnico Detallado: RefaccionariaWeb
 
-# Documentación Técnica del Proyecto: RefaccionariaWeb
-# Versión: 1.0 (Análisis de Avance)
-# Fecha: 2026-02-04
+## Introducción al Proyecto (Persona 1)
 
-## 1.0 Introducción y Visión General
+### 1.1. ¿Qué es RefaccionariaWeb?
 
-RefaccionariaWeb es una aplicación web de comercio electrónico diseñada para la venta de refacciones de automóviles. El proyecto está construido sobre la plataforma .NET 8 y sigue el patrón de arquitectura Modelo-Vista-Controlador (MVC). La aplicación está diseñada para servir a múltiples tipos de usuarios con diferentes roles (Clientes, Administradores, Personal de Almacén) y presenta una interfaz de usuario moderna y adaptable a dispositivos móviles y de escritorio.
+RefaccionariaWeb es una aplicación web de comercio electrónico robusta y moderna, diseñada específicamente para la venta y gestión de refacciones automotrices. No es solo una tienda en línea; es una plataforma integral que digitaliza y optimiza los procesos de una refaccionaria, desde la exposición de productos hasta la gestión de inventario y pedidos. La hemos construido utilizando tecnologías de punta en el ecosistema de desarrollo web, garantizando escalabilidad, seguridad y una excelente experiencia de usuario.
 
-El sistema permite la gestión completa de un inventario de productos, incluyendo detalles como SKU, precios, stock y compatibilidad con vehículos. Los clientes pueden registrarse, navegar por el catálogo, añadir productos a un carrito de compras y realizar pedidos. El sistema también incluye flujos de trabajo para el personal interno, permitiendo la gestión de ventas, el surtido de pedidos desde el almacén y la administración de usuarios.
+### 1.2. Propósito y Valor del Proyecto
 
-## 2.0 Arquitectura y Pila Tecnológica
+El objetivo principal de RefaccionariaWeb es transformar la manera en que una refaccionaria opera. En el mercado actual, la presencia digital es crucial. Nuestra aplicación permite:
 
-El proyecto utiliza una arquitectura en capas bien definida, separando la presentación, la lógica de negocio y el acceso a datos.
+*   **Expandir el Alcance:** Llegar a clientes más allá de la ubicación física de la tienda, operando 24/7.
+*   **Optimizar la Gestión:** Simplificar la administración de un vasto catálogo de productos, el seguimiento de stock y la compatibilidad con diferentes modelos de vehículos.
+*   **Mejorar la Experiencia del Cliente:** Ofrecer a los usuarios una forma cómoda e intuitiva de encontrar las refacciones que necesitan, comparar precios, y realizar compras desde cualquier dispositivo.
+*   **Eficiencia Interna:** Proporcionar herramientas al personal para gestionar pedidos, actualizar inventario, y administrar usuarios de manera efectiva, reduciendo errores manuales y tiempos de procesamiento.
 
-- **Framework Principal:** .NET 8
-- **Patrón de Arquitectura:** ASP.NET Core MVC
-- **Acceso a Datos (ORM):** Entity Framework Core 8
-- **Base de Datos:** MySQL (confirmado por el proveedor `Pomelo.EntityFrameworkCore.MySql` en `Program.cs`)
-- **Autenticación y Autorización:** ASP.NET Core Identity (manejo de usuarios y roles)
-- **Interfaz de Usuario (Frontend):**
-    - **Bootstrap 5:** Framework principal de CSS para el layout y componentes.
-    - **Bootstrap Icons:** Biblioteca de iconos.
-    - **jQuery:** Manipulación del DOM y AJAX.
-    - **SweetAlert2:** Notificaciones y alertas enriquecidas.
-    - **CSS Personalizado:** Estilos específicos para la aplicación, incluyendo un diseño adaptable (responsivo) con menús diferenciados para móvil y escritorio.
-- **Despliegue:** Docker (mediante un `Dockerfile` de compilación multi-etapa).
+### 1.3. Audiencia y Tipos de Usuarios
 
-## 3.0 Estructura del Proyecto
+La aplicación está diseñada para atender a múltiples tipos de usuarios con necesidades y permisos específicos:
 
-La organización de los archivos sigue las convenciones estándar de ASP.NET Core MVC.
+*   **Clientes:** Son usuarios externos que se registran en la plataforma. Pueden navegar por el catálogo de productos, buscar refacciones por SKU, nombre o compatibilidad de vehículo, añadir artículos a su carrito de compras, gestionar sus direcciones de envío y realizar pedidos. Su acceso está limitado a sus propias compras y a la información pública del catálogo.
+*   **Personal de Mostrador:** Usuarios internos que pueden gestionar ventas directas en tienda, buscar productos, verificar stock y procesar pedidos que no necesariamente provienen de la plataforma online.
+*   **Personal de Almacén:** Usuarios internos encargados de la logística. Su rol principal es visualizar los pedidos pendientes de preparación, surtir los productos del inventario, y actualizar el estado de los pedidos a "Enviado" una vez que los productos han sido empaquetados.
+*   **Administradores:** Usuarios con el control total del sistema. Pueden gestionar productos (crear, editar, eliminar lógicamente), usuarios (crear, editar, asignar roles), compatibilidades, configuraciones generales de la tienda, y tener una visión completa de todos los pedidos y movimientos de inventario. Tienen acceso a funcionalidades críticas para el mantenimiento y la operatividad de la plataforma.
 
-- **/Controllers:** Contiene las clases que manejan las peticiones del usuario, procesan la lógica de negocio y retornan vistas.
-- **/Models:** Contiene las clases de entidad (POCOs) que representan el dominio del negocio y el esquema de la base de datos. También incluye DTOs (Data Transfer Objects) como `ItemCarrito` y ViewModels.
-- **/Views:** Contiene los archivos Razor (.cshtml) que definen la interfaz de usuario. Se organizan en carpetas por controlador.
-    - **/Views/Shared:** Vistas reutilizables como el layout principal (`_Layout.cshtml`) y parciales (`_LoginPartial.cshtml`).
-- **/Data:** Contiene el contexto de la base de datos (`ApplicationDbContext`) y la lógica de inicialización de datos (`DbInitializer`).
-- **/wwwroot:** Contiene los activos estáticos como CSS, JavaScript, imágenes y librerías de frontend.
-- **/Areas/Identity:** Estructura de andamiaje (scaffolding) de ASP.NET Core Identity.
-- **Program.cs:** Punto de entrada de la aplicación. Configura los servicios, la inyección de dependencias y el pipeline de peticiones HTTP.
-- **Dockerfile:** Define las instrucciones para construir y ejecutar la aplicación en un contenedor de Docker.
+## 2. Arquitectura y Pila Tecnológica (Persona 2)
 
-## 4.0 Capa de Datos (Modelos y Acceso a Datos)
+### 2.1. Framework Principal: .NET 8 y C#
 
-### 4.1. ApplicationDbContext
-El archivo `Data/ApplicationDbContext.cs` es el corazón del ORM. Hereda de `IdentityDbContext` para integrar la gestión de usuarios de Identity con el resto de los datos de la aplicación. Define los `DbSet` que se corresponden con las tablas en la base de datos:
+El corazón de RefaccionariaWeb es **.NET 8**, la última versión del framework de desarrollo de Microsoft, utilizando el lenguaje **C#**. .NET 8 es una plataforma moderna, de código abierto y multiplataforma que nos proporciona:
 
-- `Productos`, `Vehiculos`, `Compatibilidades`, `Pedidos`, `DetallesPedido`, `Scraps`, `MovimientosInventario`, `SucursalConfigs`.
+*   **Rendimiento Superior:** Ofrece un excelente rendimiento para aplicaciones web, lo que se traduce en una experiencia rápida para el usuario.
+*   **Robustez y Escalabilidad:** Es una base sólida para construir aplicaciones empresariales que pueden crecer y manejar un alto volumen de usuarios y datos.
+*   **Rica Biblioteca Estándar:** Proporciona un vasto conjunto de herramientas y funcionalidades ya hechas, lo que acelera el desarrollo y reduce la cantidad de código que tenemos que escribir desde cero.
 
-### 4.2. Modelos de Entidad Principales
+### 2.2. Patrón de Arquitectura: ASP.NET Core MVC
 
-- **Producto:** Representa un artículo en venta.
-    - Propiedades clave: `SKU`, `Nombre`, `PrecioVenta`, `PrecioCompra`, `Stock`, `ImagenUrl`, `EsVisibleEnLinea` (para borrado lógico).
-- **Vehiculo:** Define un vehículo para establecer compatibilidades.
-    - Propiedades clave: `Marca`, `Modelo`, `AnioInicio`, `AnioFin`.
-- **Compatibilidad:** Entidad que relaciona `Producto` y `Vehiculo`.
-- **Pedido:** Representa una orden de un cliente.
-    - Propiedades clave: `ClienteId` (FK a IdentityUser), `FechaPedido`, `Status` (enum `PedidoStatus`), `TotalPedido`.
-    - **Snapshot de Dirección:** Guarda la dirección de envío directamente en el pedido para preservar el histórico.
-- **DetallePedido:** Representa una línea de un pedido, relacionando `Pedido` con `Producto`.
-    - Propiedades clave: `PedidoId`, `ProductoId`, `Cantidad`, `PrecioUnitario`.
-- **ItemCarrito (DTO):** No es una entidad de la BD. Es un objeto para transportar datos del carrito de compras en la sesión del usuario.
+Hemos elegido **ASP.NET Core MVC** como el patrón arquitectónico principal. MVC significa Modelo-Vista-Controlador y es una forma muy organizada de estructurar aplicaciones web:
 
-### 4.3. Inicialización de Datos (DbInitializer)
-El archivo `Data/DbInitializer.cs` se ejecuta al iniciar la aplicación para asegurar un estado base:
-1.  **Crea Roles:** Asegura la existencia de los roles: "Admin", "Cliente", "Mostrador", y "Almacen".
-2.  **Crea Usuario Admin:** Crea un usuario administrador por defecto. Las credenciales (email/contraseña) se leen de forma segura desde la configuración (variables de entorno o `appsettings`), evitando el código duro.
+*   **Separación de Responsabilidades:** Divide la aplicación en componentes lógicos claros, lo que facilita el desarrollo en equipo, la depuración y el mantenimiento. Cada componente tiene un trabajo específico:
+    *   **Modelos (Models):** Se encargan de la lógica de los datos.
+    *   **Vistas (Views):** Son responsables de la interfaz de usuario.
+    *   **Controladores (Controllers):** Actúan como intermediarios entre Modelos y Vistas.
+*   **Facilita el Mantenimiento:** Al tener un código tan bien organizado, es más sencillo entender cómo funciona cada parte y realizar cambios sin afectar otras secciones de la aplicación.
+*   **Testing:** La separación de componentes hace que sea más fácil escribir pruebas automatizadas para cada parte de la aplicación, asegurando su correcto funcionamiento.
 
-## 5.0 Lógica de Negocio (Controladores)
+### 2.3. Acceso a Datos: Entity Framework Core 8 con MySQL
 
-Los controladores implementan la lógica principal de la aplicación. Se observa un uso extensivo y correcto de la autorización basada en roles.
+*   **Base de Datos:** **MySQL** es el sistema de gestión de bases de datos relacionales que hemos seleccionado. Es una opción popular, potente y de código abierto, ideal para almacenar toda la información estructurada de nuestra refaccionaria (productos, usuarios, pedidos, etc.).
+*   **ORM (Object-Relational Mapper): Entity Framework Core 8.** Esta es una tecnología crucial. En lugar de escribir directamente consultas SQL para interactuar con MySQL, Entity Framework Core nos permite trabajar con objetos de C# (nuestros Modelos). Es como tener un traductor:
+    *   Tú le dices a Entity Framework: "Quiero guardar este objeto `Producto`."
+    *   Entity Framework lo traduce a la instrucción SQL correcta para MySQL y lo guarda.
+    *   Y viceversa: "Quiero todos los `Producto`s." Entity Framework consulta la base de datos y los convierte en objetos C# que nuestro código puede entender fácilmente.
+    Esto simplifica enormemente el desarrollo y reduce la posibilidad de errores.
 
-- **ProductosController:**
-    - **Autorización:** Acceso general para personal, pero creación/edición/borrado restringido a "Admin". Los detalles del producto son públicos (`[AllowAnonymous]`).
-    - **Borrado Lógico (Soft Delete):** En lugar de eliminar productos, los marca como no visibles (`EsVisibleEnLinea = false`), moviéndolos a una "Papelera" desde donde pueden ser restaurados.
-    - **Gestión de Imágenes:** Maneja la carga de archivos de imagen, los guarda en `wwwroot/imagenes` con un nombre único y almacena la URL en el producto.
+### 2.4. Autenticación y Autorización: ASP.NET Core Identity
 
-- **CarritoController:**
-    - **Gestión de Sesión:** Utiliza la sesión del usuario para persistir el carrito de compras (`List<ItemCarrito>`).
-    - **Validación de Stock en Tiempo Real:** Al mostrar el carrito, verifica el stock actual de cada producto en la BD y ajusta las cantidades o notifica al usuario si hay cambios, previniendo la sobreventa.
-    - **Lógica de Agregado Inteligente:** Maneja el stock limitado al añadir productos y proporciona retroalimentación clara al usuario a través de `TempData` y notificaciones SweetAlert2.
+La seguridad de los usuarios es primordial. **ASP.NET Core Identity** es el sistema de membresía de .NET que gestiona:
 
-- **PedidosController:**
-    - **Autorización Segura:** Los clientes solo pueden ver sus propios pedidos, mientras que el personal tiene una visión más amplia.
-    - **Transacciones de Base de Datos:** El proceso de creación de un pedido está envuelto en una transacción (`_context.Database.BeginTransactionAsync()`). Esto garantiza que la creación del pedido, la actualización del stock de múltiples productos y la creación de los detalles del pedido ocurran de forma atómica. Si algo falla, todo se revierte, manteniendo la integridad de los datos.
-    - **Gestión de Estados:** Permite al personal actualizar el estado de un pedido (ej. de "Pagado" a "Enviado") y a los clientes confirmar la entrega.
-    - **Vista Especializada:** Proporciona una vista `Almacen` para que el personal de almacén vea los pedidos que necesitan ser preparados.
+*   **Registro de Usuarios:** Permite a los nuevos clientes y personal crear cuentas de forma segura.
+*   **Inicio de Sesión:** Maneja la validación de credenciales (usuario/contraseña) y la creación de sesiones seguras.
+*   **Gestión de Roles:** Nos permite definir diferentes tipos de usuarios (Administrador, Cliente, Almacén) y asignarles permisos específicos, controlando qué partes de la aplicación pueden ver y qué acciones pueden realizar.
+*   **Protección:** Incluye características de seguridad como el hashing de contraseñas, tokens de seguridad, y protección contra ataques comunes.
 
-- **AccountController:**
-    - **Registro Personalizado:** Proporciona acciones de `Login` y `Register` personalizadas.
-    - **Asignación de Rol por Defecto:** Al registrarse un nuevo usuario, se le asigna automáticamente el rol "Cliente", asegurando el flujo correcto para el comercio electrónico.
+### 2.5. Interfaz de Usuario (Frontend): Bootstrap, jQuery y SweetAlert2
 
-## 6.0 Interfaz de Usuario (Vistas)
+Para que la aplicación sea atractiva y funcional para el usuario final, hemos utilizado:
 
-- **Layout Principal (`_Layout.cshtml`):**
-    - **Diseño Adaptable (Responsive):** Implementa dos sistemas de navegación distintos: uno de escritorio tradicional y uno optimizado para móviles con una barra inferior y un menú lateral deslizable.
-    - **UI Basada en Roles:** Utiliza `User.IsInRole()` para renderizar condicionalmente los menús y opciones, mostrando a cada usuario solo las funcionalidades a las que tiene acceso.
-    - **Retroalimentación al Usuario:** Integra SweetAlert2 para mostrar notificaciones no intrusivas basadas en mensajes almacenados en `TempData`.
+*   **Bootstrap 5:** Es un framework de CSS y JavaScript que nos proporciona un conjunto de componentes de interfaz de usuario pre-diseñados (botones, formularios, barras de navegación, tablas). Su principal ventaja es que facilita la creación de diseños **responsive**, es decir, que la aplicación se ve bien y es utilizable tanto en pantallas grandes de computadoras como en dispositivos móviles (tabletas y teléfonos).
+*   **jQuery:** Una biblioteca de JavaScript que simplifica la interacción con el DOM (el Document Object Model, que es la estructura de una página web). Nos permite manipular elementos HTML, manejar eventos de usuario (clics, envíos de formulario) y realizar llamadas asíncronas al servidor (AJAX) de manera más sencilla.
+*   **SweetAlert2:** Esta librería mejora significativamente la forma en que se presentan las alertas y mensajes al usuario. En lugar de los típicos cuadros de alerta del navegador, SweetAlert2 ofrece pop-ups más atractivos y personalizables para confirmaciones, notificaciones de éxito, o mensajes de error, mejorando la experiencia visual y la retroalimentación.
 
-- **Vistas:** Las vistas siguen el patrón estándar de MVC, fuertemente tipadas con los modelos correspondientes para mostrar formularios y datos.
+### 2.6. Despliegue y Contenerización: Docker
 
-## 7.0 Seguridad
+Para asegurar que nuestra aplicación se pueda ejecutar de manera consistente en cualquier entorno (desarrollo, pruebas, producción), utilizamos **Docker**.
 
-La seguridad es un pilar central de la aplicación.
+*   **Contenedores:** Docker nos permite "empaquetar" la aplicación junto con todas sus dependencias (bibliotecas, configuraciones, runtime de .NET) en una unidad llamada "contenedor".
+*   **Consistencia:** Esto significa que la aplicación funcionará exactamente igual en la máquina de un desarrollador que en un servidor en la nube, eliminando problemas de "en mi máquina funciona".
+*   **Portabilidad:** Los contenedores Docker son altamente portátiles y pueden desplegarse en cualquier sistema que soporte Docker.
+*   **Compilación Multi-etapa:** Nuestro `Dockerfile` (el archivo que describe cómo construir la imagen de Docker) utiliza un enfoque de varias etapas. Primero, se compila la aplicación en un entorno de desarrollo. Luego, solo se copian los archivos finales de la aplicación a una imagen más ligera de "runtime", lo que resulta en contenedores más pequeños y seguros para producción.
 
-- **Autenticación:** Gestionada por ASP.NET Core Identity.
-- **Autorización:** Implementada de forma granular a través del atributo `[Authorize]`.
-    - Roles (`[Authorize(Roles = "Admin")]`): Se usa en controladores y acciones para restringir el acceso a funcionalidades críticas.
-    - Propietario de Datos: La lógica en los controladores (ej. `PedidosController`) asegura que los usuarios solo puedan acceder a sus propios datos.
-- **Protección CSRF:** Se utiliza `[ValidateAntiForgeryToken]` en los formularios POST para prevenir ataques de falsificación de solicitudes entre sitios.
-- **Gestión de Secretos:** El `DbInitializer` demuestra una buena práctica al leer las credenciales del admin desde la configuración en lugar de tenerlas en el código fuente.
+## 3. Estructura del Código y Modelos de Datos (Persona 3)
 
-## 8.0 Configuración y Despliegue
+### 3.1. Organización de Carpetas (Estructura Estándar de ASP.NET Core)
 
-- **Configuración:** El archivo `appsettings.json` contiene la cadena de conexión a la base de datos (`DefaultConnection`).
-- **Despliegue (Dockerfile):**
-    - **Compilación Multi-etapa:** Utiliza un `Dockerfile` bien estructurado que sigue las mejores prácticas.
-    - **Etapa de Compilación (`build`):** Usa el SDK de .NET para restaurar, compilar y publicar la aplicación.
-    - **Etapa de Ejecución:** Usa la imagen de runtime de ASP.NET (más pequeña y segura) y copia únicamente los artefactos publicados de la etapa anterior.
-    - **Contenerización:** La aplicación está configurada para ejecutarse en el puerto 8080 dentro del contenedor.
+El proyecto sigue una estructura de carpetas estándar de ASP.NET Core MVC, lo que facilita que cualquier desarrollador familiarizado con este framework entienda rápidamente dónde encontrar cada cosa:
 
-## 9.0 Estado del Proyecto y Conclusiones
+*   **/Controllers:** Aquí residen las clases C# que actúan como "Controladores". Cada archivo `.cs` en esta carpeta (ej. `ProductosController.cs`) contiene la lógica para manejar las solicitudes de los usuarios relacionadas con una funcionalidad específica.
+*   **/Models:** Contiene las clases C# que definen la estructura de nuestros datos y la lógica de negocio. Incluye las **entidades** que se mapean a la base de datos (como `Producto.cs`, `Pedido.cs`), así como **DTOs** (Data Transfer Objects, ej. `ItemCarrito.cs` para el carrito de compras) y **ViewModels** (clases para enviar datos específicos a una vista).
+*   **/Views:** Almacena los archivos `.cshtml` (Razor Views) que definen la interfaz de usuario. Cada subcarpeta aquí suele corresponder a un controlador (ej. `Views/Productos` contiene las vistas para el `ProductosController`).
+    *   **/Views/Shared:** Contiene vistas reutilizables, como `_Layout.cshtml` (la plantilla maestra de todas las páginas) o `_LoginPartial.cshtml` (la sección de inicio de sesión/registro).
+*   **/Data:** Contiene el contexto de la base de datos (`ApplicationDbContext.cs`) que ya mencionamos, y la lógica de inicialización de datos (`DbInitializer.cs`).
+*   **/wwwroot:** Es la carpeta para todos los **archivos estáticos** que se entregan directamente al navegador: CSS (estilos), JavaScript (interactividad), imágenes (`wwwroot/imagenes`), y las librerías de frontend (Bootstrap, jQuery) en `/wwwroot/lib`.
+*   **/Areas/Identity:** Una sección especial que ASP.NET Core Identity utiliza para gestionar las páginas de registro, inicio de sesión, y otras funcionalidades de usuario. Aunque muchas páginas están predefinidas aquí, podemos personalizarlas.
+*   **Program.cs:** Es el punto de entrada de la aplicación. Aquí se configura el "pipeline" de solicitudes HTTP (cómo se procesa cada petición), se registran los servicios (como la base de datos, Identity, etc.) para la Inyección de Dependencias, y se construye y ejecuta la aplicación web.
+*   **appsettings.json:** Contiene la configuración de la aplicación, como la cadena de conexión a la base de datos (`DefaultConnection`), credenciales, etc. Puede tener versiones para diferentes entornos (desarrollo, producción).
 
-El proyecto "RefaccionariaWeb" se encuentra en un estado de desarrollo avanzado y funcional. La arquitectura es sólida y sigue las mejores prácticas de la industria para aplicaciones ASP.NET Core.
+### 3.2. Modelos de Entidad Principales y `ApplicationDbContext`
 
-**Fortalezas Notables:**
-- Clara separación de responsabilidades (MVC).
-- Modelo de datos bien pensado (borrado lógico, snapshots de datos en pedidos).
-- Implementación de seguridad robusta y granular basada en roles.
-- Procesos críticos (como la creación de pedidos) protegidos con transacciones de base de datos.
-- Experiencia de usuario cuidada, con un diseño adaptable y retroalimentación clara.
-- Preparado para el despliegue mediante contenedores Docker.
+El diseño de nuestros modelos de datos es fundamental para el funcionamiento de la aplicación. Cada clase en la carpeta `/Models` representa una tabla o un concepto importante en nuestra base de datos, y está cuidadosamente diseñada para reflejar las necesidades del negocio.
 
-Aunque el proyecto no está "terminado", la base establecida es de alta calidad y demuestra un profundo entendimiento de los conceptos de desarrollo web moderno con .NET.
+*   **`Producto.cs`:** Representa un artículo que se vende en la refaccionaria.
+    *   **Propiedades Clave:** `SKU` (identificador único), `Nombre`, `PrecioVenta`, `PrecioCompra`, `Stock`, `ImagenUrl` (ruta a la imagen), `EsVisibleEnLinea` (un `bool` que usamos para el "borrado lógico").
+*   **`Vehiculo.cs`:** Define un modelo de vehículo (Marca, Modelo, Año) para el cual una refacción puede ser compatible.
+    *   **Propiedades Clave:** `Marca`, `Modelo`, `AnioInicio`, `AnioFin`.
+*   **`Compatibilidad.cs`:** Una tabla de relación que une `Producto` con `Vehiculo`. Un producto puede ser compatible con varios vehículos, y un vehículo puede usar varias refacciones.
+*   **`Pedido.cs`:** Representa una orden de compra realizada por un cliente.
+    *   **Propiedades Clave:** `ClienteId` (una clave foránea que apunta al usuario de Identity), `FechaPedido`, `Status` (un enumerado `PedidoStatus` como "Pendiente", "Pagado", "Enviado"), `TotalPedido`.
+    *   **Importante:** Incluye un "snapshot" de la dirección de envío en el momento del pedido. Esto es crucial para la integridad de los datos históricos, ya que si un cliente cambia su dirección después de hacer un pedido, el pedido original sigue mostrando la dirección a la que se envió.
+*   **`DetallePedido.cs`:** Cada `Pedido` está compuesto por uno o más `DetallePedido`. Esta tabla enlaza un `Pedido` con un `Producto` específico, registrando la `Cantidad` de ese producto y el `PrecioUnitario` al momento de la compra.
+*   **`ItemCarrito.cs` (DTO):** No es una entidad de la base de datos. Es un **Objeto de Transferencia de Datos** que se usa en memoria para manejar los productos que un usuario tiene en su carrito antes de confirmar el pedido. Contiene `ProductoId`, `Cantidad` y otra información relevante del producto.
+
+### 3.3. `ApplicationDbContext` y `DbInitializer`
+
+*   **`Data/ApplicationDbContext.cs`:** Hereda de `IdentityDbContext`, lo que significa que ya viene con todas las tablas necesarias para gestionar usuarios de ASP.NET Core Identity. Además, aquí hemos agregado los `DbSet` para todos nuestros modelos de entidad (`Productos`, `Vehiculos`, `Pedidos`, etc.). Es la clase que Entity Framework Core usa para interactuar con nuestra base de datos MySQL.
+*   **`Data/DbInitializer.cs`:** Esta clase se ejecuta al inicio de la aplicación y es fundamental para asegurar que nuestro sistema tenga un estado base funcional.
+    *   **Creación de Roles:** Se encarga de verificar y crear los roles de usuario que necesitamos ("Admin", "Cliente", "Mostrador", "Almacen") si no existen.
+    *   **Usuario Administrador por Defecto:** Crea un usuario administrador predefinido. Es una buena práctica leer las credenciales para este usuario desde la configuración (`appsettings.json` o variables de entorno) en lugar de "hardcodearlas" en el código, mejorando la seguridad.
+
+## 4. Flujos de Negocio y Lógica de Controladores (Persona 4)
+
+### 4.1. El Rol Crucial de los Controladores
+
+Como vimos, los Controladores son los intermediarios. Contienen los "endpoints" (puntos de acceso) de nuestra aplicación, es decir, las funciones que se ejecutan cuando un usuario interactúa con la web (navega a una página, envía un formulario).
+
+*   **Manejo de Solicitudes:** Cada método de acción en un controlador (`Index()`, `Create(Producto producto)`, `AddToCart(int productId, int quantity)`) responde a una solicitud HTTP específica (GET para obtener datos, POST para enviar datos).
+*   **Lógica de Negocio:** Dentro de estos métodos, se implementa la lógica central de la aplicación, coordinando las interacciones entre los modelos (datos) y las vistas (interfaz).
+*   **Autorización Granular:** Utilizan el atributo `[Authorize]` para controlar el acceso. Por ejemplo, `[Authorize(Roles = "Admin, Almacen")]` en el `ProductosController` asegura que solo los usuarios con el rol de "Administrador" o "Almacén" puedan acceder a la gestión de productos.
+
+### 4.2. Flujos Operacionales Detallados
+
+*   **Gestión de Productos (`ProductosController`):**
+    *   **Listado y Búsqueda:** La acción `Index` muestra una lista de todos los productos activos. Permite búsquedas por nombre o SKU.
+    *   **Creación de Productos:** La acción `Create` (GET) muestra un formulario. La acción `Create` (POST) recibe los datos del formulario, incluye la carga de imágenes. Los archivos de imagen se guardan en `wwwroot/imagenes` con un nombre único generado (ej. un GUID) para evitar conflictos, y la URL de esa imagen se almacena en el modelo `Producto`.
+    *   **Edición y Detalles:** Las acciones `Edit` y `Details` permiten modificar o ver la información de un producto específico.
+    *   **Borrado Lógico (Soft Delete):** En lugar de eliminar un registro de la base de datos permanentemente (lo que podría romper la integridad referencial con pedidos históricos), marcamos el campo `EsVisibleEnLinea` a `false`. Esto "desactiva" el producto del catálogo público y lo mueve a una sección de "Papelera", desde donde un administrador puede restaurarlo o eliminarlo definitivamente si es necesario. Esta es una práctica común para mantener la integridad de los datos históricos.
+*   **El Carrito de Compras (`CarritoController`):**
+    *   **Persistencia en Sesión:** El carrito no se guarda en la base de datos mientras el usuario está comprando. En su lugar, utilizamos la **sesión del usuario** (`HttpContext.Session`). Guardamos una lista de objetos `ItemCarrito` en la sesión. Esto permite que el carrito persista mientras el usuario navega por la tienda, pero se vacía si la sesión expira o el usuario cierra el navegador.
+    *   **Validación de Stock en Tiempo Real:** Al agregar un producto al carrito o al ver la página del carrito, el sistema hace una consulta rápida a la base de datos para verificar el stock actual del producto. Si un usuario intenta añadir 10 unidades de un producto y solo hay 5 disponibles, la aplicación lo notificará y solo permitirá añadir las 5 disponibles. Esto es crucial para evitar la sobreventa.
+    *   **Retroalimentación al Usuario:** Utilizamos `TempData` (datos que persisten solo durante la siguiente solicitud HTTP) y **SweetAlert2** para mostrar mensajes claros y amigables al usuario sobre el estado de su carrito, como "Producto añadido al carrito", "Stock limitado", o "Producto agotado".
+*   **Proceso de Pedido (`PedidosController`):**
+    *   **Creación Transaccional:** La acción `Checkout` o `ConfirmarPedido` es una de las más críticas. Cuando un cliente confirma su compra, se inician una serie de operaciones:
+        1.  Crear el `Pedido` principal.
+        2.  Crear múltiples `DetallePedido` (uno por cada producto en el carrito).
+        3.  **Actualizar el `Stock`** de cada `Producto` en la base de datos, restando las cantidades vendidas.
+    *   Para garantizar que todas estas operaciones se completen con éxito o ninguna lo haga (manteniendo la integridad de los datos), se envuelven en una **transacción de base de datos** (`_context.Database.BeginTransactionAsync()`). Si, por ejemplo, el stock se actualiza pero falla la creación de un `DetallePedido`, la transacción se "revierte" (rollback), deshaciendo todos los cambios y dejando la base de datos en su estado original.
+    *   **Gestión de Estados:** Los pedidos tienen un ciclo de vida definido por un `enum PedidoStatus` (ej. `Pendiente`, `Pagado`, `Procesando`, `Enviado`, `Entregado`, `Cancelado`). Los controladores permiten a los administradores y al personal de almacén actualizar estos estados a medida que el pedido avanza en su proceso.
+    *   **Vista para Almacén:** La vista `Views/Pedidos/Almacen.cshtml` está específicamente diseñada para el personal de almacén. Muestra solo los pedidos que necesitan ser preparados (por ejemplo, aquellos en estado "Pagado" o "Procesando"), permitiéndoles gestionar su trabajo de forma eficiente.
+*   **Autenticación y Roles (`AccountController` y `Areas/Identity`):**
+    *   **Registro de Nuevos Usuarios:** Cuando un nuevo usuario se registra a través del formulario, el `AccountController` (o las páginas de Identity) lo gestiona. Por defecto, a todo nuevo registro se le asigna el rol de "Cliente", lo que le otorga los permisos necesarios para realizar compras.
+    *   **Asignación de Roles:** Los administradores pueden, a través de sus propias interfaces, modificar los roles de los usuarios existentes (por ejemplo, ascender a un empleado a "Almacén" o "Administrador").
+
+## 5. Seguridad y Despliegue (Persona 5)
+
+### 5.1. Seguridad Implementada en RefaccionariaWeb
+
+La seguridad ha sido un pilar fundamental en el desarrollo de la aplicación, implementando varias capas de protección:
+
+*   **Autenticación (¿Quién eres?):**
+    *   Gestionada completamente por **ASP.NET Core Identity**. Esto incluye el manejo seguro de contraseñas (almacenadas como hashes unidireccionales, nunca en texto plano), recuperación de cuentas, y gestión de sesiones de usuario.
+*   **Autorización (¿Qué puedes hacer?):**
+    *   Se utiliza el atributo `[Authorize]` en controladores y acciones. Por ejemplo, `[Authorize(Roles = "Admin, Almacen")]` en el `ProductosController` asegura que solo los usuarios con el rol de "Administrador" o "Almacén" puedan acceder a la gestión de productos.
+    *   **Lógica de Acceso a Datos del Propietario:** En controladores como `PedidosController`, hay lógica explícita que verifica que un cliente solo pueda ver o interactuar con *sus propios pedidos*, y no con los de otros usuarios, incluso si están autenticados. Esto se logra comparando el `ClienteId` del pedido con el `UserId` del usuario autenticado.
+*   **Protección CSRF (Cross-Site Request Forgery):**
+    *   Todos los formularios que envían datos (`<form method="post">`) incluyen una etiqueta `@Html.AntiForgeryToken()`. Este helper genera un token oculto que se envía con el formulario. En el servidor, el atributo `[ValidateAntiForgeryToken]` en los métodos POST verifica que el token sea válido. Esto previene ataques donde un sitio web malicioso podría intentar enviar solicitudes falsificadas en nombre de un usuario autenticado.
+*   **Gestión de Secretos y Configuraciones Sensibles:**
+    *   Las credenciales sensibles (como la cadena de conexión a la base de datos o la contraseña del usuario administrador inicial) **no están "hardcodeadas"** en el código fuente. En su lugar, se almacenan en `appsettings.json` o, preferiblemente para producción, en variables de entorno o sistemas de gestión de secretos, lo que los mantiene fuera del repositorio de código y mejora la seguridad.
+
+### 5.2. Despliegue con Docker (Ampliación)
+
+La estrategia de despliegue mediante Docker es una de las decisiones técnicas más importantes, ofreciendo ventajas significativas:
+
+*   **Aislamiento y Portabilidad:** Cada contenedor es una unidad aislada que contiene todo lo necesario para ejecutar la aplicación (código, runtime, dependencias). Esto garantiza que la aplicación funcione de manera idéntica en cualquier servidor o máquina que tenga Docker, eliminando los problemas de "dependencias faltantes" o "funciona en mi máquina".
+*   **Reproducibilidad:** El `Dockerfile` es una "receta" que describe cómo construir la imagen de nuestra aplicación. Esto asegura que siempre se construya de la misma manera, garantizando entornos de desarrollo, pruebas y producción consistentes.
+*   **Compilación Multi-etapa en el `Dockerfile`:** Nuestro `Dockerfile` está optimizado para producción utilizando dos etapas principales:
+    1.  **Etapa de `build` (compilación):** Utiliza una imagen de .NET SDK completa (más grande) para compilar el código fuente de nuestra aplicación. Aquí se restauran los paquetes NuGet, se compila el proyecto y se publican los artefactos listos para producción.
+    2.  **Etapa de `final` (ejecución):** Utiliza una imagen de `aspnet` más ligera, que solo contiene el runtime de .NET (lo necesario para ejecutar la aplicación, no para compilarla). En esta etapa, solo se copian los artefactos compilados de la etapa anterior a esta imagen final.
+    *   **Beneficio:** El contenedor final de producción es mucho más pequeño, más rápido de descargar, y tiene una superficie de ataque reducida (menos herramientas y librerías innecesarias), mejorando la seguridad.
+*   **Escalabilidad Sencilla:** Docker facilita la escalabilidad horizontal. Si la demanda de la aplicación aumenta, podemos ejecutar múltiples instancias (contenedores) de RefaccionariaWeb y usar un balanceador de carga para distribuir el tráfico entre ellos.
+*   **Manejo de Versiones:** Las imágenes de Docker pueden ser versionadas y almacenadas en registros (como Docker Hub o Azure Container Registry), lo que facilita la gestión de diferentes versiones de la aplicación y el despliegue de actualizaciones o reversiones.
+
+### 5.3. Conclusiones y Potencial Futuro
+
+RefaccionariaWeb es un proyecto que demuestra un sólido conocimiento en desarrollo web con .NET 8 y C#. La arquitectura MVC, el uso de Entity Framework Core, ASP.NET Core Identity, y la contenerización con Docker, no solo garantizan una aplicación funcional y segura hoy, sino que también proporcionan una base excelente para futuras expansiones y funcionalidades. El diseño responsive y la clara retroalimentación al usuario aseguran una experiencia de cliente de alta calidad. Este proyecto está listo para ser el pilar digital de cualquier refaccionaria moderna.
