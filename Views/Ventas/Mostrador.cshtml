@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-        /* --- ESTILOS BASE (TU CÓDIGO ORIGINAL) --- */
+        /* --- ESTILOS BASE (TU CÓDIGO ORIGINAL INTACTO) --- */
         :root {
             --bg-app: #e5e7eb;
             --color-primary: #2563eb;
@@ -35,84 +35,527 @@
             padding: 0;
         }
 
-        .pos-wrapper { display: flex; height: 100%; width: 100%; }
-        .left-panel { flex: 60%; display: flex; flex-direction: column; padding: 15px; border-right: 1px solid #ccc; }
-        .right-panel { flex: 40%; background: #fff; display: flex; flex-direction: column; box-shadow: -5px 0 15px rgba(0,0,0,0.05); }
-        .search-area { margin-bottom: 15px; }
-        .search-input { height: 60px; font-size: 1.5rem; font-weight: bold; border: 2px solid var(--color-primary); border-radius: 4px; box-shadow: none !important; }
-        .products-grid { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; align-content: start; padding-right: 5px; }
-        .prod-card { background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; cursor: pointer; transition: all 0.1s; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
-        .prod-card:active { transform: scale(0.95); border-color: var(--color-success); }
-        .prod-img { width: 100%; height: 100px; object-fit: cover; background: #f3f4f6; margin-bottom: 8px; border-radius: 2px; }
-        .prod-name { font-size: 0.85rem; font-weight: 700; line-height: 1.2; margin-bottom: 5px; color: var(--color-dark); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.4em; }
-        .prod-price { font-size: 1.1rem; font-weight: 900; color: var(--color-success); text-align: right; margin-top: auto; }
-        .ticket-header { background: var(--color-dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .ticket-list-container { flex-grow: 1; overflow-y: auto; background: #f9fafb; }
-        .t-table { width: 100%; border-collapse: collapse; }
-        .t-table th { background: #e5e7eb; position: sticky; top: 0; padding: 8px; font-size: 0.75rem; text-transform: uppercase; text-align: left; color: #374151; border-bottom: 1px solid #d1d5db; }
-        .t-table td { padding: 10px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
-        .qty-control { display: flex; align-items: center; gap: 5px; border: 1px solid #d1d5db; border-radius: 4px; background: white; width: fit-content; }
-        .btn-qty { border: none; background: transparent; color: var(--color-primary); font-weight: bold; padding: 2px 8px; cursor: pointer; }
-        .qty-val { font-weight: bold; font-size: 0.9rem; width: 20px; text-align: center; }
-        .financial-summary { background: #f3f4f6; padding: 15px 20px; border-top: 2px solid #d1d5db; }
-        .fin-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; color: #4b5563; }
-        .fin-total { display: flex; justify-content: space-between; margin-top: 10px; font-size: 1.8rem; font-weight: 900; color: var(--color-dark); align-items: center; }
-        .action-panel { padding: 15px; background: white; border-top: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; grid-template-rows: 1fr 1fr; gap: 10px; height: 160px; }
-        .btn-big { border: none; border-radius: 4px; font-weight: 700; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; color: white; font-size: 0.75rem; text-decoration: none; }
-        .btn-big i { font-size: 1.3rem; margin-bottom: 3px; }
-        .btn-exit { background-color: var(--color-danger); }
-        .btn-client { background-color: #3b82f6; }
-        .btn-cut { background-color: #4b5563; }
-        .btn-reprint { background-color: #6b7280; }
-        .btn-history { background-color: #0891b2; }
-        .btn-iva-active { background-color: var(--color-iva-on); color: white; border: 2px solid var(--color-iva-on); }
-        .btn-iva-inactive { background-color: white; color: #9ca3af; border: 2px solid #e5e7eb; }
-        .btn-pay { background-color: var(--color-success); grid-column: 4; grid-row: 1 / span 2; font-size: 1.5rem; }
+        .pos-wrapper {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
 
-        .mobile-search-bar, .mobile-ticket-inline, .mobile-sidebar { display: none; }
+        .left-panel {
+            flex: 60%;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-right: 1px solid #ccc;
+        }
+
+        .right-panel {
+            flex: 40%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
+        }
+
+        .search-area {
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            height: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid var(--color-primary);
+            border-radius: 4px;
+            box-shadow: none !important;
+        }
+
+        .products-grid {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            align-content: start;
+            padding-right: 5px;
+        }
+
+        .prod-card {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .prod-card:active {
+                transform: scale(0.95);
+                border-color: var(--color-success);
+            }
+
+        .prod-img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            background: #f3f4f6;
+            margin-bottom: 8px;
+            border-radius: 2px;
+        }
+
+        .prod-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 5px;
+            color: var(--color-dark);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 2.4em;
+        }
+
+        .prod-price {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--color-success);
+            text-align: right;
+            margin-top: auto;
+        }
+
+        .ticket-header {
+            background: var(--color-dark);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        .t-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .t-table th {
+                background: #e5e7eb;
+                position: sticky;
+                top: 0;
+                padding: 8px;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                text-align: left;
+                color: #374151;
+                border-bottom: 1px solid #d1d5db;
+            }
+
+            .t-table td {
+                padding: 10px 8px;
+                border-bottom: 1px solid #e5e7eb;
+                vertical-align: middle;
+            }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            width: fit-content;
+        }
+
+        .btn-qty {
+            border: none;
+            background: transparent;
+            color: var(--color-primary);
+            font-weight: bold;
+            padding: 2px 8px;
+            cursor: pointer;
+        }
+
+        .qty-val {
+            font-weight: bold;
+            font-size: 0.9rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .financial-summary {
+            background: #f3f4f6;
+            padding: 15px 20px;
+            border-top: 2px solid #d1d5db;
+        }
+
+        .fin-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .fin-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--color-dark);
+            align-items: center;
+        }
+
+        .action-panel {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 2fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            height: 160px;
+        }
+
+        .btn-big {
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.1s;
+            color: white;
+            font-size: 0.75rem;
+            text-decoration: none;
+        }
+
+            .btn-big i {
+                font-size: 1.3rem;
+                margin-bottom: 3px;
+            }
+
+        .btn-exit {
+            background-color: var(--color-danger);
+        }
+
+        .btn-client {
+            background-color: #3b82f6;
+        }
+
+        .btn-cut {
+            background-color: #4b5563;
+        }
+
+        .btn-reprint {
+            background-color: #6b7280;
+        }
+
+        .btn-history {
+            background-color: #0891b2;
+        }
+
+        .btn-iva-active {
+            background-color: var(--color-iva-on);
+            color: white;
+            border: 2px solid var(--color-iva-on);
+        }
+
+        .btn-iva-inactive {
+            background-color: white;
+            color: #9ca3af;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-pay {
+            background-color: var(--color-success);
+            grid-column: 4;
+            grid-row: 1 / span 2;
+            font-size: 1.5rem;
+        }
+
+        .mobile-search-bar, .mobile-ticket-inline, .mobile-sidebar {
+            display: none;
+        }
 
         /* MÓVIL (TU ORIGINAL) */
         @@media (max-width: 991.98px) {
-            body { background: #f3f4f6; padding: 0; }
-            .pos-wrapper { display: grid; grid-template-columns: 1fr 110px; height: 100vh; overflow: hidden; }
-            .left-panel { display: flex; flex-direction: column; padding: 0; border: none; border-right: 2px solid #ccc; overflow: hidden; background: white; height: 100%; }
-            .left-panel .search-area { display: none; }
-            .mobile-search-bar { display: flex; align-items: center; padding: 10px; background: white; border-bottom: 1px solid #ddd; height: 60px; flex-shrink: 0; }
-            .mobile-input { width: 100%; height: 40px; border-radius: 8px; border: 1px solid #ccc; padding-left: 10px; font-weight: bold; background: #f9fafb; }
-            .products-grid { padding: 0 !important; display: none; background: white; overflow-y: auto; flex: 0 1 auto; max-height: 55vh; border-bottom: 1px solid #374151; grid-template-columns: 1fr !important; }
-            .prod-card { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; height: auto !important; min-height: 50px !important; margin: 0 !important; padding: 8px 10px !important; border: none !important; border-bottom: 1px solid #eee !important; border-radius: 0 !important; box-shadow: none !important; background: white !important; }
-            .prod-card:active { background: #e0f2fe !important; }
-            .prod-img { width: 50px !important; height: 50px !important; border-radius: 4px !important; margin: 0 10px 0 0 !important; object-fit: cover !important; }
-            .prod-name { flex-grow: 1; font-size: 0.85rem !important; font-weight: 500 !important; margin: 0 !important; text-align: left !important; height: auto !important; -webkit-line-clamp: 2; color: #333; line-height: 1.2 !important; }
-            .prod-price { font-size: 1rem !important; margin: 0 !important; min-width: 75px !important; text-align: right !important; color: var(--color-success) !important; font-weight: 700 !important; }
-            .mobile-ticket-inline { display: flex; flex-direction: column; background: #f9fafb; flex: 1 1 auto; min-height: 0; overflow: hidden; }
-            .m-ticket-header { background: #374151; color: white; padding: 8px 10px; font-size: 0.85rem; font-weight: bold; display: flex; justify-content: space-between; flex-shrink: 0; }
-            .m-ticket-body { flex: 1; overflow-y: auto; padding: 0; }
-            .mt-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; padding: 10px; font-size: 0.85rem; background: white; }
-            .mt-desc { flex-grow: 1; line-height: 1.1; padding-right: 10px; }
-            .mt-qty-box { display: flex; align-items: center; gap: 8px; margin-right: 10px; }
-            .mt-btn { width: 28px; height: 28px; background: #f3f4f6; border: 1px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--color-primary); }
-            .mt-total { font-weight: bold; min-width: 60px; text-align: right; font-size: 0.95rem; }
-            .right-panel { display: none !important; }
-            .mobile-sidebar { display: flex; flex-direction: column; background: var(--color-dark); padding: 8px; gap: 8px; align-items: center; box-shadow: -2px 0 10px rgba(0,0,0,0.3); z-index: 100; overflow-y: auto; justify-content: flex-start; }
-            .btn-mob { width: 100%; height: 55px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; flex-shrink: 0; text-decoration: none; }
-            .btn-mob i { font-size: 1.4rem; margin-bottom: 2px; }
-            .btn-mob:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
-            .mob-del { background: var(--color-danger); }
-            .mob-iva-on { background: var(--color-iva-on); border: 1px solid white; }
-            .mob-client { background: var(--color-primary); }
-            .mob-cut { background: #4b5563; }
-            .mob-print { background: #6b7280; }
-            .mob-hist { background: #0891b2; }
-            .mob-pay { background: var(--color-success); color: white; height: 80px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-            .mob-back { background: #4b5563; }
+            body {
+                background: #f3f4f6;
+                padding: 0;
+            }
+
+            .pos-wrapper {
+                display: grid;
+                grid-template-columns: 1fr 110px;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .left-panel {
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+                border: none;
+                border-right: 2px solid #ccc;
+                overflow: hidden;
+                background: white;
+                height: 100%;
+            }
+
+                .left-panel .search-area {
+                    display: none;
+                }
+
+            .mobile-search-bar {
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                background: white;
+                border-bottom: 1px solid #ddd;
+                height: 60px;
+                flex-shrink: 0;
+            }
+
+            .mobile-input {
+                width: 100%;
+                height: 40px;
+                border-radius: 8px;
+                border: 1px solid #ccc;
+                padding-left: 10px;
+                font-weight: bold;
+                background: #f9fafb;
+            }
+
+            .products-grid {
+                padding: 0 !important;
+                display: none;
+                background: white;
+                overflow-y: auto;
+                flex: 0 1 auto;
+                max-height: 55vh;
+                border-bottom: 1px solid #374151;
+                grid-template-columns: 1fr !important;
+            }
+
+            .prod-card {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                height: auto !important;
+                min-height: 50px !important;
+                margin: 0 !important;
+                padding: 8px 10px !important;
+                border: none !important;
+                border-bottom: 1px solid #eee !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
+
+                .prod-card:active {
+                    background: #e0f2fe !important;
+                }
+
+            .prod-img {
+                width: 50px !important;
+                height: 50px !important;
+                border-radius: 4px !important;
+                margin: 0 10px 0 0 !important;
+                object-fit: cover !important;
+            }
+
+            .prod-name {
+                flex-grow: 1;
+                font-size: 0.85rem !important;
+                font-weight: 500 !important;
+                margin: 0 !important;
+                text-align: left !important;
+                height: auto !important;
+                -webkit-line-clamp: 2;
+                color: #333;
+                line-height: 1.2 !important;
+            }
+
+            .prod-price {
+                font-size: 1rem !important;
+                margin: 0 !important;
+                min-width: 75px !important;
+                text-align: right !important;
+                color: var(--color-success) !important;
+                font-weight: 700 !important;
+            }
+
+            .mobile-ticket-inline {
+                display: flex;
+                flex-direction: column;
+                background: #f9fafb;
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .m-ticket-header {
+                background: #374151;
+                color: white;
+                padding: 8px 10px;
+                font-size: 0.85rem;
+                font-weight: bold;
+                display: flex;
+                justify-content: space-between;
+                flex-shrink: 0;
+            }
+
+            .m-ticket-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: 0;
+            }
+
+            .mt-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 10px;
+                font-size: 0.85rem;
+                background: white;
+            }
+
+            .mt-desc {
+                flex-grow: 1;
+                line-height: 1.1;
+                padding-right: 10px;
+            }
+
+            .mt-qty-box {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-right: 10px;
+            }
+
+            .mt-btn {
+                width: 28px;
+                height: 28px;
+                background: #f3f4f6;
+                border: 1px solid #ccc;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: var(--color-primary);
+            }
+
+            .mt-total {
+                font-weight: bold;
+                min-width: 60px;
+                text-align: right;
+                font-size: 0.95rem;
+            }
+
+            .right-panel {
+                display: none !important;
+            }
+
+            .mobile-sidebar {
+                display: flex;
+                flex-direction: column;
+                background: var(--color-dark);
+                padding: 8px;
+                gap: 8px;
+                align-items: center;
+                box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+                z-index: 100;
+                overflow-y: auto;
+                justify-content: flex-start;
+            }
+
+            .btn-mob {
+                width: 100%;
+                height: 55px;
+                border-radius: 10px;
+                border: none;
+                background: rgba(255,255,255,0.1);
+                color: white;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.65rem;
+                font-weight: bold;
+                flex-shrink: 0;
+                text-decoration: none;
+            }
+
+                .btn-mob i {
+                    font-size: 1.4rem;
+                    margin-bottom: 2px;
+                }
+
+                .btn-mob:active {
+                    background: rgba(255,255,255,0.3);
+                    transform: scale(0.95);
+                }
+
+            .mob-del {
+                background: var(--color-danger);
+            }
+
+            .mob-iva-on {
+                background: var(--color-iva-on);
+                border: 1px solid white;
+            }
+
+            .mob-client {
+                background: var(--color-primary);
+            }
+
+            .mob-cut {
+                background: #4b5563;
+            }
+
+            .mob-print {
+                background: #6b7280;
+            }
+
+            .mob-hist {
+                background: #0891b2;
+            }
+
+            .mob-pay {
+                background: var(--color-success);
+                color: white;
+                height: 80px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            }
+
+            .mob-back {
+                background: #4b5563;
+            }
         }
     </style>
 </head>
 <body>
 
-    @* MODALES (TU ORIGINAL + EL NUEVO DE FERIA) *@
-    
+    @* MODALES *@
+
     <div class="modal fade" id="modalApertura" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
@@ -197,15 +640,13 @@
             </div>
         </div>
 
-        @* --- ZONA DERECHA (PC) - ORIGINAL --- *@
+        @* --- ZONA DERECHA (PC) --- *@
         <div class="right-panel d-none d-lg-flex">
             <div class="ticket-header">
                 <div class="fw-bold"><i class="bi bi-cart3 me-2"></i> TICKET (Caja #@cajaId)</div>
                 <div class="d-flex align-items-center gap-2">
                     <div class="small opacity-75 me-2">@User.Identity.Name</div>
-                    <button onclick="limpiarTicket()" class="btn btn-sm btn-outline-light border-0" title="Limpiar Ticket">
-                        <i class="bi bi-trash3"></i>
-                    </button>
+                    <button onclick="limpiarTicket()" class="btn btn-sm btn-outline-light border-0" title="Limpiar Ticket"><i class="bi bi-trash3"></i></button>
                 </div>
             </div>
             <div class="ticket-list-container">
@@ -218,7 +659,6 @@
                 <div class="fin-total"><span>TOTAL:</span><span id="lblTotal">$0.00</span></div>
             </div>
 
-            @* --- BOTONERA PC ORIGINAL --- *@
             <div class="action-panel">
                 <a href="@Url.Action("Index", "Home")" class="btn-big btn-exit"><i class="bi bi-box-arrow-left"></i> SALIR</a>
                 <button class="btn-big btn-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i> Cliente</button>
@@ -230,7 +670,7 @@
             </div>
         </div>
 
-        @* --- BARRA MÓVIL ORIGINAL (LOS 8 BOTONES RESTAURADOS) --- *@
+        @* --- BARRA MÓVIL ORIGINAL --- *@
         <div class="mobile-sidebar">
             <a href="/Home/Index" class="btn-mob mob-back"><i class="bi bi-box-arrow-left"></i><span>SALIR</span></a>
             <button class="btn-mob mob-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i><span>CTE</span></button>
@@ -248,13 +688,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // --- TU SCRIPT ORIGINAL (RESTAURADO) ---
         let debounceTimer;
         let clienteActual = "";
         let aplicaIVA = true;
         let totalNumerico = 0;
         const CAJA_ABIERTA_ID = @cajaId;
         let ultimoPedidoId = 0;
+        let ultimoMontoRecibido = 0; // <--- AGREGADO PARA GUARDAR LA FERIA
 
         function playBeep() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const g = ctx.createGain(); osc.connect(g); g.connect(ctx.destination); osc.frequency.value=1500; g.gain.value=0.05; osc.start(); setTimeout(()=>osc.stop(),80); } catch(e){} }
 
@@ -271,11 +711,7 @@
             $('#inputBusquedaMovil').on('keyup', function() { $('#inputBusqueda').val($(this).val()).trigger('keyup'); });
         });
 
-        function reimprimirUltimo() {
-            if(ultimoPedidoId === 0) { Swal.fire('Aviso', 'No hay venta reciente en esta sesión.', 'info'); }
-            else { window.open('/Ventas/ImprimirTicketVenta/' + ultimoPedidoId, '_blank'); }
-        }
-
+        // --- FUNCIONES ORIGINALES ---
         function abrirCaja() {
             const monto = $('#txtFondoInicial').val();
             if (!monto || monto < 0) { Swal.fire('Error', 'Monto inválido', 'warning'); return; }
@@ -322,15 +758,14 @@
             $('#lblTotal').text('$'+totalFinal.toLocaleString('en-US',{minimumFractionDigits:2}));
             $('#mobTotalInline').text('$'+totalFinal.toLocaleString('en-US',{minimumFractionDigits:2}));
         }
-        
-        // --- AQUÍ ESTÁ LA FUNCIÓN ORIGINAL renderizarResultados QUE HABÍA ROTO ---
+
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer); const term = $(this).val(); const listContainer = $('#contenedorResultados');
             if (term.length < 2) { if (window.innerWidth < 992) listContainer.hide(); if(term.length===0) listContainer.html('<div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size:4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>'); return; }
             if (window.innerWidth < 992) listContainer.show();
             debounceTimer = setTimeout(() => { $.get('/Ventas/BuscarProductos', { term: term }, function(data) { renderizarResultados(data); }); }, 300);
         });
-        
+
         function renderizarResultados(productos) {
             const container = $('#contenedorResultados'); container.empty();
             if (productos.length === 0) { container.append('<div class="col-12 text-center py-3 text-muted small">No encontrado</div>'); return; }
@@ -342,7 +777,7 @@
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) { if (res.success) cargarTicket(); else Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top' }); });
         }
         function restarUnidad(id) { $.post('/Ventas/RestarDelTicket', { id: id }, function(res) { if (res.success) cargarTicket(); }); }
-        
+
         function cargarTicket() {
             $.get('/Ventas/ObtenerTicket', function(data) {
                 const tbody = $('#tablaTicketBody'); const mobList = $('#mobileTicketList'); tbody.empty(); mobList.empty();
@@ -361,12 +796,12 @@
         function asignarCliente() { Swal.fire({ title: 'Cliente', input: 'text', inputValue: clienteActual, showCancelButton: true }).then((r) => { if(r.isConfirmed) { clienteActual = r.value; Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1000}); } }); }
 
         // =======================================================================
-        // AQUI ESTÁ LA NUEVA LÓGICA DE COBRO (INTEGRADA SIN ROMPER NADA MÁS)
+        // LÓGICA DE COBRO CON FERIA (INTEGRADA CORRECTAMENTE)
         // =======================================================================
 
         function abrirModalCobro() {
             if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
-            
+
             const totalConIvaStr = $('#lblTotal').text();
             const textoCliente = clienteActual ? clienteActual : "Público General";
 
@@ -382,7 +817,6 @@
             });
 
             setTimeout(() => {
-                // Opción Efectivo: Abre el nuevo Modal con Feria
                 document.getElementById('btnPagarEfectivo').onclick = function() {
                     Swal.close();
                     $('#txtTotalEnModal').text(totalConIvaStr);
@@ -391,8 +825,6 @@
                     $('#btnConfirmarVentaEfectivo').prop('disabled', true);
                     new bootstrap.Modal(document.getElementById('modalCobroEfectivo')).show();
                 };
-
-                // Opción Tarjeta: Se va directo al proceso (como tenías antes)
                 document.getElementById('btnPagarTarjeta').onclick = function() {
                     Swal.close();
                     procesarVenta('Tarjeta');
@@ -400,7 +832,6 @@
             }, 100);
         }
 
-        // Cálculo de Feria en Tiempo Real
         $('#txtMontoRecibido').on('input', function() {
             const totalStr = $('#txtTotalEnModal').text().replace('$', '').replace(',', '');
             const total = parseFloat(totalStr);
@@ -416,18 +847,33 @@
             }
         });
 
-        // Botón Confirmar del Modal de Efectivo
         $('#btnConfirmarVentaEfectivo').on('click', function() {
             bootstrap.Modal.getInstance(document.getElementById('modalCobroEfectivo')).hide();
             procesarVenta('Efectivo');
         });
 
-        // Función original que conecta con el servidor (INTACTA)
+        // --- FUNCIÓN DE IMPRESIÓN MEJORADA (USA LA FERIA CAPTURADA) ---
+        function reimprimirUltimo() {
+            if(ultimoPedidoId === 0) { Swal.fire('Aviso', 'No hay venta reciente en esta sesión.', 'info'); }
+            else {
+                // AQUÍ ESTÁ EL TRUCO: Pasamos lo recibido en la URL
+                window.open('/Ventas/ImprimirTicketVenta/' + ultimoPedidoId + '?recibido=' + ultimoMontoRecibido, '_blank');
+            }
+        }
+
         function procesarVenta(metodo) {
             Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
             $.post('/Ventas/FinalizarVenta', { nombreCliente: clienteActual, metodoPago: metodo, aplicaIVA: aplicaIVA }, function(res) {
                 if (res.success) {
                     ultimoPedidoId = res.pedidoId;
+
+                    // GUARDAR EL MONTO SI FUE EFECTIVO PARA EL TICKET
+                    ultimoMontoRecibido = 0;
+                    if (metodo === 'Efectivo') {
+                        ultimoMontoRecibido = $('#txtMontoRecibido').val() || 0;
+                    }
+
                     Swal.fire({
                         title: '¡Venta Exitosa!',
                         html: `<h1 class="text-success display-4"><i class="bi bi-check-circle"></i></h1><h3>Folio #${res.pedidoId}</h3><p>Pago: <strong>${metodo}</strong></p>`,
