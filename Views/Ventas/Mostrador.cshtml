@@ -1,7 +1,13 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+
+@{
     ViewData["Title"] = "Punto de Venta";
+    // ESTA LÍNEA ES LA CLAVE: 'null' significa "No me pongas menús ni barras de admin"
     Layout = null;
-    int cajaId = ViewBag.CajaAbiertaId != null ? (int)ViewBag.CajaAbiertaId : 0;
+
+    // Corrección para evitar errores si el ViewBag viene nulo
+    int cajaId = ViewBag.CajaAbiertaId as int? ?? 0;
 }
 
 <!DOCTYPE html>
@@ -9,7 +15,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>POS - Refaccionaria</title>
+    <title>POS - Refaccionaria (Caja #@cajaId)</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -23,39 +30,44 @@
             --color-iva-on: #7c3aed;
         }
 
-        body {
-            background-color: var(--bg-app);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+        /* RESET TOTAL PARA QUE NO SE VEA CHUECO */
+        html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden; /* Evita doble scroll */
+            background-color: var(--bg-app);
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
         .pos-wrapper {
             display: flex;
-            height: 100%;
-            width: 100%;
+            height: 100vh; /* Fuerza altura completa */
+            width: 100vw; /* Fuerza ancho completo */
         }
 
+        /* --- PANEL IZQUIERDO (BUSCADOR Y LISTA MÓVIL) --- */
         .left-panel {
             flex: 60%;
             display: flex;
             flex-direction: column;
             padding: 15px;
             border-right: 1px solid #ccc;
+            height: 100%;
         }
 
+        /* --- PANEL DERECHO (TICKET Y BOTONES) --- */
         .right-panel {
             flex: 40%;
             background: #fff;
             display: flex;
             flex-direction: column;
             box-shadow: -5px 0 15px rgba(0,0,0,0.05);
+            height: 100%;
         }
 
+        /* ESTILOS DEL BUSCADOR */
         .search-area {
             margin-bottom: 15px;
         }
@@ -65,10 +77,10 @@
             font-size: 1.5rem;
             font-weight: bold;
             border: 2px solid var(--color-primary);
-            border-radius: 4px;
             box-shadow: none !important;
         }
 
+        /* GRID DE PRODUCTOS (RESULTADOS) */
         .products-grid {
             flex-grow: 1;
             overflow-y: auto;
@@ -85,12 +97,10 @@
             border-radius: 4px;
             padding: 8px;
             cursor: pointer;
-            transition: all 0.1s;
+            transition: 0.1s;
             display: flex;
             flex-direction: column;
             height: 100%;
-            position: relative;
-            overflow: hidden;
         }
 
             .prod-card:active {
@@ -104,20 +114,16 @@
             object-fit: cover;
             background: #f3f4f6;
             margin-bottom: 8px;
-            border-radius: 2px;
         }
 
         .prod-name {
             font-size: 0.85rem;
             font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 5px;
-            color: var(--color-dark);
+            height: 2.4em;
+            overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            overflow: hidden;
-            height: 2.4em;
         }
 
         .prod-price {
@@ -128,6 +134,7 @@
             margin-top: auto;
         }
 
+        /* TICKET TABLE */
         .ticket-header {
             background: var(--color-dark);
             color: white;
@@ -154,9 +161,7 @@
                 top: 0;
                 padding: 8px;
                 font-size: 0.75rem;
-                text-transform: uppercase;
                 text-align: left;
-                color: #374151;
                 border-bottom: 1px solid #d1d5db;
             }
 
@@ -166,6 +171,7 @@
                 vertical-align: middle;
             }
 
+        /* BOTONES DE CANTIDAD */
         .qty-control {
             display: flex;
             align-items: center;
@@ -192,6 +198,7 @@
             text-align: center;
         }
 
+        /* TOTALES */
         .financial-summary {
             background: #f3f4f6;
             padding: 15px 20px;
@@ -213,9 +220,9 @@
             font-size: 1.8rem;
             font-weight: 900;
             color: var(--color-dark);
-            align-items: center;
         }
 
+        /* BOTONES DE ACCIÓN (PANEL INFERIOR) */
         .action-panel {
             padding: 15px;
             background: white;
@@ -237,7 +244,6 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: 0.1s;
             color: white;
             font-size: 0.75rem;
             text-decoration: none;
@@ -248,6 +254,7 @@
                 margin-bottom: 3px;
             }
 
+        /* COLORES DE BOTONES */
         .btn-exit {
             background-color: var(--color-danger);
         }
@@ -287,35 +294,23 @@
             font-size: 1.5rem;
         }
 
+        /* --- MÓVIL / TABLET (< 992px) --- */
         @@media (max-width: 991.98px) {
-            body {
-                background: #f3f4f6;
-                padding: 0;
-            }
-
             .pos-wrapper {
                 display: grid;
-                grid-template-columns: 1fr 110px;
-                height: 100vh;
-                overflow: hidden;
+                grid-template-columns: 1fr 90px;
             }
-
+            /* Ajuste de barra lateral móvil */
             .left-panel {
-                display: flex;
-                flex-direction: column;
                 padding: 0;
                 border: none;
                 border-right: 2px solid #ccc;
-                overflow: hidden;
                 background: white;
-                height: 100%;
             }
 
             .mobile-search-bar {
                 display: flex;
-                align-items: center;
                 padding: 10px;
-                background: white;
                 border-bottom: 1px solid #ddd;
                 height: 60px;
                 flex-shrink: 0;
@@ -327,72 +322,48 @@
                 border-radius: 8px;
                 border: 1px solid #ccc;
                 padding-left: 10px;
-                font-weight: bold;
                 background: #f9fafb;
             }
-
+            /* Ajustes para lista de productos en móvil */
             .products-grid {
-                padding: 0 !important;
                 display: none;
                 background: white;
-                overflow-y: auto;
-                flex: 0 1 auto;
                 max-height: 55vh;
                 border-bottom: 1px solid #374151;
                 grid-template-columns: 1fr !important;
             }
 
             .prod-card {
-                display: flex !important;
                 flex-direction: row !important;
                 align-items: center !important;
-                justify-content: flex-start !important;
                 height: auto !important;
-                min-height: 50px !important;
+                min-height: 60px !important;
                 margin: 0 !important;
-                padding: 8px 10px !important;
                 border: none !important;
                 border-bottom: 1px solid #eee !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                background: white !important;
             }
 
             .prod-img {
                 width: 50px !important;
                 height: 50px !important;
-                border-radius: 4px !important;
                 margin: 0 10px 0 0 !important;
-                object-fit: cover !important;
             }
 
             .prod-name {
-                flex-grow: 1;
-                font-size: 0.85rem !important;
-                font-weight: 500 !important;
-                margin: 0 !important;
+                font-size: 0.9rem !important;
                 text-align: left !important;
-                height: auto !important;
-                -webkit-line-clamp: 2;
-                color: #333;
-                line-height: 1.2 !important;
             }
 
             .prod-price {
                 font-size: 1rem !important;
-                margin: 0 !important;
-                min-width: 75px !important;
-                text-align: right !important;
-                color: var(--color-success) !important;
-                font-weight: 700 !important;
+                min-width: 80px !important;
             }
-
+            /* Ticket inline en móvil */
             .mobile-ticket-inline {
                 display: flex;
                 flex-direction: column;
                 background: #f9fafb;
-                flex: 1 1 auto;
-                min-height: 0;
+                flex: 1;
                 overflow: hidden;
             }
 
@@ -400,17 +371,14 @@
                 background: #374151;
                 color: white;
                 padding: 8px 10px;
-                font-size: 0.85rem;
                 font-weight: bold;
                 display: flex;
                 justify-content: space-between;
-                flex-shrink: 0;
             }
 
             .m-ticket-body {
                 flex: 1;
                 overflow-y: auto;
-                padding: 0;
             }
 
             .mt-item {
@@ -419,27 +387,22 @@
                 align-items: center;
                 border-bottom: 1px solid #e5e7eb;
                 padding: 10px;
-                font-size: 0.85rem;
                 background: white;
             }
-
+            /* Barra lateral móvil */
             .mobile-sidebar {
                 display: flex;
                 flex-direction: column;
                 background: var(--color-dark);
-                padding: 8px;
-                gap: 8px;
-                align-items: center;
-                box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-                z-index: 100;
+                padding: 5px;
+                gap: 5px;
                 overflow-y: auto;
-                justify-content: flex-start;
             }
 
             .btn-mob {
                 width: 100%;
                 height: 55px;
-                border-radius: 10px;
+                border-radius: 8px;
                 border: none;
                 background: rgba(255,255,255,0.1);
                 color: white;
@@ -448,51 +411,37 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 0.65rem;
-                font-weight: bold;
-                flex-shrink: 0;
                 text-decoration: none;
-            }
-
-                .btn-mob i {
-                    font-size: 1.4rem;
-                    margin-bottom: 2px;
-                }
-
-            .mob-del {
-                background: var(--color-danger);
-            }
-
-            .mob-iva-on {
-                background: var(--color-iva-on);
-                border: 1px solid white;
             }
 
             .mob-pay {
                 background: var(--color-success);
-                color: white;
                 height: 80px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             }
 
-            .mob-back {
-                background: #4b5563;
+            .mob-del {
+                background: var(--color-danger);
             }
         }
     </style>
 </head>
 <body>
 
-    @* ESCUDO DE SEGURIDAD (ANTIFORGERY TOKEN) *@
+    @* ESCUDO DE SEGURIDAD *@
     @Html.AntiForgeryToken()
 
-    @* MODALES *@
+    @* --- MODALES --- *@
+
     <div class="modal fade" id="modalApertura" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-primary text-white"><h5 class="modal-title fw-bold"><i class="bi bi-box-seam me-2"></i>APERTURA DE CAJA</h5></div>
                 <div class="modal-body p-4 text-center">
                     <p class="text-muted mb-3">Tu turno está cerrado. Ingresa el fondo inicial.</p>
-                    <div class="form-floating mb-3"><input type="number" class="form-control fs-1 fw-bold text-center text-primary" id="txtFondoInicial" placeholder="0.00" value="500"><label>Fondo Inicial ($)</label></div>
+                    <div class="form-floating mb-3">
+                        <input type="number" class="form-control fs-1 fw-bold text-center text-primary" id="txtFondoInicial" placeholder="0.00" value="500">
+                        <label>Fondo Inicial ($)</label>
+                    </div>
                     <button class="btn btn-primary btn-lg w-100 py-3 fw-bold" onclick="abrirCaja()">ABRIR CAJA</button>
                 </div>
             </div>
@@ -551,7 +500,9 @@
         </div>
     </div>
 
+    @* --- LAYOUT PRINCIPAL --- *@
     <div class="pos-wrapper">
+
         <div class="left-panel">
             <div class="search-area d-none d-lg-block">
                 <div class="input-group">
@@ -560,13 +511,23 @@
                     <button class="btn btn-light border-2 border-start-0" onclick="$('#inputBusqueda').val('').focus()"><i class="bi bi-x-lg"></i></button>
                 </div>
             </div>
-            <div class="mobile-search-bar"><input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off"></div>
-            <div id="contenedorResultados" class="products-grid">
-                <div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5"><i class="bi bi-upc-scan" style="font-size: 4rem;"></i><h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3></div>
+
+            <div class="mobile-search-bar d-lg-none">
+                <input type="text" id="inputBusquedaMovil" class="mobile-input" placeholder="🔍 Buscar..." autocomplete="off">
             </div>
-            <div class="mobile-ticket-inline">
+
+            <div id="contenedorResultados" class="products-grid">
+                <div class="d-none d-lg-flex flex-column align-items-center justify-content-center w-100 h-100 text-muted opacity-50 pt-5">
+                    <i class="bi bi-upc-scan" style="font-size: 4rem;"></i>
+                    <h3 class="mt-3 fw-bold">LISTO PARA VENDER</h3>
+                </div>
+            </div>
+
+            <div class="mobile-ticket-inline d-lg-none">
                 <div class="m-ticket-header"><span>TICKET ACTUAL</span><span id="mobTotalInline" class="text-warning">$0.00</span></div>
-                <div id="mobileTicketList" class="m-ticket-body"><div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div></div>
+                <div id="mobileTicketList" class="m-ticket-body">
+                    <div class="text-center text-muted small py-4 mt-5">Ticket Vacío</div>
+                </div>
             </div>
         </div>
 
@@ -574,14 +535,19 @@
             <div class="ticket-header">
                 <div class="fw-bold"><i class="bi bi-cart3 me-2"></i> TICKET (Caja #@cajaId)</div>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="small opacity-75 me-2">@User.Identity.Name</div>
+                    <div class="small opacity-75 me-2">@User.Identity?.Name</div>
                     <button onclick="limpiarTicket()" class="btn btn-sm btn-outline-light border-0" title="Limpiar Ticket"><i class="bi bi-trash3"></i></button>
                 </div>
             </div>
+
             <div class="ticket-list-container">
-                <table class="t-table"><thead><tr><th style="width:45%;">Descripción</th><th style="width:20%;">Precio</th><th style="width:20%;">Cant.</th><th style="width:15%;">Total</th><th style="width:5%;"></th></tr></thead><tbody id="tablaTicketBody"></tbody></table>
+                <table class="t-table">
+                    <thead><tr><th style="width:45%;">Descripción</th><th style="width:20%;">Precio</th><th style="width:20%;">Cant.</th><th style="width:15%;">Total</th><th style="width:5%;"></th></tr></thead>
+                    <tbody id="tablaTicketBody"></tbody>
+                </table>
                 <div id="emptyTicketMsg" class="text-center py-5 text-muted"><p>Ticket Vacío</p></div>
             </div>
+
             <div class="financial-summary">
                 <div class="fin-row"><span>Subtotal</span><span id="lblSubtotal">$0.00</span></div>
                 <div class="fin-row"><span>IVA (16%)</span><span id="lblIVA">$0.00</span></div>
@@ -599,7 +565,7 @@
             </div>
         </div>
 
-        <div class="mobile-sidebar">
+        <div class="mobile-sidebar d-lg-none">
             <a href="/Home/Index" class="btn-mob mob-back"><i class="bi bi-box-arrow-left"></i><span>SALIR</span></a>
             <button class="btn-mob mob-client" onclick="asignarCliente()"><i class="bi bi-person-fill"></i><span>CTE</span></button>
             <button id="btnMobIva" class="btn-mob mob-iva-on" onclick="toggleIVA()"><i class="bi bi-percent"></i><span id="txtMobIva">CON IVA</span></button>
@@ -616,6 +582,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        // VARIABLES GLOBALES
         let debounceTimer;
         let clienteActual = "";
         let aplicaIVA = true;
@@ -624,20 +591,25 @@
         let ultimoPedidoId = 0;
         let ultimoMontoRecibido = 0;
 
+        // SONIDO BEEP
         function playBeep() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const g = ctx.createGain(); osc.connect(g); g.connect(ctx.destination); osc.frequency.value=1500; g.gain.value=0.05; osc.start(); setTimeout(()=>osc.stop(),80); } catch(e){} }
 
+        // INICIO
         $(document).ready(function() {
             if (CAJA_ABIERTA_ID === 0) {
                 new bootstrap.Modal(document.getElementById('modalApertura')).show();
             } else { cargarTicket(); }
 
+            // Teclas Rápidas
             $(document).keydown(function(e) {
                 if(e.key === "F12") { e.preventDefault(); abrirModalCobro(); }
                 if(e.key === "F2") { e.preventDefault(); $('#inputBusqueda').focus(); }
             });
+            // Sync Buscador Móvil
             $('#inputBusquedaMovil').on('keyup', function() { $('#inputBusqueda').val($(this).val()).trigger('keyup'); });
         });
 
+        // FUNCIONES
         function reimprimirUltimo() {
             if(ultimoPedidoId === 0) { Swal.fire('Aviso', 'No hay venta reciente en esta sesión.', 'info'); }
             else { window.open('/Ventas/ImprimirTicketVenta/' + ultimoPedidoId + '?recibido=' + ultimoMontoRecibido, '_blank'); }
@@ -699,6 +671,7 @@
             $('#mobTotalInline').text(fmtMoney(totalFinal));
         }
 
+        // BUSQUEDA
         $('#inputBusqueda').on('keyup', function() {
             clearTimeout(debounceTimer); const term = $(this).val(); const listContainer = $('#contenedorResultados');
             if (term.length < 2) {
@@ -716,11 +689,11 @@
             productos.forEach(p => { container.append(`<div id="prod-${p.id}" class="prod-card" onclick="agregarAlTicket(${p.id})"><img src="${p.imagenUrl||'/images/no-image.png'}" class="prod-img"><div class="prod-name">${p.nombre}</div><div class="prod-price">$${p.precioVenta.toFixed(2)}</div></div>`); });
         }
 
+        // TICKET OPS
         function agregarAlTicket(id) {
             playBeep(); const card = $(`#prod-${id}`); card.css('background', '#dcfce7'); setTimeout(() => card.css('background', ''), 200);
             $.post('/Ventas/AgregarAlTicket', { id: id }, function(res) { if (res.success) cargarTicket(); else Swal.fire({ icon: 'warning', title: 'Stock', text: res.message, toast: true, position: 'top' }); });
         }
-
         function restarUnidad(id) { $.post('/Ventas/RestarDelTicket', { id: id }, function(res) { if (res.success) cargarTicket(); }); }
 
         function cargarTicket() {
@@ -736,11 +709,11 @@
                 recalcularTotalesVisuales();
             });
         }
-
         function eliminarDelTicket(id) { $.post('/Ventas/EliminarDelTicket', { id: id }, function() { cargarTicket(); }); }
         function limpiarTicket() { $.post('/Ventas/LimpiarTicket', function() { cargarTicket(); }); }
         function asignarCliente() { Swal.fire({ title: 'Cliente', input: 'text', inputValue: clienteActual, showCancelButton: true }).then((r) => { if(r.isConfirmed) { clienteActual = r.value; Swal.fire({icon:'success', title: 'Cliente Asignado', text: clienteActual || 'Público', toast: true, position: 'top', timer: 1000}); } }); }
 
+        // COBRO
         function abrirModalCobro() {
             if (totalNumerico <= 0) { Swal.fire('Error', 'Ticket vacío', 'error'); return; }
             const totalConIvaStr = $('#lblTotal').text();
@@ -768,6 +741,7 @@
                 };
                 document.getElementById('btnPagarTarjeta').onclick = function() {
                     Swal.close();
+                    // AQUÍ ENTRA LA LÓGICA DE TERMINAL EXTERNA QUE PLATICAMOS
                     procesarVenta('Tarjeta');
                 };
             }, 100);
