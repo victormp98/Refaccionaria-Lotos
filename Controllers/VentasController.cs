@@ -244,7 +244,6 @@ namespace RefaccionariaWeb.Controllers
         // ==========================================
         // 4. FINALIZAR VENTA (SIN LA VARIABLE INVENTADA)
         // ==========================================
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FinalizarVenta(string nombreCliente, string metodoPago, bool aplicaIVA, string rfc = null)
@@ -253,23 +252,19 @@ namespace RefaccionariaWeb.Controllers
             if (carrito == null || !carrito.Any()) return Json(new { success = false, message = "El ticket está vacío." });
 
             var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             var cajaAbierta = await _context.CortesCaja
                 .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.FechaCierre == null);
 
             if (cajaAbierta == null)
-            {
-                return Json(new { success = false, message = "⚠️ ERROR: Tu turno está cerrado. Refresca para abrir caja." });
-            }
+                return Json(new { success = false, message = "⚠️ ERROR: Tu turno está cerrado." });
 
+            // --- INICIO DE BLOQUE SEGURO ---
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 decimal subtotal = carrito.Sum(x => x.Cantidad * x.Precio);
-                decimal totalFinal = subtotal;
+                decimal totalFinal = aplicaIVA ? subtotal * 1.16m : subtotal;
                 string infoIva = aplicaIVA ? " (Con IVA 16%)" : " (Sin IVA)";
-
-                if (aplicaIVA) totalFinal = subtotal * 1.16m;
 
                 var pedido = new Pedido
                 {
@@ -278,7 +273,7 @@ namespace RefaccionariaWeb.Controllers
                     Status = PedidoStatus.Entregado,
                     TotalPedido = totalFinal,
                     NombreReceptor = nombreCliente ?? "Público General",
-                    DireccionEnvio = "Mostrador - " + (metodoPago ?? "Efectivo") + infoIva,
+                    DireccionEnvio = $"Mostrador - {metodoPago ?? "Efectivo"}{infoIva}",
                     CiudadEnvio = "N/A",
                     EstadoEnvio = "N/A",
                     CodigoPostalEnvio = "00000",
@@ -293,9 +288,14 @@ namespace RefaccionariaWeb.Controllers
 
                 foreach (var item in carrito)
                 {
+                    // RE-VERIFICACIÓN DE STOCK (Punto crítico de seguridad)
                     var producto = await _context.Productos.FindAsync(item.ProductoId);
-                    if (producto == null || producto.Stock < item.Cantidad)
-                        throw new Exception($"Stock insuficiente para {item.Nombre}");
+
+                    if (producto == null)
+                        throw new Exception($"El producto {item.Nombre} ya no existe en el catálogo.");
+
+                    if (producto.Stock < item.Cantidad)
+                        throw new Exception($"¡Venta cancelada! Solo quedan {producto.Stock} unidades de {item.Nombre}.");
 
                     producto.Stock -= item.Cantidad;
                     _context.Update(producto);
@@ -319,16 +319,19 @@ namespace RefaccionariaWeb.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                HttpContext.Session.Remove("Carrito");
+                await transaction.CommitAsync(); // Aquí es donde el dinero se amarra legalmente
 
+                HttpContext.Session.Remove("Carrito");
                 return Json(new { success = true, pedidoId = pedido.Id });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error crítico al procesar la venta"); // <--- CORREGIDO SIN 'id' INVENTADA
-                return Json(new { success = false, message = "Ocurrió un error interno al procesar la venta. Intente de nuevo." });
+                await transaction.RollbackAsync(); // Si algo falló, deshacemos todo como si no hubiera pasado nada
+                _logger.LogError(ex, "Falla en transacción de venta");
+
+                // Mensaje genérico para el cliente, pero informativo sobre el stock si fue el caso
+                string errorMsg = ex.Message.Contains("unidades") ? ex.Message : "Error interno al procesar el pago.";
+                return Json(new { success = false, message = errorMsg });
             }
         }
 
