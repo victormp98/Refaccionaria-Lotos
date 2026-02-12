@@ -27,6 +27,8 @@ namespace RefaccionariaWeb.Data
             modelBuilder.Entity<DetallePedido>().ToTable("detallespedido");
             modelBuilder.Entity<Scrap>().ToTable("scraps");
             modelBuilder.Entity<MovimientoInventario>().ToTable("MovimientosInventario");
+            modelBuilder.Entity<CorteCaja>().ToTable("cortescaja");
+            modelBuilder.Entity<SucursalConfig>().ToTable("SucursalConfig");
 
         }
     }

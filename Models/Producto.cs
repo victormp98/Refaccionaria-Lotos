@@ -33,6 +33,7 @@ namespace RefaccionariaWeb.Models
         public string? ImagenUrl { get; set; } // Puede estar vacío si viene de Excel
 
         public bool EsVisibleEnLinea { get; set; } = true;
+        public bool Eliminado { get; set; } = false;
 
         public ICollection<Compatibilidad>? Compatibilidades { get; set; }
     }

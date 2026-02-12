@@ -1,130 +1,88 @@
 @model IEnumerable<RefaccionariaWeb.Models.Producto>
+
 @{
-    ViewData["Title"] = "Inventario";
+    ViewData["Title"] = "Inventario de Productos";
 }
 
-<style>
-    :root {
-        --primary-soft: #e3f2fd;
-        --secondary-soft: #f5f5f5;
-        --danger-soft: #ffebee;
-        --success-soft: #e8f5e9;
-    }
+<div class="container mt-4">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
 
-    .btn-action {
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-weight: 600;
-        font-size: 0.8rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border: none;
-        text-decoration: none;
-    }
+    <p>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Producto</a>
+            <a asp-action="Papelera" class="btn btn-secondary"><i class="bi bi-trash me-2"></i>Ver Papelera</a>
+        }
+    </p>
 
-    .btn-edit {
-        background: var(--primary-soft);
-        color: #0d6efd;
-    }
-
-    .btn-view {
-        background: var(--secondary-soft);
-        color: #6c757d;
-    }
-
-    .btn-del {
-        background: var(--danger-soft);
-        color: #dc3545;
-    }
-
-    .btn-buy {
-        background: var(--success-soft);
-        color: #198754;
-    }
-</style>
-
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-2">
-        <h2 class="fw-bold mb-0 text-dark"><i class="bi bi-box-seam-fill text-primary"></i> Inventario</h2>
-        <div class="d-flex gap-2">
-            @if (User.IsInRole("Admin"))
-            {
-                <a asp-action="Papelera" class="btn btn-outline-danger rounded-pill px-3 fw-bold"><i class="bi bi-trash3"></i> Papelera</a>
-                <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow fw-bold"><i class="bi bi-plus-lg"></i> Nuevo</a>
-            }
-        </div>
-    </div>
-
-    @* PC *@
-    <div class="table-responsive d-none d-md-block shadow-sm rounded-4 overflow-hidden border">
-        <table class="table table-hover align-middle mb-0 bg-white">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
-                    <th class="ps-4">Producto</th>
-                    <th>Marca</th>
+                    <th>Producto</th>
+                    <th>SKU</th>
                     <th>Precio Venta</th>
                     <th>Stock</th>
-                    <th class="text-end pe-4">Acciones</th>
+                    <th>Visibilidad</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td class="ps-4">
+                        <td>
                             <div class="d-flex align-items-center">
-                                <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" class="rounded-3 me-3 border" style="width: 45px; height: 45px; object-fit: cover;" />
-                                <div><div class="fw-bold">@item.Nombre</div><small class="text-muted">@item.SKU</small></div>
+                                <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" class="rounded border me-3" style="width: 40px; height: 40px; object-fit: cover;" />
+                                <span class="fw-bold">@Html.DisplayFor(modelItem => item.Nombre)</span>
                             </div>
                         </td>
-                        <td><span class="badge bg-light text-dark border">@item.MarcaPieza</span></td>
-                        <td class="fw-bold text-success">$@item.PrecioVenta</td>
-                        <td><span class="badge @(item.Stock < 5 ? "bg-danger" : "bg-dark") rounded-pill px-3">@item.Stock pzas</span></td>
-                        <td class="text-end pe-4">
-                            <div class="d-flex justify-content-end gap-2">
+                        <td>@Html.DisplayFor(modelItem => item.SKU)</td>
+                        <td>@Html.DisplayFor(modelItem => item.PrecioVenta)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Stock)</td>
+                        <td>
+                            @if (item.EsVisibleEnLinea)
+                            {
+                                <span class="badge bg-success">Online</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Oculto</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Detalles"><i class="bi bi-search"></i></a>
+
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <a asp-action="Compra" asp-route-id="@item.Id" class="btn-action btn-buy"><i class="bi bi-cart-plus"></i> Compra</a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn-action btn-edit"><i class="bi bi-pencil-square"></i> Editar</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn-action btn-del"><i class="bi bi-trash"></i> Quitar</a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                    
+                                    <!-- Botón para Alternar Visibilidad Web (Usa un form para POST) -->
+                                    <form asp-action="AlternarVisibilidadWeb" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm @(item.EsVisibleEnLinea ? "btn-outline-info" : "btn-outline-secondary")" title="@(item.EsVisibleEnLinea ? "Ocultar de la Web" : "Mostrar en la Web")">
+                                            <i class="bi @(item.EsVisibleEnLinea ? "bi-eye-fill" : "bi-eye-slash-fill")"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Botón para Mover a Papelera (Usa un form para POST) -->
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="get" class="d-inline">
+                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Mover a Papelera">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 }
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn-action btn-view"><i class="bi bi-eye"></i> Ver</a>
+
+                                @* Nuevo Botón 'Compra' para Admin y Almacen *@
+                                @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
+                                {
+                                    <a asp-action="Compra" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success" title="Registrar Compra"><i class="bi bi-box-seam"></i></a>
+                                }
                             </div>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-    </div>
-
-    @* MÓVIL *@
-    <div class="d-block d-md-none">
-        @foreach (var item in Model)
-        {
-            <div class="card mb-3 shadow-sm border-0 rounded-4 border-start border-5 border-primary">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" class="rounded-3 border me-3" style="width: 60px; height: 60px; object-fit: cover;" />
-                        <div class="flex-grow-1">
-                            <h6 class="fw-bold mb-0">@item.Nombre</h6>
-                            <div class="text-muted small">@item.MarcaPieza | SKU: @item.SKU</div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a asp-action="Compra" asp-route-id="@item.Id" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold">Compra</a>
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold">Editar</a>
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">Eliminar</a>
-                        }
-                        else
-                        {
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold">Ver</a>
-                        }
-                    </div>
-                </div>
-            </div>
-        }
     </div>
 </div>

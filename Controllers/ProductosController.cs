@@ -1,42 +1,39 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System.Security.Claims;
+using RefaccionariaWeb.Services;
+using System.Threading.Tasks;
+using System;
+using Microsoft.AspNetCore.Http;
 
 namespace RefaccionariaWeb.Controllers
 {
     [Authorize(Roles = "Admin,Mostrador,Almacen")]
     public class ProductosController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IAlmacenService _almacenService;
         private readonly IWebHostEnvironment _hostEnvironment;
 
-        public ProductosController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
+        public ProductosController(IAlmacenService almacenService, IWebHostEnvironment hostEnvironment)
         {
-            _context = context;
+            _almacenService = almacenService;
             _hostEnvironment = hostEnvironment;
         }
 
         public async Task<IActionResult> Index()
         {
-            // Solo mostramos los que están activos en el inventario principal
-            return View(await _context.Productos.Where(p => p.EsVisibleEnLinea == true).ToListAsync());
+            var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: false);
+            return View(productos);
         }
 
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
-
-            var producto = await _context.Productos
-                .Include(p => p.Compatibilidades.Where(c => c.Vehiculo.Activo == true))
-                .ThenInclude(c => c.Vehiculo)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
+            var producto = await _almacenService.ObtenerProductoPorId(id.Value);
             if (producto == null) return NotFound();
             return View(producto);
         }
@@ -56,8 +53,7 @@ namespace RefaccionariaWeb.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(producto);
-                await _context.SaveChangesAsync();
+                await _almacenService.CrearProducto(producto);
                 return RedirectToAction(nameof(Index));
             }
             return View(producto);
@@ -67,7 +63,7 @@ namespace RefaccionariaWeb.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-            var producto = await _context.Productos.FindAsync(id);
+            var producto = await _almacenService.ObtenerProductoPorId(id.Value);
             if (producto == null) return NotFound();
             return View(producto);
         }
@@ -81,31 +77,34 @@ namespace RefaccionariaWeb.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                if (imagenArchivo != null && imagenArchivo.Length > 0)
                 {
-                    if (imagenArchivo != null && imagenArchivo.Length > 0)
-                    {
-                        producto.ImagenUrl = await GuardarImagen(imagenArchivo);
-                    }
-                    _context.Update(producto);
-                    await _context.SaveChangesAsync();
+                    producto.ImagenUrl = await GuardarImagen(imagenArchivo);
                 }
-                catch (DbUpdateConcurrencyException)
+
+                var resultado = await _almacenService.EditarProducto(producto);
+                if (!resultado)
                 {
-                    if (!ProductoExists(producto.Id)) return NotFound();
-                    else throw;
+                    return NotFound();
                 }
                 return RedirectToAction(nameof(Index));
             }
             return View(producto);
         }
 
-        // ACCIÓN PARA EL MÓDULO DE COMPRAS (Suma stock y actualiza precios)
+        [HttpPost]
+        [Authorize(Roles = "Admin")] // Solo el Admin puede alternar visibilidad
+        public async Task<IActionResult> AlternarVisibilidadWeb(int id)
+        {
+            await _almacenService.AlternarVisibilidadWeb(id);
+            return RedirectToAction(nameof(Index)); // Redirige de vuelta al listado
+        }
+
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Compra(int? id)
         {
             if (id == null) return NotFound();
-            var producto = await _context.Productos.FindAsync(id);
+            var producto = await _almacenService.ObtenerProductoPorId(id.Value);
             if (producto == null) return NotFound();
             return View(producto);
         }
@@ -115,37 +114,17 @@ namespace RefaccionariaWeb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Compra(int id, int cantidad, decimal precioCompra, decimal precioVenta, string? referencia)
         {
-            var producto = await _context.Productos.FindAsync(id);
-            if (producto == null) return NotFound();
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var resultado = await _almacenService.RegistrarCompra(id, cantidad, precioCompra, precioVenta, usuarioId, referencia);
 
-            if (cantidad <= 0)
+            if (!resultado)
             {
-                ModelState.AddModelError("", "La cantidad debe ser mayor a cero.");
+                ModelState.AddModelError("", "No se pudo registrar la compra. Verifique que la cantidad sea válida, el producto exista o el precio de venta no sea menor al de compra.");
+                var producto = await _almacenService.ObtenerProductoPorId(id);
                 return View(producto);
             }
 
-            // 1. Actualizar Datos del Producto
-            producto.Stock += cantidad;
-            producto.PrecioCompra = precioCompra;
-            producto.PrecioVenta = precioVenta;
-
-            // 2. Registrar en Bitácora (Tabla Intermedia)
-            var movimiento = new MovimientoInventario
-            {
-                ProductoId = producto.Id,
-                TipoMovimiento = "ENTRADA",
-                Cantidad = cantidad,
-                FechaRegistro = DateTime.Now,
-                Referencia = referencia ?? "Compra de mercancía",
-                UsuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                NombreUsuario = User.Identity?.Name
-            };
-
-            _context.Update(producto);
-            _context.Add(movimiento);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Compra registrada: {cantidad} unidades de {producto.Nombre}";
+            TempData["Success"] = $"Compra registrada: {cantidad} unidades.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -153,7 +132,7 @@ namespace RefaccionariaWeb.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-            var producto = await _context.Productos.FirstOrDefaultAsync(m => m.Id == id);
+            var producto = await _almacenService.ObtenerProductoPorId(id.Value);
             if (producto == null) return NotFound();
             return View(producto);
         }
@@ -163,37 +142,21 @@ namespace RefaccionariaWeb.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var producto = await _context.Productos.FindAsync(id);
-            if (producto != null)
-            {
-                // CAMBIO: Ahora solo lo oculta (lo manda a papelera) en lugar de borrarlo
-                producto.EsVisibleEnLinea = false;
-                _context.Update(producto);
-                await _context.SaveChangesAsync();
-            }
+            await _almacenService.MoverAPapelera(id);
             return RedirectToAction(nameof(Index));
         }
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Papelera()
         {
-            var productosOcultos = await _context.Productos
-                .Where(p => p.EsVisibleEnLinea == false)
-                .ToListAsync();
-
+            var productosOcultos = await _almacenService.ObtenerPapelera();
             return View(productosOcultos);
         }
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Restaurar(int id)
         {
-            var producto = await _context.Productos.FindAsync(id);
-            if (producto != null)
-            {
-                producto.EsVisibleEnLinea = true;
-                _context.Update(producto);
-                await _context.SaveChangesAsync();
-            }
+            await _almacenService.RestaurarDePapelera(id);
             return RedirectToAction(nameof(Papelera));
         }
 
@@ -209,7 +172,5 @@ namespace RefaccionariaWeb.Controllers
             }
             return "/imagenes/" + nombreArchivo;
         }
-
-        private bool ProductoExists(int id) => _context.Productos.Any(e => e.Id == id);
     }
 }
