@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RefaccionariaWeb.Models.ViewModels.EditarUsuarioViewModel>
+﻿@model IEnumerable<RefaccionariaWeb.Models.ViewModels.UsuarioViewModel>
 
 @{
     ViewData["Title"] = "Usuarios Bloqueados";
@@ -35,7 +35,7 @@
                             <small class="text-muted fw-normal">ID: @item.Id.Substring(0, 8)...</small>
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-secondary rounded-pill px-3">@item.RolSeleccionado</span>
+                            <span class="badge bg-secondary rounded-pill px-3">@item.Rol</span>
                         </td>
                         <td class="text-end pe-5">
                             <a asp-action="Desbloquear" asp-route-id="@item.Id" asp-route-tipo="@tipoActual" class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm">
@@ -58,7 +58,7 @@
                         <div class="overflow-hidden">
                             <h6 class="mb-0 text-truncate fw-bold text-muted">@item.Email</h6>
                             <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 mt-1 rounded-pill">
-                                @item.RolSeleccionado
+                                @item.Rol
                             </span>
                         </div>
                         <div class="bg-danger bg-opacity-10 p-2 rounded-circle">

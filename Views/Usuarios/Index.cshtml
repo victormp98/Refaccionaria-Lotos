@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RefaccionariaWeb.Models.ViewModels.EditarUsuarioViewModel>
+﻿@model IEnumerable<RefaccionariaWeb.Models.ViewModels.UsuarioViewModel>
 
 @{
     ViewData["Title"] = "Gestión de Usuarios";
@@ -37,10 +37,10 @@
                         <td class="ps-4 fw-bold">@item.Email</td>
                         <td class="text-center">
                             @{
-                                var bClass = item.RolSeleccionado == "Admin" ? "bg-danger" :
-                                (item.RolSeleccionado == "Cliente" ? "bg-info text-dark" : "bg-success");
+                                var bClass = item.Rol == "Admin" ? "bg-danger" :
+                                (item.Rol == "Cliente" ? "bg-info text-dark" : "bg-success");
                             }
-                            <span class="badge @bClass px-3 py-2 rounded-pill">@item.RolSeleccionado?.ToUpper()</span>
+                            <span class="badge @bClass px-3 py-2 rounded-pill">@item.Rol?.ToUpper()</span>
                         </td>
                         <td class="text-end pe-5">
                             <a asp-action="Edit" asp-route-id="@item.Id" asp-route-tipo="@tipoActual" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" style="background:#e3f2fd; border:none;">
@@ -57,10 +57,10 @@
     <div class="d-block d-md-none mb-4">
         @foreach (var item in Model)
         {
-            <div class="card mb-3 shadow-sm border-0 rounded-4 border-start border-5 @(item.RolSeleccionado == "Cliente" ? "border-info" : "border-primary")">
+            <div class="card mb-3 shadow-sm border-0 rounded-4 border-start border-5 @(item.Rol == "Cliente" ? "border-info" : "border-primary")">
                 <div class="card-body">
                     <h6 class="fw-bold text-dark mb-1 text-truncate">@item.Email</h6>
-                    <span class="badge bg-light text-primary border mb-3">@item.RolSeleccionado</span>
+                    <span class="badge bg-light text-primary border mb-3">@item.Rol</span>
                     <div class="d-flex justify-content-end">
                         <a asp-action="Edit" asp-route-id="@item.Id" asp-route-tipo="@tipoActual" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold">Administrar</a>
                     </div>
