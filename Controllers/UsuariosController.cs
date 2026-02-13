@@ -33,18 +33,32 @@ namespace RefaccionariaWeb.Controllers
             return View(modelo);
         }
 
-        // 3. CREACIÓN
-        public IActionResult Crear() => View();
+        // 3. CREACIÓN (GET): Recibe el tipo para no perder el origen
+        public IActionResult Crear(string tipo)
+        {
+            ViewBag.TipoActual = tipo;
+            return View();
+        }
 
+        // 3. CREACIÓN (POST): Redirecciona según el tipo de origen
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Crear(CrearUsuarioViewModel model)
+        public async Task<IActionResult> Crear(CrearUsuarioViewModel model, string tipo)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.TipoActual = tipo;
+                return View(model);
+            }
 
             var exito = await _usuariosService.Crear(model);
-            if (exito) return RedirectToAction(nameof(Index), new { tipo = "personal" });
+            if (exito)
+            {
+                // Ahora te regresa a la lista correcta (Personal o Clientes)
+                return RedirectToAction(nameof(Index), new { tipo = tipo });
+            }
 
+            ViewBag.TipoActual = tipo;
             ModelState.AddModelError("", "Error al crear el usuario. Verifique los requisitos de contraseña.");
             return View(model);
         }
@@ -54,7 +68,7 @@ namespace RefaccionariaWeb.Controllers
         {
             var model = await _usuariosService.ObtenerParaEditar(id);
             if (model == null) return NotFound();
-            
+
             ViewBag.TipoRetorno = tipo;
             return View(model);
         }
@@ -68,8 +82,8 @@ namespace RefaccionariaWeb.Controllers
             var exito = await _usuariosService.Editar(model);
             if (!exito) return View(model);
 
-            return model.EstaBloqueado 
-                ? RedirectToAction(nameof(Papelera), new { tipo = tipo }) 
+            return model.EstaBloqueado
+                ? RedirectToAction(nameof(Papelera), new { tipo = tipo })
                 : RedirectToAction(nameof(Index), new { tipo = tipo });
         }
 

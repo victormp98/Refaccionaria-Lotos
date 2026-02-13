@@ -16,7 +16,7 @@
             <a asp-action="Papelera" asp-route-tipo="@tipoActual" class="btn btn-outline-danger rounded-pill px-3 fw-bold">
                 <i class="bi bi-shield-lock"></i> Papelera
             </a>
-            <a asp-action="Crear" class="btn btn-primary rounded-pill px-4 shadow fw-bold">Nuevo Registro</a>
+            <a asp-action="Crear" asp-route-tipo="@tipoActual" class="btn btn-primary rounded-pill px-4 shadow fw-bold">Nuevo Registro</a>
         </div>
     </div>
 

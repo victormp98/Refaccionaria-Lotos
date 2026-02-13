@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Registrar Empleado";
+    // Recuperamos el tipo que viene del controlador
+    string tipoOrigen = ViewBag.TipoActual?.ToString();
 }
 
 <div class="container mt-5">
@@ -11,7 +13,7 @@
 
                 <div class="card-header bg-success text-white py-3 rounded-top-4">
                     <h4 class="mb-0">
-                        <i class="bi bi-person-plus-fill"></i> Nuevo Empleado
+                        <i class="bi bi-person-plus-fill"></i> Nuevo Registro
                     </h4>
                 </div>
 
@@ -19,11 +21,12 @@
 
                     <div class="alert alert-light border small text-muted mb-4">
                         <i class="bi bi-info-circle-fill text-info"></i>
-                        El empleado se creará con el rol de <strong>Mostrador</strong> por defecto.
+                        El usuario se creará con el rol de <strong>Mostrador</strong> por defecto.
                         Podrás cambiar su rol después en la opción "Administrar".
                     </div>
 
-                    <form asp-action="Crear">
+                    @* Agregamos el tipo al form para que el POST sepa a dónde regresar *@
+                    <form asp-action="Crear" asp-route-tipo="@tipoOrigen">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
@@ -49,7 +52,8 @@
                             <button type="submit" class="btn btn-success btn-lg rounded-pill shadow-sm">
                                 <i class="bi bi-check-lg"></i> Registrar Usuario
                             </button>
-                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
+                            @* CORRECCIÓN: Ahora el botón cancelar lleva el tipo de regreso *@
+                            <a asp-action="Index" asp-route-tipo="@tipoOrigen" class="btn btn-outline-secondary rounded-pill">
                                 Cancelar
                             </a>
                         </div>
