@@ -68,7 +68,7 @@ namespace RefaccionariaWeb.Services
                         Email = user.Email,
                         UserName = user.UserName,
                         Rol = rolPrincipal,
-                        EstaBloqueado = estaBloqueado // Ahora usa el valor real de estaBloqueado
+                        EstaBloqueado = estaBloqueado
                     });
                 }
             }
@@ -87,7 +87,7 @@ namespace RefaccionariaWeb.Services
             {
                 Id = usuario.Id,
                 Email = usuario.Email,
-                UserName = usuario.UserName,
+                // UserName = usuario.UserName,  <-- Borrada
                 Telefono = usuario.PhoneNumber,
                 RolSeleccionado = rolesUsuario.FirstOrDefault(),
                 EstaBloqueado = await _userManager.IsLockedOutAsync(usuario),
@@ -107,11 +107,10 @@ namespace RefaccionariaWeb.Services
 
             if (result.Succeeded)
             {
-                // Asignar rol 'Mostrador' SIEMPRE por defecto al crear, ignorando cualquier otra selección.
-                await _userManager.AddToRoleAsync(user, "Mostrador"); 
+                await _userManager.AddToRoleAsync(user, "Mostrador");
                 return true;
             }
-            return false; // Falló la creación
+            return false;
         }
 
         public async Task<bool> Editar(EditarUsuarioViewModel model)
@@ -126,7 +125,6 @@ namespace RefaccionariaWeb.Services
             var result = await _userManager.UpdateAsync(usuario);
             if (!result.Succeeded) return false;
 
-            // Lógica para actualizar roles, solo si se ha seleccionado un rol (no nulo/vacío)
             if (!string.IsNullOrEmpty(model.RolSeleccionado))
             {
                 var rolesActuales = await _userManager.GetRolesAsync(usuario);
@@ -136,9 +134,7 @@ namespace RefaccionariaWeb.Services
                 var resultAdd = await _userManager.AddToRoleAsync(usuario, model.RolSeleccionado);
                 if (!resultAdd.Succeeded) return false;
             }
-            // Si model.RolSeleccionado es nulo/vacío, se conservan los roles existentes.
 
-            // Ajuste de Bloqueo en el Servicio
             bool lockoutSuccess;
             if (model.EstaBloqueado)
                 lockoutSuccess = await Bloquear(model.Id);
@@ -153,11 +149,9 @@ namespace RefaccionariaWeb.Services
             var usuario = await _userManager.FindByIdAsync(id);
             if (usuario == null) return false;
 
-            // Bloqueo permanente para simular eliminación lógica
             var result = await _userManager.SetLockoutEndDateAsync(usuario, DateTimeOffset.UtcNow.AddYears(100));
             if (!result.Succeeded) return false;
-            
-            // También reiniciamos el contador de fallos de acceso
+
             var resetResult = await _userManager.ResetAccessFailedCountAsync(usuario);
             return resetResult.Succeeded;
         }
@@ -167,11 +161,9 @@ namespace RefaccionariaWeb.Services
             var usuario = await _userManager.FindByIdAsync(id);
             if (usuario == null) return false;
 
-            // Quitar bloqueo
             var result = await _userManager.SetLockoutEndDateAsync(usuario, null);
             if (!result.Succeeded) return false;
 
-            // También reiniciamos el contador de fallos de acceso
             var resetResult = await _userManager.ResetAccessFailedCountAsync(usuario);
             return resetResult.Succeeded;
         }
