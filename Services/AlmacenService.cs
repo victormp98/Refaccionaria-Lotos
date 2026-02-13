@@ -25,18 +25,21 @@ namespace RefaccionariaWeb.Services
             var query = _context.Productos.AsQueryable();
             query = query.Where(p => !p.Eliminado);
 
-            if (soloVisibles)
-            {
-                query = query.Where(p => p.EsVisibleEnLinea == true);
-            }
+            if (soloVisibles) query = query.Where(p => p.EsVisibleEnLinea == true);
 
-            // LÓGICA DE BÚSQUEDA (SQL Safe)
+            // LÓGICA DE BÚSQUEDA BLINDADA (Aquí es donde debe estar)
             if (!string.IsNullOrEmpty(buscar))
             {
+                // Convertimos a minúsculas para estandarizar
+                string termino = buscar.ToLower();
+
+                // EF Core traduce esto a SQL. Agregamos validación de nulos por seguridad.
                 query = query.Where(p =>
-                    p.Nombre.Contains(buscar) ||
-                    p.SKU.Contains(buscar) ||
-                    p.MarcaPieza.Contains(buscar));
+                    (p.Nombre != null && p.Nombre.ToLower().Contains(termino)) ||
+                    (p.SKU != null && p.SKU.ToLower().Contains(termino)) ||
+                    (p.MarcaPieza != null && p.MarcaPieza.ToLower().Contains(termino)) ||
+                    (p.Descripcion != null && p.Descripcion.ToLower().Contains(termino))
+                );
             }
 
             return await query.ToListAsync();
