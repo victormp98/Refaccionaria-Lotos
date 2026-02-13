@@ -23,9 +23,21 @@ namespace RefaccionariaWeb.Controllers
             _hostEnvironment = hostEnvironment;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: false);
+            var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: false); // Obtiene todos los productos no eliminados para la búsqueda
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                string lowerSearchString = searchString.ToLower();
+                productos = productos.Where(p =>
+                    p.Nombre.ToLower().Contains(lowerSearchString) ||
+                    p.SKU.ToLower().Contains(lowerSearchString) ||
+                    (p.MarcaPieza != null && p.MarcaPieza.ToLower().Contains(lowerSearchString))).ToList();
+
+                ViewData["CurrentFilter"] = searchString;
+            }
+
             return View(productos);
         }
 
