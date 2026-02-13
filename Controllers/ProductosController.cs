@@ -25,19 +25,8 @@ namespace RefaccionariaWeb.Controllers
 
         public async Task<IActionResult> Index(string searchString)
         {
-            var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: false); // Obtiene todos los productos no eliminados para la búsqueda
-
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                string lowerSearchString = searchString.ToLower();
-                productos = productos.Where(p =>
-                    p.Nombre.ToLower().Contains(lowerSearchString) ||
-                    p.SKU.ToLower().Contains(lowerSearchString) ||
-                    (p.MarcaPieza != null && p.MarcaPieza.ToLower().Contains(lowerSearchString))).ToList();
-
-                ViewData["CurrentFilter"] = searchString;
-            }
-
+            var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: false, buscar: searchString);
+            ViewData["CurrentFilter"] = searchString; // Para mantener el texto en el input
             return View(productos);
         }
 

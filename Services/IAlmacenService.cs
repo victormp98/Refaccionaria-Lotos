@@ -6,7 +6,7 @@ namespace RefaccionariaWeb.Services
 {
     public interface IAlmacenService
     {
-        Task<List<Producto>> ObtenerTodosLosProductos(bool soloVisibles = false);
+        Task<List<Producto>> ObtenerTodosLosProductos(bool soloVisibles = false, string buscar = null);
         Task<Producto?> ObtenerProductoPorId(int id);
         Task<bool> ActualizarStock(int productoId, int cantidad, string motivo, string usuarioId);
         Task<List<Producto>> ObtenerProductosConStockBajo(int limite);

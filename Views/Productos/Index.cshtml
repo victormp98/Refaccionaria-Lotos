@@ -21,7 +21,7 @@
     <form asp-action="Index" asp-controller="Productos" method="get" class="mb-4">
         <div class="input-group shadow-sm rounded-pill overflow-hidden border">
             <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
-            <input type="text" name="searchString" value="@currentFilter" class="form-control border-0" placeholder="Buscar por Nombre, SKU o Marca...">
+            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control border-0" placeholder="Buscar por Nombre, SKU o Marca...">
             <button class="btn btn-primary border-0 fw-bold" type="submit">Buscar</button>
             @if (!string.IsNullOrEmpty(currentFilter))
             {
@@ -69,7 +69,6 @@
                         <td class="text-end pe-4">
                             <div class="btn-group" role="group">
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Detalles"><i class="bi bi-search"></i></a>
-
                                 @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
                                 {
                                     <a asp-action="Compra" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success" title="Registrar Compra"><i class="bi bi-box-seam"></i></a>
@@ -94,48 +93,41 @@
         </table>
     </div>
 
-    <!-- Vista de Tarjetas para Móvil -->
+    <!-- Vista de Tarjetas para Móvil (Diseño estandarizado con Vehículos) -->
     <div class="d-lg-none">
         @foreach (var item in Model)
         {
             <div class="card mb-3 shadow-sm border-0 rounded-4 border-start border-5 border-info">
                 <div class="card-body">
-                    <div class="row g-0">
-                        <div class="col-3 d-flex align-items-center justify-content-center p-2">
-                             <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/no-image.png" : item.ImagenUrl)" class="img-fluid rounded" style="max-height:100px; object-fit:cover;">
-                        </div>
-                        <div class="col-9">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
                             <h6 class="fw-bold mb-0">@item.Nombre</h6>
-                            <small class="text-muted d-block">SKU: @item.SKU</small>
-                            <span class="badge bg-light text-dark border rounded-pill">@item.MarcaPieza</span>
-                            <span class="d-block fw-bold fs-5 text-primary">@item.PrecioVenta.ToString("C")</span>
-                            <span class="badge @(item.Stock > 0 ? "bg-dark" : "bg-danger")">Stock: @item.Stock</span>
-                            @if (item.EsVisibleEnLinea)
-                            {
-                                <span class="badge bg-success">Online</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">Oculto</span>
-                            }
+                            <small class="text-muted">SKU: @item.SKU</small>
                         </div>
+                        <span class="badge bg-light text-dark border rounded-pill">@item.PrecioVenta.ToString("C")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge @(item.Stock > 0 ? "bg-dark" : "bg-danger")">Stock: @item.Stock</span>
+                        @if (item.EsVisibleEnLinea)
+                        {
+                            <span class="badge bg-success">Online</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Oculto</span>
+                        }
                     </div>
                     <div class="d-flex justify-content-end gap-2 pt-2 border-top mt-2">
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></a>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">Detalles</a>
                         @if (User.IsInRole("Admin") || User.IsInRole("Almacen"))
                         {
-                            <a asp-action="Compra" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success"><i class="bi bi-box-seam"></i></a>
+                            <a asp-action="Compra" asp-route-id="@item.Id" class="btn btn-sm btn-outline-success rounded-pill px-3">Surtir</a>
                         }
                         @if (User.IsInRole("Admin"))
                         {
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil-square"></i></a>
-                            <form asp-action="AlternarVisibilidadWeb" asp-route-id="@item.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm @(item.EsVisibleEnLinea ? "btn-outline-info" : "btn-outline-secondary")" title="@(item.EsVisibleEnLinea ? "Ocultar de la Web" : "Mostrar en la Web")">
-                                    <i class="bi @(item.EsVisibleEnLinea ? "bi-eye-fill" : "bi-eye-slash-fill")"></i>
-                                </button>
-                            </form>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Editar</a>
                             <form asp-action="Delete" asp-route-id="@item.Id" method="get" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Mover a Papelera"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Quitar</button>
                             </form>
                         }
                     </div>

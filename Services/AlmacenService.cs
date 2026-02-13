@@ -20,7 +20,7 @@ namespace RefaccionariaWeb.Services
             _userManager = userManager;
         }
 
-        public async Task<List<Producto>> ObtenerTodosLosProductos(bool soloVisibles = false)
+        public async Task<List<Producto>> ObtenerTodosLosProductos(bool soloVisibles = false, string buscar = null)
         {
             var query = _context.Productos.AsQueryable();
             query = query.Where(p => !p.Eliminado);
@@ -28,6 +28,15 @@ namespace RefaccionariaWeb.Services
             if (soloVisibles)
             {
                 query = query.Where(p => p.EsVisibleEnLinea == true);
+            }
+
+            // LÓGICA DE BÚSQUEDA (SQL Safe)
+            if (!string.IsNullOrEmpty(buscar))
+            {
+                query = query.Where(p =>
+                    p.Nombre.Contains(buscar) ||
+                    p.SKU.Contains(buscar) ||
+                    p.MarcaPieza.Contains(buscar));
             }
 
             return await query.ToListAsync();
