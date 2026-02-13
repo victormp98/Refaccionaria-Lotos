@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,10 +12,12 @@ namespace RefaccionariaWeb.Services
     public class AlmacenService : IAlmacenService
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AlmacenService(ApplicationDbContext context)
+        public AlmacenService(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<List<Producto>> ObtenerTodosLosProductos(bool soloVisibles = false)
@@ -145,42 +149,43 @@ namespace RefaccionariaWeb.Services
 
         public async Task<bool> RegistrarCompra(int id, int cantidad, decimal pCompra, decimal pVenta, string usuarioId, string referencia)
         {
-            var producto = await _context.Productos.FindAsync(id);
-            if (producto == null || producto.Eliminado)
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
+                var producto = await _context.Productos.FindAsync(id);
+                if (producto == null || producto.Eliminado) return false;
+                if (cantidad <= 0) return false;
+                if (pVenta < pCompra) return false;
+
+                var usuario = await _userManager.FindByIdAsync(usuarioId);
+
+                producto.Stock += cantidad;
+                producto.PrecioCompra = pCompra;
+                producto.PrecioVenta = pVenta;
+
+                var movimiento = new MovimientoInventario
+                {
+                    ProductoId = id,
+                    TipoMovimiento = "ENTRADA",
+                    Cantidad = cantidad,
+                    FechaRegistro = DateTime.Now,
+                    Referencia = referencia ?? "Compra de mercancía",
+                    UsuarioId = usuarioId,
+                    NombreUsuario = usuario?.UserName // Guardamos el nombre de usuario
+                };
+
+                _context.Update(producto);
+                _context.Add(movimiento);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
                 return false;
             }
-
-            if (cantidad <= 0)
-            {
-                return false;
-            }
-
-            // VALIDACIÓN DE NEGOCIO: Precio de venta no puede ser menor al de compra
-            if (pVenta < pCompra)
-            {
-                return false;
-            }
-
-            producto.Stock += cantidad;
-            producto.PrecioCompra = pCompra;
-            producto.PrecioVenta = pVenta;
-
-            var movimiento = new MovimientoInventario
-            {
-                ProductoId = id,
-                TipoMovimiento = "ENTRADA",
-                Cantidad = cantidad,
-                FechaRegistro = System.DateTime.Now,
-                Referencia = referencia ?? "Compra de mercancía",
-                UsuarioId = usuarioId
-            };
-
-            _context.Update(producto);
-            _context.Add(movimiento);
-            await _context.SaveChangesAsync();
-
-            return true;
         }
     }
 }

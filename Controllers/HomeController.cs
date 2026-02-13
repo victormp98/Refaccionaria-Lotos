@@ -1,42 +1,41 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Models;
 using System.Diagnostics;
+using RefaccionariaWeb.Services;
+using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace RefaccionariaWeb.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _context;
+        private readonly IAlmacenService _almacenService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, IAlmacenService almacenService)
         {
             _logger = logger;
-            _context = context;
+            _almacenService = almacenService;
         }
 
-        // MODIFICADO: Ahora recibe el parámetro de búsqueda del Layout
         public async Task<IActionResult> Index(string searchString)
         {
-            // Iniciamos la consulta con los productos visibles
-            var productosQuery = _context.Productos
-                                         .Where(p => p.EsVisibleEnLinea == true);
+            // La llamada al servicio ya filtra por !Eliminado y EsVisibleEnLinea
+            var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: true);
 
-            // Si el usuario escribió algo en el buscador
+            // Si el usuario escribió algo en el buscador, filtramos sobre los resultados del servicio
             if (!string.IsNullOrEmpty(searchString))
             {
-                searchString = searchString.ToLower();
-                productosQuery = productosQuery.Where(p =>
-                    p.Nombre.ToLower().Contains(searchString) ||
-                    p.MarcaPieza.ToLower().Contains(searchString) ||
-                    (p.Descripcion != null && p.Descripcion.ToLower().Contains(searchString)));
+                string lowerSearchString = searchString.ToLower();
+                productos = productos.Where(p =>
+                    p.Nombre.ToLower().Contains(lowerSearchString) ||
+                    p.MarcaPieza.ToLower().Contains(lowerSearchString) ||
+                    (p.Descripcion != null && p.Descripcion.ToLower().Contains(lowerSearchString))).ToList();
 
                 ViewData["CurrentFilter"] = searchString;
             }
 
-            var productos = await productosQuery.ToListAsync();
             return View(productos);
         }
 
