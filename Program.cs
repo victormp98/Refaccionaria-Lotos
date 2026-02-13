@@ -50,6 +50,7 @@ builder.Services.AddSession(options => {
 // REGISTRO DE LA CAPA DE SERVICIOS
 builder.Services.AddScoped<IAlmacenService, AlmacenService>();
 builder.Services.AddScoped<IUsuariosService, UsuariosService>();
+builder.Services.AddScoped<IVentasService, VentasService>();
 
 var app = builder.Build();
 

@@ -8,11 +8,11 @@ using RefaccionariaWeb.Models.DTOs;
 using RefaccionariaWeb.Models.Enums;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
-using RefaccionariaWeb.Services; // <-- Agregado para usar el servicio
+using RefaccionariaWeb.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System; // Agregado para usar Exception
+using System;
 
 namespace RefaccionariaWeb.Controllers
 {
@@ -21,13 +21,19 @@ namespace RefaccionariaWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<VentasController> _logger;
-        private readonly IAlmacenService _almacenService; // <-- Inyección del servicio
+        private readonly IAlmacenService _almacenService;
+        private readonly IVentasService _ventasService; // Inyección del nuevo servicio
 
-        public VentasController(ApplicationDbContext context, ILogger<VentasController> logger, IAlmacenService almacenService)
+        public VentasController(
+            ApplicationDbContext context,
+            ILogger<VentasController> logger,
+            IAlmacenService almacenService,
+            IVentasService ventasService) // Añadimos IVentasService
         {
             _context = context;
             _logger = logger;
-            _almacenService = almacenService; // <-- Asignación del servicio
+            _almacenService = almacenService;
+            _ventasService = ventasService; // Asignamos el nuevo servicio
         }
 
         // ==========================================
@@ -156,14 +162,10 @@ namespace RefaccionariaWeb.Controllers
         {
             if (string.IsNullOrEmpty(term) || term.Length < 2) return Json(new List<object>());
 
-            // USAMOS EL SERVICIO BLINDADO
-            // soloVisibles: false -> Para que el vendedor vea productos ocultos en la web pero no eliminados
-            // buscar: term -> Usa la lógica SQL Safe y Case-Insensitive que arreglamos en el servicio
             var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: false, buscar: term);
 
-            // Proyección para el Autocomplete del FrontEnd
             var resultado = productos
-                .Where(p => p.Stock > 0) // Mantenemos tu filtro de Stock > 0 para vender solo lo que hay
+                .Where(p => p.Stock > 0)
                 .Take(10)
                 .Select(p => new {
                     p.Id,
@@ -257,92 +259,43 @@ namespace RefaccionariaWeb.Controllers
         // ==========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FinalizarVenta(string nombreCliente, string metodoPago, bool aplicaIVA, string rfc = null)
+        public async Task<IActionResult> FinalizarVenta(string nombreCliente, string metodoPago, bool aplicaIVA, string rfc = null, string razonSocial = null)
         {
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
             if (carrito == null || !carrito.Any()) return Json(new { success = false, message = "El ticket está vacío." });
 
-            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var empleadoId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var cajaAbierta = await _context.CortesCaja
-                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.FechaCierre == null);
+                .FirstOrDefaultAsync(c => c.UsuarioId == empleadoId && c.FechaCierre == null);
 
             if (cajaAbierta == null)
                 return Json(new { success = false, message = "⚠️ ERROR: Tu turno está cerrado." });
 
-            // --- INICIO DE BLOQUE SEGURO ---
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                decimal subtotal = carrito.Sum(x => x.Cantidad * x.Precio);
-                decimal totalFinal = aplicaIVA ? subtotal * 1.16m : subtotal;
-                string infoIva = aplicaIVA ? " (Con IVA 16%)" : " (Sin IVA)";
+                var pedidoId = await _ventasService.ProcesarVentaMostrador(
+                    carrito: carrito,
+                    empleadoId: empleadoId,
+                    corteCajaId: cajaAbierta.Id,
+                    nombreReceptor: nombreCliente,
+                    metodoPago: metodoPago,
+                    aplicaIVA: aplicaIVA,
+                    rfc: rfc,
+                    razonSocial: razonSocial
+                );
 
-                var pedido = new Pedido
+                if (pedidoId == null)
                 {
-                    ClienteId = usuarioId,
-                    FechaPedido = DateTime.Now,
-                    Status = PedidoStatus.Entregado,
-                    TotalPedido = totalFinal,
-                    NombreReceptor = nombreCliente ?? "Público General",
-                    DireccionEnvio = $"Mostrador - {metodoPago ?? "Efectivo"}{infoIva}",
-                    CiudadEnvio = "N/A",
-                    EstadoEnvio = "N/A",
-                    CodigoPostalEnvio = "00000",
-                    TipoEntrega = 2,
-                    RequiereFactura = !string.IsNullOrEmpty(rfc),
-                    Rfc = rfc,
-                    CorteCajaId = cajaAbierta.Id
-                };
-
-                _context.Pedidos.Add(pedido);
-                await _context.SaveChangesAsync();
-
-                foreach (var item in carrito)
-                {
-                    // RE-VERIFICACIÓN DE STOCK (Punto crítico de seguridad)
-                    var producto = await _context.Productos.FindAsync(item.ProductoId);
-
-                    if (producto == null)
-                        throw new Exception($"El producto {item.Nombre} ya no existe en el catálogo.");
-
-                    if (producto.Stock < item.Cantidad)
-                        throw new Exception($"¡Venta cancelada! Solo quedan {producto.Stock} unidades de {item.Nombre}.");
-
-                    producto.Stock -= item.Cantidad;
-                    _context.Update(producto);
-
-                    _context.DetallesPedido.Add(new DetallePedido
-                    {
-                        PedidoId = pedido.Id,
-                        ProductoId = item.ProductoId,
-                        Cantidad = item.Cantidad,
-                        PrecioUnitario = item.Precio
-                    });
-
-                    _context.MovimientosInventario.Add(new MovimientoInventario
-                    {
-                        ProductoId = item.ProductoId,
-                        TipoMovimiento = "Salida Venta",
-                        Cantidad = item.Cantidad,
-                        FechaRegistro = DateTime.Now,
-                        UsuarioId = usuarioId
-                    });
+                    return Json(new { success = false, message = "Error al procesar la venta." });
                 }
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync(); // Aquí es donde el dinero se amarra legalmente
-
                 HttpContext.Session.Remove("Carrito");
-                return Json(new { success = true, pedidoId = pedido.Id });
+                return Json(new { success = true, pedidoId = pedidoId });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync(); // Si algo falló, deshacemos todo como si no hubiera pasado nada
-                _logger.LogError(ex, "Falla en transacción de venta");
-
-                // Mensaje genérico para el cliente, pero informativo sobre el stock si fue el caso
-                string errorMsg = ex.Message.Contains("unidades") ? ex.Message : "Error interno al procesar el pago.";
-                return Json(new { success = false, message = errorMsg });
+                _logger.LogError(ex, "Falla en transacción de venta de mostrador.");
+                return Json(new { success = false, message = "Ocurrió un error interno al procesar la venta." });
             }
         }
 

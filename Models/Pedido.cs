@@ -15,7 +15,7 @@ namespace RefaccionariaWeb.Models
         public int Id { get; set; }
 
         // === RELACIÓN CON EL CLIENTE ===
-        [Required]
+        [Required] // Mantenemos Required, se usará el ID del "Público General"
         public string ClienteId { get; set; } // FK a AspNetUsers (IdentityUser)
         [ForeignKey("ClienteId")]
         public virtual IdentityUser Cliente { get; set; }
@@ -33,28 +33,23 @@ namespace RefaccionariaWeb.Models
 
         // === TRAZABILIDAD DE ENVÍO (SNAPSHOT DE DIRECCIÓN) ===
         // Campos para guardar la dirección EXACTA del pedido en el momento de la compra
-        [Required]
         [StringLength(200)]
-        public string DireccionEnvio { get; set; }
+        public string? DireccionEnvio { get; set; } // Ahora nullable
 
-        [Required]
         [StringLength(100)]
-        public string CiudadEnvio { get; set; }
+        public string? CiudadEnvio { get; set; } // Ahora nullable
 
-        [Required]
         [StringLength(100)]
-        public string EstadoEnvio { get; set; }
+        public string? EstadoEnvio { get; set; } // Ahora nullable
 
-        [Required]
         [StringLength(10)]
-        public string CodigoPostalEnvio { get; set; }
+        public string? CodigoPostalEnvio { get; set; } // Ahora nullable
 
         [StringLength(100)]
-        public string PaisEnvio { get; set; } = "México"; // Asunción por defecto, se puede cambiar
+        public string? PaisEnvio { get; set; } = "México";
 
-        [Required]
         [StringLength(150)]
-        public string NombreReceptor { get; set; } // Nombre de la persona que recibe el pedido
+        public string? NombreReceptor { get; set; } // Ahora nullable
 
         // === INFORMACIÓN DE FACTURACIÓN (SNAPSHOT) ===
         public bool RequiereFactura { get; set; }
@@ -76,10 +71,14 @@ namespace RefaccionariaWeb.Models
         public string? NumeroGuia { get; set; }
 
         public DateTime? FechaEnvio { get; set; }
+        
         public int? CorteCajaId { get; set; }
-
         [ForeignKey("CorteCajaId")]
-        public virtual CorteCaja CorteCaja { get; set; }
+        public virtual CorteCaja? CorteCaja { get; set; } // Ahora nullable
+
+        public string? EmpleadoId { get; set; } // Nuevo campo para el empleado
+        [ForeignKey("EmpleadoId")]
+        public virtual IdentityUser? Empleado { get; set; } // Relación con el empleado
 
         // === RELACIÓN CON LOS DETALLES DEL PEDIDO ===
         public virtual ICollection<DetallePedido> Detalles { get; set; } = new List<DetallePedido>();
