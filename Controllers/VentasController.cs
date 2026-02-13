@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
@@ -8,6 +8,11 @@ using RefaccionariaWeb.Models.DTOs;
 using RefaccionariaWeb.Models.Enums;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
+using RefaccionariaWeb.Services; // <-- Agregado para usar el servicio
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System; // Agregado para usar Exception
 
 namespace RefaccionariaWeb.Controllers
 {
@@ -16,11 +21,13 @@ namespace RefaccionariaWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<VentasController> _logger;
+        private readonly IAlmacenService _almacenService; // <-- Inyección del servicio
 
-        public VentasController(ApplicationDbContext context, ILogger<VentasController> logger)
+        public VentasController(ApplicationDbContext context, ILogger<VentasController> logger, IAlmacenService almacenService)
         {
             _context = context;
             _logger = logger;
+            _almacenService = almacenService; // <-- Asignación del servicio
         }
 
         // ==========================================
@@ -149,9 +156,14 @@ namespace RefaccionariaWeb.Controllers
         {
             if (string.IsNullOrEmpty(term) || term.Length < 2) return Json(new List<object>());
 
-            var productos = await _context.Productos
-                .Where(p => p.EsVisibleEnLinea && p.Stock > 0 &&
-                           (p.Nombre.Contains(term) || p.SKU.Contains(term) || p.MarcaPieza.Contains(term)))
+            // USAMOS EL SERVICIO BLINDADO
+            // soloVisibles: false -> Para que el vendedor vea productos ocultos en la web pero no eliminados
+            // buscar: term -> Usa la lógica SQL Safe y Case-Insensitive que arreglamos en el servicio
+            var productos = await _almacenService.ObtenerTodosLosProductos(soloVisibles: false, buscar: term);
+
+            // Proyección para el Autocomplete del FrontEnd
+            var resultado = productos
+                .Where(p => p.Stock > 0) // Mantenemos tu filtro de Stock > 0 para vender solo lo que hay
                 .Take(10)
                 .Select(p => new {
                     p.Id,
@@ -161,10 +173,9 @@ namespace RefaccionariaWeb.Controllers
                     p.PrecioVenta,
                     p.Stock,
                     p.ImagenUrl
-                })
-                .ToListAsync();
+                });
 
-            return Json(productos);
+            return Json(resultado);
         }
 
         [HttpPost]
