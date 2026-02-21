@@ -8,11 +8,13 @@ namespace RefaccionariaWeb.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
         }
 
         [HttpGet]
@@ -37,8 +39,12 @@ namespace RefaccionariaWeb.Controllers
             if (result.Succeeded)
             {
                 // ================================================================
-                // CORRECCIÓN: "Cliente" en lugar de "CLIENTE"
+                // CORRECCIÓN: "Cliente" en lugar de "CLIENTE" y asegurar su existencia
                 // ================================================================
+                if (!await _roleManager.RoleExistsAsync("Cliente"))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("Cliente"));
+                }
                 await _userManager.AddToRoleAsync(user, "Cliente");
 
                 await _signInManager.SignInAsync(user, isPersistent: false);
