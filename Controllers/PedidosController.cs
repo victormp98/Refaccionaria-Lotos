@@ -8,8 +8,10 @@ using RefaccionariaWeb.Models.Enums;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading.Tasks;
 using RefaccionariaWeb.Models.DTOs;
 using RefaccionariaWeb.Extensions;
+using Stripe.Checkout;
 
 namespace RefaccionariaWeb.Controllers
 {
@@ -150,8 +152,49 @@ namespace RefaccionariaWeb.Controllers
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
+
+                    // ====================================================
+                    // STRIPE: CREAR PASARELA DE PAGO CHECKOUT SESSION
+                    // ====================================================
+                    var domain = $"{Request.Scheme}://{Request.Host}";
+                    var options = new SessionCreateOptions
+                    {
+                        PaymentMethodTypes = new List<string> { "card" },
+                        LineItems = new List<SessionLineItemOptions>(),
+                        Mode = "payment",
+                        SuccessUrl = domain + $"/Pedidos/PagoExitoso?id={nuevoPedido.Id}",
+                        CancelUrl = domain + $"/Pedidos/PagoCancelado?id={nuevoPedido.Id}",
+                        Metadata = new Dictionary<string, string>
+                        {
+                            { "PedidoId", nuevoPedido.Id.ToString() }
+                        }
+                    };
+
+                    foreach (var item in carrito)
+                    {
+                        var sessionListItem = new SessionLineItemOptions
+                        {
+                            PriceData = new SessionLineItemPriceDataOptions
+                            {
+                                UnitAmount = (long)(item.Precio * 100), // Stripe usa centavos
+                                Currency = "mxn",
+                                ProductData = new SessionLineItemPriceDataProductDataOptions
+                                {
+                                    Name = string.IsNullOrEmpty(item.Nombre) ? "Producto" : item.Nombre
+                                }
+                            },
+                            Quantity = item.Cantidad
+                        };
+                        options.LineItems.Add(sessionListItem);
+                    }
+
+                    var service = new SessionService();
+                    var session = await service.CreateAsync(options);
+
                     HttpContext.Session.Remove("Carrito");
-                    return RedirectToAction(nameof(Details), new { id = nuevoPedido.Id });
+
+                    Response.Headers.Add("Location", session.Url);
+                    return new StatusCodeResult(303);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -172,5 +215,37 @@ namespace RefaccionariaWeb.Controllers
         [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Cliente")] public async Task<IActionResult> ConfirmarEntrega(int id) { var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id); var currentUser = await _userManager.GetUserAsync(User); if (pedido == null || currentUser == null || pedido.ClienteId != currentUser.Id) return NotFound(); if (pedido.Status == PedidoStatus.Enviado) { pedido.Status = PedidoStatus.Entregado; _context.Update(pedido); await _context.SaveChangesAsync(); TempData["Success"] = "¡Gracias por confirmar la recepción de tu pedido!"; } return RedirectToAction(nameof(Details), new { id = id }); }
         [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Admin,Almacen")] public async Task<IActionResult> ReportarScrap(int id, string motivo) { var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id); if (pedido == null) return NotFound(); pedido.Status = PedidoStatus.Cancelado; _context.Update(pedido); await _context.SaveChangesAsync(); TempData["Error"] = $"Pedido #{id} marcado como SCRAP: {motivo}"; return RedirectToAction(nameof(Almacen)); }
         [Authorize(Roles = "Admin,Almacen")] public async Task<IActionResult> Almacen() { var pedidosAlmacen = await _context.Pedidos.Include(p => p.Cliente).Include(p => p.Detalles).ThenInclude(d => d.Producto).Where(p => p.Status == PedidoStatus.Pagado || p.Status == PedidoStatus.EnProceso).OrderByDescending(p => p.FechaPedido).ToListAsync(); return View(pedidosAlmacen); }
+
+        // =========================================
+        // WEBHOOKS Y PANTALLAS DE STRIPE
+        // =========================================
+
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> PagoExitoso(int id)
+        {
+            var pedido = await _context.Pedidos.FindAsync(id);
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (pedido == null || currentUser == null || pedido.ClienteId != currentUser.Id) return NotFound();
+
+            // Cambiamos el estado asumiendo que el pago pasó
+            if (pedido.Status == PedidoStatus.PendienteDePago)
+            {
+                pedido.Status = PedidoStatus.Pagado; 
+                _context.Update(pedido);
+                await _context.SaveChangesAsync();
+            }
+
+            return View(pedido);
+        }
+
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> PagoCancelado(int id)
+        {
+            var pedido = await _context.Pedidos.FindAsync(id);
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (pedido == null || currentUser == null || pedido.ClienteId != currentUser.Id) return NotFound();
+
+            return View(pedido);
+        }
     }
 }

@@ -1,0 +1,8 @@
+﻿C:\Program Files\dotnet\sdk\10.0.103\Microsoft.Common.CurrentVersion.targets(5381,5): error MSB3027: No se pudo copiar "C:\Users\victo\Desktop\Proyecto_Final\RefaccionariaWeb\RefaccionariaWeb\obj\Debug\net8.0\apphost.exe" en "bin\Debug\net8.0\RefaccionariaWeb.exe". Se superó el número de 10 reintentos. Error. El archivo se ha bloqueado por: "RefaccionariaWeb (31668)" [C:\Users\victo\Desktop\Proyecto_Final\RefaccionariaWeb\RefaccionariaWeb\RefaccionariaWeb.csproj]
+C:\Program Files\dotnet\sdk\10.0.103\Microsoft.Common.CurrentVersion.targets(5381,5): error MSB3021: No se puede copiar "C:\Users\victo\Desktop\Proyecto_Final\RefaccionariaWeb\RefaccionariaWeb\obj\Debug\net8.0\apphost.exe" en "bin\Debug\net8.0\RefaccionariaWeb.exe". The process cannot access the file 'C:\Users\victo\Desktop\Proyecto_Final\RefaccionariaWeb\RefaccionariaWeb\bin\Debug\net8.0\RefaccionariaWeb.exe' because it is being used by another process. [C:\Users\victo\Desktop\Proyecto_Final\RefaccionariaWeb\RefaccionariaWeb\RefaccionariaWeb.csproj]
+
+ERROR al compilar.
+    10 Advertencia(s)
+    2 Errores
+
+Tiempo transcurrido 00:00:13.37

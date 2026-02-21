@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Services;
 using Microsoft.Extensions.Logging;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +54,9 @@ builder.Services.AddScoped<IUsuariosService, UsuariosService>();
 builder.Services.AddScoped<IVentasService, VentasService>();
 
 var app = builder.Build();
+
+// CONFIGURADOR DE STRIPE
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 // INICIALIZACIÓN DE DATOS (Sin migraciones automáticas)
 using (var scope = app.Services.CreateScope())

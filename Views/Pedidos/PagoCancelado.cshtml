@@ -1,0 +1,38 @@
+@model RefaccionariaWeb.Models.Pedido
+@{
+    ViewData["Title"] = "Pago Cancelado";
+}
+
+<div class="container mt-5 pt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            
+            <div class="card shadow-lg border-0 rounded-4 p-4 py-5 mb-4" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+                <div class="mb-4">
+                    <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
+                </div>
+                
+                <h1 class="display-6 fw-bold text-dark mb-3">Pago Incompleto</h1>
+                <p class="lead text-muted mb-4">
+                    Parece que cancelaste el proceso de pago o hubo un problema al comunicarse con el banco. 
+                </p>
+
+                <div class="alert alert-warning border-0 rounded-3 text-start mx-auto shadow-sm" style="max-width: 400px;">
+                    <div class="d-flex w-100">
+                        <i class="bi bi-info-circle-fill mt-1 me-3 fs-5"></i>
+                        <div>
+                            <strong>No te preocupes.</strong> Tu pedido <strong>#@Model.Id</strong> está guardado en tu cuenta como <em>"Pendiente de Pago"</em>.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg rounded-pill px-4 fw-bold shadow-sm">
+                        Seguir Explorando
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
