@@ -164,6 +164,7 @@ namespace RefaccionariaWeb.Controllers
                         Mode = "payment",
                         SuccessUrl = domain + $"/Pedidos/PagoExitoso?id={nuevoPedido.Id}",
                         CancelUrl = domain + $"/Pedidos/PagoCancelado?id={nuevoPedido.Id}",
+                        CustomerEmail = currentUser?.Email, // <--- Precarga el correo del usuario en Stripe
                         Metadata = new Dictionary<string, string>
                         {
                             { "PedidoId", nuevoPedido.Id.ToString() }
