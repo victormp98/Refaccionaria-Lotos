@@ -66,6 +66,7 @@ namespace RefaccionariaWeb.Controllers
             return View(pedido);
         }
 
+        // GET: /Pedidos/Create
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> Create()
         {
@@ -94,6 +95,15 @@ namespace RefaccionariaWeb.Controllers
             {
                 pedido.Rfc = string.IsNullOrWhiteSpace(pedido.Rfc) ? null : pedido.Rfc.Trim();
                 pedido.RazonSocial = string.IsNullOrWhiteSpace(pedido.RazonSocial) ? null : pedido.RazonSocial.Trim();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = string.Join("; ", ModelState.Values
+                                        .SelectMany(x => x.Errors)
+                                        .Select(x => x.ErrorMessage));
+                Console.WriteLine($"[STRIPE ERROR] MODELSTATE INVÁLIDO: {errors}");
+                ModelState.AddModelError("", "Por favor completa todos los campos requeridos correctamente.");
             }
 
             if (ModelState.IsValid && carrito != null && carrito.Any())

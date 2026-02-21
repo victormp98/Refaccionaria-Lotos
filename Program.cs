@@ -83,6 +83,17 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 
+// ==========================================
+// CONFIGURACIÓN DE CULTURA (PARA DECIMALES)
+// ==========================================
+var supportedCultures = new[] { new System.Globalization.CultureInfo("es-MX") };
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("es-MX"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

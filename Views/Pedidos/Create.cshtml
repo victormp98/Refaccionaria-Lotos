@@ -229,11 +229,12 @@
                 txtEnvio.innerText = "N/A (Retiro)";
                 txtEnvio.className = "text-muted";
 
-                inputNombre.value = "RETIRO: " + datosTienda.nombre;
-                inputDireccion.value = datosTienda.direccion;
-                inputCP.value = datosTienda.cp;
-                inputCiudad.value = datosTienda.ciudad;
-                inputEstado.value = datosTienda.estado;
+                // ESTOS CAMPOS DEBEN ESTAR LLENOS O EL JQUERY VALIDATION IMPEDIRÁ EL SUBMIT AL BACKEND
+                inputNombre.value = "RETIRO: " + (datosTienda.nombre || "Sucursal");
+                inputDireccion.value = datosTienda.direccion || "Mostrador";
+                inputCP.value = datosTienda.cp || "00000";
+                inputCiudad.value = datosTienda.ciudad || "Local";
+                inputEstado.value = datosTienda.estado || "Local";
             }
         }
 
