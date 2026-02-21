@@ -57,11 +57,11 @@
 </style>
 
 <div class="container py-4">
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <h2 class="fw-bold mb-4">¿Cómo quieres recibir tu compra?</h2>
+    <form asp-action="Create" id="checkoutForm">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <h2 class="fw-bold mb-4">¿Cómo quieres recibir tu compra?</h2>
 
-            <form asp-action="Create" id="checkoutForm">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 @* Campo oculto para el Tipo de Entrega *@
@@ -148,40 +148,41 @@
                     </div>
                 </div>
                 <button type="submit" id="btnSubmitHidden" style="display:none;"></button>
-            </form>
-        </div>
+            </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm rounded-4 border-0 sticky-summary">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold mb-3">Resumen de compra</h5>
-                    <div class="mb-3" style="max-height: 200px; overflow-y: auto;">
-                        @foreach (var item in carrito)
-                        {
-                            <div class="d-flex align-items-center mb-2">
-                                <img src="@item.ImagenUrl" width="45" height="45" class="rounded border me-2" style="object-fit: contain;">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <div class="small fw-bold text-truncate">@item.Nombre</div>
-                                    <small class="text-muted">Cant: @item.Cantidad</small>
+            <div class="col-lg-4">
+                <div class="card shadow-sm rounded-4 border-0 sticky-summary">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Resumen de compra</h5>
+                        <div class="mb-3" style="max-height: 200px; overflow-y: auto;">
+                            @foreach (var item in carrito)
+                            {
+                                <div class="d-flex align-items-center mb-2">
+                                    <img src="@item.ImagenUrl" width="45" height="45" class="rounded border me-2" style="object-fit: contain;">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <div class="small fw-bold text-truncate">@item.Nombre</div>
+                                        <small class="text-muted">Cant: @item.Cantidad</small>
+                                    </div>
+                                    <div class="small fw-bold ms-2">$@item.SubTotal.ToString("N2")</div>
                                 </div>
-                                <div class="small fw-bold ms-2">$@item.SubTotal.ToString("N2")</div>
-                            </div>
-                        }
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-2"><span>Productos</span><span>$@total.ToString("N2")</span></div>
-                    <div class="d-flex justify-content-between mb-2 text-success"><span>Envío</span><span id="txtEnvio">Gratis</span></div>
-                    <div class="d-flex justify-content-between h4 fw-bold text-primary my-3"><span>Total</span><span>$@total.ToString("N2")</span></div>
+                            }
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2"><span>Productos</span><span>$@total.ToString("N2")</span></div>
+                        <div class="d-flex justify-content-between mb-2 text-success"><span>Envío</span><span id="txtEnvio">Gratis</span></div>
+                        <div class="d-flex justify-content-between h4 fw-bold text-primary my-3"><span>Total</span><span>$@total.ToString("N2")</span></div>
 
-                    <div class="btn-confirmar-fix">
-                        <button type="button" onclick="document.getElementById('btnSubmitHidden').click()" class="btn btn-success btn-lg w-100 rounded-pill py-3 fw-bold shadow">
-                            Confirmar y Pagar
-                        </button>
+                        <div class="btn-confirmar-fix">
+                            <!-- CAMBIO: Ahora es type="submit" directamente -->
+                            <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill py-3 fw-bold shadow">
+                                Confirmar y Pagar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
 @section Scripts {
