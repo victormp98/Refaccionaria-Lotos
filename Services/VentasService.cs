@@ -71,13 +71,11 @@ namespace RefaccionariaWeb.Services
                     CorteCajaId = corteCajaId
                 };
 
-                _context.Pedidos.Add(pedido);
-                await _context.SaveChangesAsync(); // Guarda el pedido para obtener su Id
+                pedido.Detalles = new List<DetallePedido>();
 
                 foreach (var item in carrito)
                 {
-                    // Obtener producto para verificar stock y detalles
-                    var producto = await _almacenService.ObtenerProductoPorId(item.ProductoId);
+                    var producto = await _context.Productos.FindAsync(item.ProductoId);
                     
                     if (producto == null || producto.Eliminado)
                         throw new Exception($"El producto '{item.Nombre}' ya no existe o está eliminado.");
@@ -85,28 +83,29 @@ namespace RefaccionariaWeb.Services
                     if (producto.Stock < item.Cantidad)
                         throw new Exception($"¡Venta cancelada! Stock insuficiente para '{item.Nombre}'. Solo quedan {producto.Stock} unidades.");
 
-                    // Descontar stock usando el AlmacenService
-                    var stockActualizado = await _almacenService.ActualizarStock(
-                        productoId: item.ProductoId,
-                        cantidad: -item.Cantidad, // Cantidad negativa para descontar
-                        motivo: "Salida Venta Mostrador",
-                        usuarioId: empleadoId // El empleado que descontó el stock
-                    );
+                    producto.Stock -= item.Cantidad;
+                    _context.Update(producto);
 
-                    if (!stockActualizado)
-                        throw new Exception($"Error al actualizar stock para '{item.Nombre}'.");
-
-                    // Crear Detalle de Pedido
-                    _context.DetallesPedido.Add(new DetallePedido
+                    _context.MovimientosInventario.Add(new MovimientoInventario
                     {
-                        PedidoId = pedido.Id,
+                        ProductoId = producto.Id,
+                        TipoMovimiento = "Salida Venta Mostrador",
+                        Cantidad = -item.Cantidad,
+                        FechaRegistro = DateTime.Now,
+                        UsuarioId = empleadoId,
+                        Referencia = "Venta Mostrador"
+                    });
+
+                    pedido.Detalles.Add(new DetallePedido
+                    {
                         ProductoId = item.ProductoId,
                         Cantidad = item.Cantidad,
                         PrecioUnitario = item.Precio
                     });
                 }
 
-                await _context.SaveChangesAsync(); // Guarda los detalles del pedido y movimientos de inventario del servicio
+                _context.Pedidos.Add(pedido);
+                await _context.SaveChangesAsync(); // Se guarda el pedido, detalles e inventario en 1 hit
                 await transaction.CommitAsync();
 
                 return pedido.Id;

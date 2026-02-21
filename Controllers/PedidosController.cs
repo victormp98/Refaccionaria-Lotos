@@ -68,9 +68,8 @@ namespace RefaccionariaWeb.Controllers
         public async Task<IActionResult> Create()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-            var pedido = new Pedido
+            var pedido = new CheckoutViewModel
             {
-                ClienteId = currentUser.Id,
                 NombreReceptor = currentUser.UserName ?? currentUser.Email
             };
             return View(pedido);
@@ -79,7 +78,7 @@ namespace RefaccionariaWeb.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> Create([Bind("DireccionEnvio,CiudadEnvio,EstadoEnvio,CodigoPostalEnvio,PaisEnvio,NombreReceptor,RequiereFactura,Rfc,RazonSocial,TipoEntrega")] Pedido pedido)
+        public async Task<IActionResult> Create(CheckoutViewModel pedido)
         {
             var currentUser = await _userManager.GetUserAsync(User);
             var carrito = HttpContext.Session.GetObject<List<ItemCarrito>>("Carrito");
@@ -95,32 +94,29 @@ namespace RefaccionariaWeb.Controllers
                 pedido.RazonSocial = string.IsNullOrWhiteSpace(pedido.RazonSocial) ? null : pedido.RazonSocial.Trim();
             }
 
-            // --- CORRECCIÓN: IGNORAR VALIDACIONES DE CAJA Y RELACIONES ---
-            ModelState.Remove("ClienteId");
-            ModelState.Remove("Cliente");
-            ModelState.Remove("TotalPedido");
-            ModelState.Remove("FechaPedido");
-            ModelState.Remove("Status");
-            ModelState.Remove("Detalles");
-
-            // ESTO FALTABA: Decirle al validador que ignore la falta de caja
-            ModelState.Remove("CorteCaja");
-            ModelState.Remove("CorteCajaId");
-
             if (ModelState.IsValid && carrito != null && carrito.Any())
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    pedido.ClienteId = currentUser.Id;
-                    pedido.FechaPedido = DateTime.Now;
-                    pedido.Status = PedidoStatus.PendienteDePago;
-
-                    // Aseguramos que sea NULL explícitamente (Venta Web no tiene caja)
-                    pedido.CorteCajaId = null;
-
-                    _context.Add(pedido);
-                    await _context.SaveChangesAsync();
+                    var nuevoPedido = new Pedido
+                    {
+                        ClienteId = currentUser.Id,
+                        FechaPedido = DateTime.Now,
+                        Status = PedidoStatus.PendienteDePago,
+                        CorteCajaId = null,
+                        DireccionEnvio = pedido.DireccionEnvio,
+                        CiudadEnvio = pedido.CiudadEnvio,
+                        EstadoEnvio = pedido.EstadoEnvio,
+                        CodigoPostalEnvio = pedido.CodigoPostalEnvio,
+                        PaisEnvio = "México",
+                        NombreReceptor = pedido.NombreReceptor,
+                        RequiereFactura = pedido.RequiereFactura,
+                        Rfc = pedido.Rfc,
+                        RazonSocial = pedido.RazonSocial,
+                        TipoEntrega = pedido.TipoEntrega,
+                        Detalles = new List<DetallePedido>()
+                    };
 
                     decimal total = 0;
                     foreach (var item in carrito)
@@ -132,29 +128,35 @@ namespace RefaccionariaWeb.Controllers
                         prod.Stock -= item.Cantidad;
                         _context.Update(prod);
 
-                        // B) Crear Detalle
-                        _context.Add(new DetallePedido { PedidoId = pedido.Id, ProductoId = prod.Id, Cantidad = item.Cantidad, PrecioUnitario = item.Precio });
+                        // B) Agregar Detalle
+                        nuevoPedido.Detalles.Add(new DetallePedido { ProductoId = prod.Id, Cantidad = item.Cantidad, PrecioUnitario = item.Precio });
 
                         // C) REGISTRAR EN BITÁCORA (Salida por Venta Web)
                         _context.MovimientosInventario.Add(new MovimientoInventario
                         {
                             ProductoId = prod.Id,
                             TipoMovimiento = "Salida Venta Web", // Diferenciamos la venta web
-                            Cantidad = item.Cantidad,
+                            Cantidad = -item.Cantidad,
                             FechaRegistro = DateTime.Now,
-                            UsuarioId = currentUser.Id
+                            UsuarioId = currentUser.Id,
+                            Referencia = "Venta Web"
                         });
 
                         total += (item.Cantidad * item.Precio);
                     }
 
-                    pedido.TotalPedido = total;
-                    _context.Update(pedido);
+                    nuevoPedido.TotalPedido = total;
+                    _context.Pedidos.Add(nuevoPedido);
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
                     HttpContext.Session.Remove("Carrito");
-                    return RedirectToAction(nameof(Details), new { id = pedido.Id });
+                    return RedirectToAction(nameof(Details), new { id = nuevoPedido.Id });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    await transaction.RollbackAsync();
+                    ModelState.AddModelError("", "Ops, alguien compró los últimos productos justo antes que tú. Revisa tu carrito.");
                 }
                 catch (Exception ex)
                 {

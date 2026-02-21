@@ -24,6 +24,7 @@ namespace RefaccionariaWeb.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioCompra { get; set; }
 
+        [ConcurrencyCheck]
         public int Stock { get; set; }
 
         // Logística

@@ -50,8 +50,9 @@ namespace RefaccionariaWeb.Data
             if (publicoGeneralUser == null)
             {
                 publicoGeneralUser = new IdentityUser { UserName = PUBLICO_GENERAL_EMAIL, Email = PUBLICO_GENERAL_EMAIL, EmailConfirmed = true };
-                // Se usa una contraseña fuerte por seguridad; el usuario nunca debería intentar iniciar sesión con ella.
-                var result = await userManager.CreateAsync(publicoGeneralUser, "Publico123!"); 
+                // Se genera una contraseña fuerte aleatoria; el usuario nunca debería intentar iniciar sesión con ella.
+                string randomPassword = Guid.NewGuid().ToString() + "A1!";
+                var result = await userManager.CreateAsync(publicoGeneralUser, randomPassword); 
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(publicoGeneralUser, "Cliente");
