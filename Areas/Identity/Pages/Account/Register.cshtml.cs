@@ -35,8 +35,9 @@ namespace RefaccionariaWeb.Areas.Identity.Pages.Account
             [Display(Name = "Correo")]
             public string Email { get; set; }
 
-            [Required]
-            [StringLength(100, MinimumLength = 6)]
+            [Required(ErrorMessage = "La contraseña es obligatoria.")]
+            [StringLength(100, ErrorMessage = "La {0} debe tener al menos {2} y un máximo de {1} caracteres.", MinimumLength = 8)]
+            [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$", ErrorMessage = "La contraseña debe tener al menos una mayúscula, una minúscula, un número y un carácter especial.")]
             [DataType(DataType.Password)]
             [Display(Name = "Contraseña")]
             public string Password { get; set; }

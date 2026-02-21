@@ -55,7 +55,7 @@ namespace RefaccionariaWeb.Controllers
 
             if (!(User.IsInRole("Admin") || User.IsInRole("Mostrador") || User.IsInRole("Almacen")))
             {
-                pedidoQuery = pedidoQuery.Where(m => m.ClienteId == currentUser.Id);
+                pedidoQuery = pedidoQuery.Where(m => m.ClienteId == (currentUser != null ? currentUser.Id : string.Empty));
             }
 
             var pedido = await pedidoQuery.FirstOrDefaultAsync();
@@ -70,7 +70,7 @@ namespace RefaccionariaWeb.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             var pedido = new CheckoutViewModel
             {
-                NombreReceptor = currentUser.UserName ?? currentUser.Email
+                NombreReceptor = currentUser?.UserName ?? currentUser?.Email ?? string.Empty
             };
             return View(pedido);
         }
@@ -101,7 +101,7 @@ namespace RefaccionariaWeb.Controllers
                 {
                     var nuevoPedido = new Pedido
                     {
-                        ClienteId = currentUser.Id,
+                        ClienteId = currentUser?.Id ?? string.Empty,
                         FechaPedido = DateTime.Now,
                         Status = PedidoStatus.PendienteDePago,
                         CorteCajaId = null,
@@ -138,7 +138,7 @@ namespace RefaccionariaWeb.Controllers
                             TipoMovimiento = "Salida Venta Web", // Diferenciamos la venta web
                             Cantidad = -item.Cantidad,
                             FechaRegistro = DateTime.Now,
-                            UsuarioId = currentUser.Id,
+                            UsuarioId = currentUser?.Id ?? string.Empty,
                             Referencia = "Venta Web"
                         });
 
@@ -169,7 +169,7 @@ namespace RefaccionariaWeb.Controllers
 
         // ... (UpdateStatus, ConfirmarEntrega, ReportarScrap, Almacen -> SIN CAMBIOS)
         [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Admin,Mostrador,Almacen")] public async Task<IActionResult> UpdateStatus(int id, PedidoStatus nuevoStatus, string paqueteria = null, string guia = null, string returnUrl = null) { var pedido = await _context.Pedidos.FindAsync(id); if (pedido != null) { pedido.Status = nuevoStatus; if (nuevoStatus == PedidoStatus.Enviado) { pedido.Paqueteria = paqueteria; pedido.NumeroGuia = guia; pedido.FechaEnvio = DateTime.Now; } _context.Update(pedido); await _context.SaveChangesAsync(); } if (!string.IsNullOrEmpty(returnUrl)) { return Redirect(returnUrl); } return RedirectToAction(nameof(Details), new { id = id }); }
-        [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Cliente")] public async Task<IActionResult> ConfirmarEntrega(int id) { var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id); var currentUser = await _userManager.GetUserAsync(User); if (pedido == null || pedido.ClienteId != currentUser.Id) return NotFound(); if (pedido.Status == PedidoStatus.Enviado) { pedido.Status = PedidoStatus.Entregado; _context.Update(pedido); await _context.SaveChangesAsync(); TempData["Success"] = "¡Gracias por confirmar la recepción de tu pedido!"; } return RedirectToAction(nameof(Details), new { id = id }); }
+        [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Cliente")] public async Task<IActionResult> ConfirmarEntrega(int id) { var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id); var currentUser = await _userManager.GetUserAsync(User); if (pedido == null || currentUser == null || pedido.ClienteId != currentUser.Id) return NotFound(); if (pedido.Status == PedidoStatus.Enviado) { pedido.Status = PedidoStatus.Entregado; _context.Update(pedido); await _context.SaveChangesAsync(); TempData["Success"] = "¡Gracias por confirmar la recepción de tu pedido!"; } return RedirectToAction(nameof(Details), new { id = id }); }
         [HttpPost][ValidateAntiForgeryToken][Authorize(Roles = "Admin,Almacen")] public async Task<IActionResult> ReportarScrap(int id, string motivo) { var pedido = await _context.Pedidos.FirstOrDefaultAsync(p => p.Id == id); if (pedido == null) return NotFound(); pedido.Status = PedidoStatus.Cancelado; _context.Update(pedido); await _context.SaveChangesAsync(); TempData["Error"] = $"Pedido #{id} marcado como SCRAP: {motivo}"; return RedirectToAction(nameof(Almacen)); }
         [Authorize(Roles = "Admin,Almacen")] public async Task<IActionResult> Almacen() { var pedidosAlmacen = await _context.Pedidos.Include(p => p.Cliente).Include(p => p.Detalles).ThenInclude(d => d.Producto).Where(p => p.Status == PedidoStatus.Pagado || p.Status == PedidoStatus.EnProceso).OrderByDescending(p => p.FechaPedido).ToListAsync(); return View(pedidosAlmacen); }
     }

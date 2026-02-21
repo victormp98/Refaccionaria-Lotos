@@ -98,11 +98,11 @@ namespace RefaccionariaWeb.Controllers
             if (caja == null) return Json(new { success = false, message = "No hay caja abierta." });
 
             var ventasEfectivo = await _context.Pedidos
-                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Efectivo"))
+                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio != null && p.DireccionEnvio.Contains("Efectivo"))
                 .SumAsync(p => p.TotalPedido);
 
             var ventasTarjeta = await _context.Pedidos
-                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Tarjeta"))
+                .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio != null && p.DireccionEnvio.Contains("Tarjeta"))
                 .SumAsync(p => p.TotalPedido);
 
             return Json(new
@@ -128,11 +128,11 @@ namespace RefaccionariaWeb.Controllers
                 if (caja == null) return Json(new { success = false, message = "No hay caja abierta." });
 
                 var ventasEfectivo = await _context.Pedidos
-                    .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Efectivo"))
+                    .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio != null && p.DireccionEnvio.Contains("Efectivo"))
                     .SumAsync(p => p.TotalPedido);
 
                 var ventasTarjeta = await _context.Pedidos
-                    .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio.Contains("Tarjeta"))
+                    .Where(p => p.CorteCajaId == caja.Id && p.DireccionEnvio != null && p.DireccionEnvio.Contains("Tarjeta"))
                     .SumAsync(p => p.TotalPedido);
 
                 caja.TotalVentasEfectivo = ventasEfectivo;

@@ -6,23 +6,23 @@ namespace RefaccionariaWeb.Models.DTOs
     {
         [Required]
         [StringLength(150)]
-        public string NombreReceptor { get; set; }
+        public string NombreReceptor { get; set; } = string.Empty;
 
         [Required]
         [StringLength(200)]
-        public string DireccionEnvio { get; set; }
+        public string DireccionEnvio { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100)]
-        public string CiudadEnvio { get; set; }
+        public string CiudadEnvio { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100)]
-        public string EstadoEnvio { get; set; }
+        public string EstadoEnvio { get; set; } = string.Empty;
 
         [Required]
         [StringLength(10)]
-        public string CodigoPostalEnvio { get; set; }
+        public string CodigoPostalEnvio { get; set; } = string.Empty;
 
         public bool RequiereFactura { get; set; }
 

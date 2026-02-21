@@ -1,0 +1,7 @@
+﻿C:\Users\victo\Desktop\Proyecto_Final\RefaccionariaWeb\RefaccionariaWeb\Data\DbInitializer.cs(68,62): error CS0246: El nombre del tipo o del espacio de nombres 'RefaccionariaContext' no se encontró (¿falta una directiva using o una referencia de ensamblado?) [C:\Users\victo\Desktop\Proyecto_Final\RefaccionariaWeb\RefaccionariaWeb\RefaccionariaWeb.csproj]
+
+ERROR al compilar.
+    77 Advertencia(s)
+    1 Errores
+
+Tiempo transcurrido 00:00:04.70

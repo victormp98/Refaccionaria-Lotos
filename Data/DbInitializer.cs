@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using RefaccionariaWeb.Models;
 
 namespace RefaccionariaWeb.Data
 {
@@ -27,9 +30,9 @@ namespace RefaccionariaWeb.Data
                 }
             }
 
-            // 2. ADMIN (Desde Coolify)
-            var adminEmail = configuration["ADMIN_USER"];
-            var adminPass = configuration["ADMIN_PASS"];
+            // 2. ADMIN (Desde Coolify o Fallback local)
+            var adminEmail = configuration["ADMIN_USER"] ?? "admin@refaccionaria.com";
+            var adminPass = configuration["ADMIN_PASS"] ?? "Admin_12345!";
 
             if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPass))
             {
@@ -61,6 +64,53 @@ namespace RefaccionariaWeb.Data
                 // Por ahora, asumimos que la creación será exitosa.
             }
             PublicoGeneralUserId = publicoGeneralUser.Id; // Guardamos el ID para acceso externo por el servicio
+            // 4. PRODUCTOS DE PRUEBA (SEED DATA PARA PRUEBAS E2E LOCALES)
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            if (!context.Productos.Any())
+            {
+                context.Productos.AddRange(
+                    new Producto
+                    {
+                        Nombre = "Aceite Sintético 5W-30 Motorcraft 5L",
+                        Descripcion = "Aceite de motor sintético avanzado para un rendimiento superior. (Num. Parte: XO-5W30-Q1SP)",
+                        MarcaPieza = "Motorcraft",
+                        SKU = "ACE-MOT-5W30",
+                        PrecioCompra = 450.00m,
+                        PrecioVenta = 750.00m,
+                        Stock = 50,
+                        Pasillo = "A1",
+                        Anaquel = "E3",
+                        ImagenUrl = null
+                    },
+                    new Producto
+                    {
+                        Nombre = "Batería LTH AGM 35/85",
+                        Descripcion = "Batería para auto Start-Stop de alto rendimiento. (Num. Parte: AGM-35-85)",
+                        MarcaPieza = "LTH",
+                        SKU = "BAT-LTH-AGM",
+                        PrecioCompra = 1800.00m,
+                        PrecioVenta = 2650.00m,
+                        Stock = 15,
+                        Pasillo = "Piso",
+                        Anaquel = "Zona Baterías",
+                        ImagenUrl = null
+                    },
+                    new Producto
+                    {
+                        Nombre = "Balatas Delanteras de Cerámica Wagner",
+                        Descripcion = "Juego de balatas cerámicas sin ruido para Mazda 3 2014-2018. (Num. Parte: QC1624)",
+                        MarcaPieza = "Wagner",
+                        SKU = "BAL-WAG-QC1624",
+                        PrecioCompra = 350.00m,
+                        PrecioVenta = 690.00m,
+                        Stock = 30,
+                        Pasillo = "B2",
+                        Anaquel = "E1",
+                        ImagenUrl = null
+                    }
+                );
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
