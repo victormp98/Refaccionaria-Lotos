@@ -199,12 +199,10 @@ namespace RefaccionariaWeb.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    await transaction.RollbackAsync();
                     ModelState.AddModelError("", "Ops, alguien compró los últimos productos justo antes que tú. Revisa tu carrito.");
                 }
                 catch (Exception ex)
                 {
-                    await transaction.RollbackAsync();
                     ModelState.AddModelError("", "Error al procesar: " + ex.Message);
                 }
             }
