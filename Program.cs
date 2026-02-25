@@ -15,7 +15,9 @@ builder.Logging.AddConsole();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21))));
+    options.UseMySql(connectionString, 
+        new MySqlServerVersion(new Version(8, 0, 21)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure()));
        
 // IDENTITY (Y Pliticas de contrasela)
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
