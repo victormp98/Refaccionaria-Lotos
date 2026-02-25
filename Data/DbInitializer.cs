@@ -18,22 +18,6 @@ namespace RefaccionariaWeb.Data
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-
-            // --- MODO LIMPIEZA (Para entrega final) ---
-            // Si quieres borrar todo, descomenta las líneas de abajo y haz un push. 
-            // Una vez que el sitio cargue vacío, vuelve a comentarlas para que no borre tus datos nuevos.
-            /*
-            context.CortesCaja.RemoveRange(context.CortesCaja);
-            context.MovimientosInventario.RemoveRange(context.MovimientosInventario);
-            context.Scraps.RemoveRange(context.Scraps);
-            context.DetallesPedido.RemoveRange(context.DetallesPedido);
-            context.Pedidos.RemoveRange(context.Pedidos);
-            context.Compatibilidades.RemoveRange(context.Compatibilidades);
-            context.Vehiculos.RemoveRange(context.Vehiculos);
-            context.Productos.RemoveRange(context.Productos);
-            await context.SaveChangesAsync();
-            */
 
             // 1. ROLES (Nombres exactos)
             string[] roleNames = { "Admin", "Cliente", "Mostrador", "Almacen" };
