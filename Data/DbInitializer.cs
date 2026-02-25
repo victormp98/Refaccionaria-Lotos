@@ -46,6 +46,7 @@ namespace RefaccionariaWeb.Data
                         await userManager.AddToRoleAsync(admin, "Admin");
                     }
                 }
+                /* 
                 else
                 {
                     // MODO RESCATE: Si el usuario ya existe pero olvidaste la contraseña, 
@@ -53,6 +54,7 @@ namespace RefaccionariaWeb.Data
                     var token = await userManager.GeneratePasswordResetTokenAsync(user);
                     await userManager.ResetPasswordAsync(user, token, adminPass);
                 }
+                */
             }
 
             // 3. USUARIO "PÚBLICO GENERAL" para ventas de mostrador

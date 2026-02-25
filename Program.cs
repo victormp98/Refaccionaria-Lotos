@@ -3,13 +3,29 @@ using Microsoft.EntityFrameworkCore;
 using RefaccionariaWeb.Data;
 using RefaccionariaWeb.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.HttpOverrides;
 using Stripe;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // CONFIGURACIÓN DE LOGGING
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+
+// CONFIGURACIÓN PARA PROXY INVERSO (Coolify/Docker)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
 
 // CONEXIÓN A BASE DE DATOS
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -82,6 +98,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseForwardedHeaders();
 app.UseStaticFiles();
 app.UseRouting();
 
