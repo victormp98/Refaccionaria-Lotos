@@ -27,13 +27,19 @@ namespace RefaccionariaWeb.Controllers
 
         // GET: Compatibilidades
         [Authorize(Roles = "Admin,Almacen,Mostrador")] // <--- TODOS LOS EMPLEADOS
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? productoId = null)
         {
             var applicationDbContext = _context.Compatibilidades
                 .Include(c => c.Producto)
                 .Include(c => c.Vehiculo)
                 // FILTRO MÁGICO: Solo mostrar si AMBOS padres están activos/visibles
                 .Where(c => c.Vehiculo.Activo == true && c.Producto.EsVisibleEnLinea == true);
+
+            if (productoId != null)
+            {
+                applicationDbContext = applicationDbContext.Where(c => c.ProductoId == productoId);
+                ViewData["ProductoFiltrado"] = await _context.Productos.FindAsync(productoId);
+            }
 
             return View(await applicationDbContext.ToListAsync());
         }

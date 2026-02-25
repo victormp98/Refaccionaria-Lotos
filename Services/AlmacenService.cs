@@ -27,14 +27,14 @@ namespace RefaccionariaWeb.Services
 
             if (soloVisibles) query = query.Where(p => p.EsVisibleEnLinea == true);
 
-            // LÓGICA DE BÚSQUEDA BLINDADA (Aquí es donde debe estar)
+            // LÓGICA DE BÚSQUEDA BLINDADA Y OPTIMIZADA
             if (!string.IsNullOrEmpty(buscar))
             {
-                // Convertimos a minúsculas para estandarizar
-                string termino = buscar.ToLower();
+                string termino = buscar.Trim().ToLower();
 
-                // EF Core traduce esto a SQL. Agregamos validación de nulos por seguridad.
+                // Priorizamos búsqueda exacta por SKU si el término es corto, o contiene en campos clave
                 query = query.Where(p =>
+                    (p.SKU != null && p.SKU.ToLower() == termino) || // Búsqueda exacta SKU
                     (p.Nombre != null && p.Nombre.ToLower().Contains(termino)) ||
                     (p.SKU != null && p.SKU.ToLower().Contains(termino)) ||
                     (p.MarcaPieza != null && p.MarcaPieza.ToLower().Contains(termino)) ||

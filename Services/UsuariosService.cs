@@ -100,17 +100,17 @@ namespace RefaccionariaWeb.Services
             };
         }
 
-        public async Task<bool> Crear(CrearUsuarioViewModel model)
+        public async Task<IdentityResult> Crear(CrearUsuarioViewModel model)
         {
             var user = new IdentityUser { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
+                // Por defecto, asignar Mostrador si no se especifica (puedes ajustar esto)
                 await _userManager.AddToRoleAsync(user, "Mostrador");
-                return true;
             }
-            return false;
+            return result;
         }
 
         public async Task<bool> Editar(EditarUsuarioViewModel model)

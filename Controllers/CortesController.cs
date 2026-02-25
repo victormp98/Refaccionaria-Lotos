@@ -27,12 +27,20 @@ namespace RefaccionariaWeb.Controllers
 
             return View(historial);
         }
-        public async Task<IActionResult> ReporteGeneral()
+        public async Task<IActionResult> ReporteGeneral(DateTime? inicio = null, DateTime? fin = null)
         {
-            var historial = await _context.CortesCaja
-                .Include(c => c.Usuario)
-                .OrderByDescending(c => c.FechaApertura)
-                .ToListAsync();
+            var query = _context.CortesCaja.Include(c => c.Usuario).AsQueryable();
+
+            if (inicio.HasValue) 
+                query = query.Where(c => c.FechaApertura >= inicio.Value);
+            
+            if (fin.HasValue) 
+                query = query.Where(c => c.FechaApertura <= fin.Value.AddDays(1));
+
+            var historial = await query.OrderByDescending(c => c.FechaApertura).ToListAsync();
+
+            ViewData["FechaInicio"] = inicio?.ToString("yyyy-MM-dd");
+            ViewData["FechaFin"] = fin?.ToString("yyyy-MM-dd");
 
             return View(historial);
         }

@@ -51,15 +51,19 @@ namespace RefaccionariaWeb.Controllers
                 return View(model);
             }
 
-            var exito = await _usuariosService.Crear(model);
-            if (exito)
+            var result = await _usuariosService.Crear(model);
+            if (result.Succeeded)
             {
                 // Ahora te regresa a la lista correcta (Personal o Clientes)
                 return RedirectToAction(nameof(Index), new { tipo = tipo });
             }
 
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
             ViewBag.TipoActual = tipo;
-            ModelState.AddModelError("", "Error al crear el usuario. Verifique los requisitos de contraseña.");
             return View(model);
         }
 

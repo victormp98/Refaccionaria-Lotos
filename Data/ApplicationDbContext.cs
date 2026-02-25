@@ -29,7 +29,6 @@ namespace RefaccionariaWeb.Data
             modelBuilder.Entity<MovimientoInventario>().ToTable("MovimientosInventario");
             modelBuilder.Entity<CorteCaja>().ToTable("cortescaja");
             modelBuilder.Entity<SucursalConfig>().ToTable("SucursalConfig");
-
         }
     }
 }
